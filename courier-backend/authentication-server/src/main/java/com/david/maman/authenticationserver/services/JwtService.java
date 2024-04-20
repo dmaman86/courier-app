@@ -7,8 +7,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -19,12 +20,14 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
+    @Value("${security.jwt.signin-key}")
     private String jwtSigningKey;
 
-    private long jwtExpiration = 86400000;  // 24 hours
+    @Value("${security.jwt.expiration}")
+    private long jwtExpiration;
 
-    private long jwtRefreshExpiration = 604800000;  // 7 days
+    @Value("${security.jwt.refresh-token.expiration}")
+    private long jwtRefreshExpiration;
 
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -35,16 +38,16 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails){
+    public String generateToken(CustomUserDetails userDetails){
         Map<String, Object> claims = new HashMap<>();
         return generateToken(claims, userDetails);
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails){
+    public String generateToken(Map<String, Object> extraClaims, CustomUserDetails userDetails){
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
-    public String generateRefreshToken(UserDetails userDetails){
+    public String generateRefreshToken(CustomUserDetails userDetails){
         Map<String, Object> claims = new HashMap<>();
         return buildToken(claims, userDetails, jwtRefreshExpiration);
     }
@@ -53,7 +56,7 @@ public class JwtService {
         return jwtExpiration;
     }
 
-    public String buildToken(Map<String, Object> extraClaims, UserDetails user, long expirationTime) {
+    public String buildToken(Map<String, Object> extraClaims, CustomUserDetails user, long expirationTime) {
         return Jwts.builder()
                     .setClaims(extraClaims)
                     .setSubject(user.getUsername())
@@ -63,7 +66,7 @@ public class JwtService {
                     .compact();
     }
 
-    public Boolean validateToken(String token, UserDetails user) {
+    public Boolean validateToken(String token, CustomUserDetails user) {
         final String email = extractUserName(token);
         return (email.equals(user.getUsername()) && !isTokenExpired(token));
     }

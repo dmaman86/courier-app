@@ -9,18 +9,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayConfig {
 
-    // @Autowired
-    // private AuthenticationFilter authenticationFilter;
-
     @Autowired
-    private AuthFilter authenticationFilter;
+    private AuthFilter authFilter;
 
     @Bean
     RouteLocator routes(RouteLocatorBuilder builder){
         return builder.routes()
                     .route("authentication-server", r -> r.path("/api/auth/**")
-                            .filters(f -> f.filter(authenticationFilter.apply(new AuthFilter.Config())))
+                            .filters(f -> f.filter(authFilter.apply(new AuthFilter.Config())))
                             .uri("lb://authentication-server"))
+                    .route("product-server", r -> r.path("/api/contact/**")
+                            .filters(f -> f.filter(authFilter.apply(new AuthFilter.Config())))
+                            .uri("lb://courier-server"))
                     .build();
     }
 

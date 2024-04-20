@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  courier-fronted:
+    build: ./courier-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - spring-cloud-gateway
+
+  courier-backend:
+    build: ./courier-backend
+
+# docker-compose up --build

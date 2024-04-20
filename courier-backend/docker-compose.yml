@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+
+  service-registry:
+    build: ./service-registry
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config-server
+
+  spring-cloud-gateway:
+    build: ./spring-cloud-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - service-registry
+
+  authentication-server:
+    build: ./authentication-server
+    ports:
+      - "8088:8088"
+    depends_on:
+      - service-registry
+
+  courier-server:
+    build: ./courier-server
+    ports:
+      - "8081:8081"
+    depends_on:
+      - service-registry
+      - authentication-server
+
+# docker-compose up --build

@@ -1,6 +1,8 @@
 spring:
     application:
         name: courier-server
+    config:
+        import: optional:configserver:http://localhost:8888
     datasource:
         url: jdbc:mysql://localhost:3306/courierdb?createDatabaseIfNotExist=true&serverTimezone=UTC
         username: root
