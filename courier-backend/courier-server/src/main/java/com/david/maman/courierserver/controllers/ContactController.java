@@ -21,7 +21,7 @@ import com.david.maman.courierserver.services.ContactService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/contact")
+@RequestMapping("/api/courier/contact")
 @RequiredArgsConstructor
 public class ContactController {
 

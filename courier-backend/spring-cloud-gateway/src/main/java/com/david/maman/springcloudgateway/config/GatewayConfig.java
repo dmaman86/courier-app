@@ -18,7 +18,7 @@ public class GatewayConfig {
                     .route("authentication-server", r -> r.path("/api/auth/**")
                             .filters(f -> f.filter(authFilter.apply(new AuthFilter.Config())))
                             .uri("lb://authentication-server"))
-                    .route("product-server", r -> r.path("/api/contact/**")
+                    .route("product-server", r -> r.path("/api/courier/**")
                             .filters(f -> f.filter(authFilter.apply(new AuthFilter.Config())))
                             .uri("lb://courier-server"))
                     .build();

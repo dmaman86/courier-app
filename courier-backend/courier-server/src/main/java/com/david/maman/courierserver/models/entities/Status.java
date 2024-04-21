@@ -1,5 +1,10 @@
 package com.david.maman.courierserver.models.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.david.maman.courierserver.models.dto.StatusDto;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,4 +28,18 @@ public class Status {
     private Long id;
 
     private String name;
+
+    public static Status toEntity(StatusDto statusDto){
+        return Status.builder()
+                .id(statusDto.getId())
+                .name(statusDto.getName())
+                .build();
+    }
+
+    public static List<Status> toEntity(List<StatusDto> statusDtos){
+        List<Status> statuses = new ArrayList<>();
+        statusDtos.forEach(statusDto -> statuses.add(Status.toEntity(statusDto)));
+
+        return statuses;
+    }
 }
