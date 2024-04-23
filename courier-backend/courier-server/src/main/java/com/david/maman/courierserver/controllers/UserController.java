@@ -42,7 +42,7 @@ public class UserController {
                 throw new RuntimeException("User already exists");
             }
             logger.info(userDto.toString());
-            userService.saveUserDto(userDto);
+            userService.createUser(userDto);
             return ResponseEntity.ok("User registered successfully");
         }catch(Exception e){
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

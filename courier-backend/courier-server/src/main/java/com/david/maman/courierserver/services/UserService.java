@@ -15,13 +15,13 @@ public interface UserService {
 
     void save(User user);
 
+    void createUser(UserDto userDto);
+
+    void saveClientDto(ClientDto clientDto);
+
     void updateUser(User user, UserDto userDto);
 
     void updateClient(User user, ClientDto clientDto);
-
-    void saveUserDto(UserDto userDto);
-
-    void saveClientDto(ClientDto clientDto);
 
     void delete(Long id);
 

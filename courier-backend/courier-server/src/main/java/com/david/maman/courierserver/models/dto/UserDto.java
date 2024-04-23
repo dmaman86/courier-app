@@ -22,7 +22,6 @@ public class UserDto {
     private String lastName;
     private String phone;
     private String email;
-    private String password;
     private Set<RoleDto> roles;
 
     public static UserDto toDto(User user) {
@@ -32,7 +31,6 @@ public class UserDto {
             .lastName(user.getLastName())
             .phone(user.getPhone())
             .email(user.getEmail())
-            .password(user.getPassword())
             .roles(RoleDto.toDto(user.getRoles()))
             .build();
     }

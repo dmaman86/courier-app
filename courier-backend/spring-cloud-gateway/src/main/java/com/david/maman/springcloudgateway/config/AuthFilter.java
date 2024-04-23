@@ -18,7 +18,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 
 import com.david.maman.springcloudgateway.helpers.ApiError;
-import com.david.maman.springcloudgateway.service.JwtService;
 
 import reactor.core.publisher.Mono;
 
@@ -33,9 +32,6 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config>{
     @Autowired
     private RouterValidator routerValidator;
 
-    @Autowired
-    private JwtService jwtService;
-
     @Override
     public GatewayFilter apply(Config config){
         return ((exchange, chain) -> {
@@ -48,9 +44,6 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config>{
                 try {
                     String token = this.getTokenHeader(request);
                     logger.info("Token: {}", token);
-                    if(jwtService.isTokenExpired(token)){
-                        return this.onError(exchange, "Authentication token is expired", HttpStatus.UNAUTHORIZED);
-                    }
                     return webClientBuilder.build().post()
                             .uri("lb://authentication-server/api/auth/validate")
                             .header(HttpHeaders.AUTHORIZATION, bearerToken)

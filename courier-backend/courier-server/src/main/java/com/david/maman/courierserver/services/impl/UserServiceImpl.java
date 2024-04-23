@@ -19,9 +19,13 @@ import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
+import com.david.maman.courierserver.models.entities.UserCredentials;
+import com.david.maman.courierserver.repositories.UserCredentialsRepository;
 import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.ContactService;
 import com.david.maman.courierserver.services.UserService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -32,10 +36,10 @@ public class UserServiceImpl implements UserService{
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private ContactService contactService;
 
     @Autowired
-    private ContactService contactService;
+    private UserCredentialsRepository userCredentialsRepository;
 
     @Override
     public Optional<User> loadUserByEmail(String email) {
@@ -50,6 +54,28 @@ public class UserServiceImpl implements UserService{
     @Override
     public void save(User user) {
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void createUser(UserDto userDto) {
+        User user = User.builder()
+            .name(userDto.getName())
+            .lastName(userDto.getLastName())
+            .email(userDto.getEmail())
+            .phone(userDto.getPhone())
+            .roles(Role.toEntity(userDto.getRoles()))
+            .build();
+
+        this.save(user);
+        userCredentialsRepository.save(this.buildUserCredentials(user));
+    }
+
+    private UserCredentials buildUserCredentials(User user){
+        return UserCredentials.builder()
+            .user(user)
+            .firstConnection(true)
+            .build();
     }
 
     @Override
@@ -68,16 +94,25 @@ public class UserServiceImpl implements UserService{
                 contactService.deleteContact(contact.get().getId());
             }
         }
-
-        if(userDto.getPassword() != null && !userDto.getPassword().isEmpty()){
-            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        }
         
-        // Set<Role> roles = userDto.getRoles().stream().map(role -> roleRepository.findByName(role.getName())).collect(Collectors.toSet());
         Set<Role> roles = Role.toEntity(userDto.getRoles());
 
         user.setRoles(roles);
         this.save(user);
+    }
+
+    @Override
+    public void saveClientDto(ClientDto clientDto){
+        this.createUser(clientDto);
+
+        Contact contact = Contact.builder()
+            .name(clientDto.getName())
+            .lastName(clientDto.getLastName())
+            .phone(clientDto.getPhone())
+            .office(Office.toEntity(clientDto.getOffice()))
+            .branches(new HashSet<>(Branch.toEntity(clientDto.getBranches())))
+            .build();
+        contactService.saveContact(contact);
     }
 
     @Override
@@ -92,34 +127,6 @@ public class UserServiceImpl implements UserService{
             contactService.saveContact(contact);
         }
         
-    }
-
-    @Override
-    public void saveUserDto(UserDto userDto) {
-        User user = User.builder()
-            .name(userDto.getName())
-            .lastName(userDto.getLastName())
-            .email(userDto.getEmail())
-            .phone(userDto.getPhone())
-            .password(passwordEncoder.encode(userDto.getPassword()))
-            .roles(Role.toEntity(userDto.getRoles()))
-            .build();
-
-        this.save(user);
-    }
-
-    @Override
-    public void saveClientDto(ClientDto clientDto){
-        this.saveUserDto(clientDto);
-
-        Contact contact = Contact.builder()
-            .name(clientDto.getName())
-            .lastName(clientDto.getLastName())
-            .phone(clientDto.getPhone())
-            .office(Office.toEntity(clientDto.getOffice()))
-            .branches(new HashSet<>(Branch.toEntity(clientDto.getBranches())))
-            .build();
-        contactService.saveContact(contact);
     }
 
     @Override

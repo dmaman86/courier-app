@@ -12,20 +12,21 @@ public class ClientDto extends UserDto{
     public OfficeDto getOffice() {
         return office;
     }
+
     public void setOffice(OfficeDto office) {
         this.office = office;
     }
+
     public List<BranchDto> getBranches() {
         return branches;
     }
+
     public void setBranches(List<BranchDto> branches) {
         this.branches = branches;
     }
+
     @Override
     public String toString() {
-        return "ClientDto [office=" + office + ", branches=" + branches + ", getOffice()=" + getOffice()
-                + ", getEmail()=" + getEmail() + ", getId()=" + getId() + ", getLastName()=" + getLastName()
-                + ", getName()=" + getName() + ", getPassword()=" + getPassword() + ", getPhone()=" + getPhone()
-                + ", getRoles()=" + getRoles() + ", getBranches()=" + getBranches() + "]";
+        return "ClientDto [office=" + office + ", branches=" + branches + "]";
     }
 }

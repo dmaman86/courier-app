@@ -9,6 +9,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.UserDetailsServiceImpl;
 import com.david.maman.authenticationserver.models.dto.LoginDto;
+import com.david.maman.authenticationserver.models.dto.UserCredentialsPassword;
+import com.david.maman.authenticationserver.models.entities.UserCredentials;
 import com.david.maman.authenticationserver.repositories.TokenRepository;
+import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
 import com.david.maman.authenticationserver.services.AuthService;
 import com.david.maman.authenticationserver.services.JwtService;
 
@@ -35,10 +39,19 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
     private final TokenRepository tokenRepository;
+    private final UserCredentialsRepository userCredentialsRepository;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
         try{
+
+            UserCredentials credentials = userCredentialsRepository.findByUserEmail(loginDto.getEmail())
+                                                .orElseThrow(() -> new RuntimeException("Error: User not found"));
+
+            if(credentials.getFirstConnection() && credentials.getPassword().isBlank()){
+                throw new RuntimeException("Error: User must set a password");
+            }
+
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
             );
@@ -51,6 +64,22 @@ public class AuthController {
            return ResponseEntity.ok(authService.login(user));
         }catch(BadCredentialsException e){
             return ResponseEntity.badRequest().body("Error: Bad credentials");
+        }catch(Exception e){
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUserCredentials(@RequestBody UserCredentialsPassword userCredentialsPassword){
+        try{
+            UserCredentials credentials = userCredentialsRepository.findByUserEmail(userCredentialsPassword.getEmail())
+                                                .orElseThrow(() -> new RuntimeException("Error: User not found"));
+
+            if(!credentials.getFirstConnection() || userCredentialsPassword.getPassword() == null || userCredentialsPassword.getPassword().isBlank()){
+                throw new RuntimeException("Error: User can't update password");
+            }
+            authService.updateUserCredentials(userCredentialsPassword);
+            return ResponseEntity.ok("Password was set successfully");
         }catch(Exception e){
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }

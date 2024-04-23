@@ -6,8 +6,7 @@ spring:
         name: spring-cloud-gateway
     cloud:
         gateway.discovery.locator.enabled: true
-    config:
-        import: optional:configserver:http://localhost:8888
+        config.enabled: false
 
 eureka:
     client:

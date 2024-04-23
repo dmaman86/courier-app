@@ -13,7 +13,7 @@ public class RouterValidator {
 
     private static final Logger logger = LoggerFactory.getLogger(RouterValidator.class);
     
-    public static final List<String> openEndPoints = List.of("/api/auth/signin");
+    public static final List<String> openEndPoints = List.of("/api/auth/signin", "/api/auth/update");
 
     public Predicate<ServerHttpRequest> isSecured = request -> {
         boolean isSecure = openEndPoints.stream()

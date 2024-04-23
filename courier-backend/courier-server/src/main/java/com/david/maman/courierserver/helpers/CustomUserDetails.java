@@ -1,33 +1,27 @@
 package com.david.maman.courierserver.helpers;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
+import com.david.maman.courierserver.models.entities.UserCredentials;
 
-public class CustomUserDetails extends User implements UserDetails{
+public class CustomUserDetails implements UserDetails{
 
-    private Long id;
-    private String username;
+    private User user;
     private String password;
     Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(User user){
-        this.id = user.getId();
-        this.username = user.getEmail();
-        this.password = user.getPassword();
-        List<GrantedAuthority> auths = new ArrayList<>();
-
-        for(Role role : user.getRoles()){
-            auths.add(new SimpleGrantedAuthority(role.getName()));
-        }
-        this.authorities = auths;
+    public CustomUserDetails(UserCredentials credentials){
+        this.user = credentials.getUser();
+        this.password = credentials.getPassword();
+        this.authorities = user.getRoles().stream()
+                                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                                .collect(Collectors.toList());
     }
 
     @Override
@@ -37,7 +31,7 @@ public class CustomUserDetails extends User implements UserDetails{
 
     @Override
     public String getUsername() {
-        return username;
+        return user.getEmail();
     }
 
     @Override
@@ -65,20 +59,13 @@ public class CustomUserDetails extends User implements UserDetails{
         return true;
     }
 
-    @Override
-    public Long getId(){
-        return id;
-    }
-
-    @Override
-    public void setId(Long id){
-        this.id = id;
+    public User getUser(){
+        return user;
     }
 
     @Override
     public String toString() {
-        return "CustomUserDetails [id=" + id + ", username=" + username + ", password=" + password + ", authorities="
-                + authorities + "]";
+        return "CustomUserDetails [user=" + user + ", password=" + password + ", authorities=" + authorities + "]";
     }
     
 }
