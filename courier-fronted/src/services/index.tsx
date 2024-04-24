@@ -1,7 +1,10 @@
 import { service } from './api';
-import { AuthService } from './auth.service';
+import { AuthService, UserService } from './auth.service';
+import { status } from './status.service';
 
 export {
     service,
-    AuthService
+    AuthService,
+    UserService,
+    status
 }

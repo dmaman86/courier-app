@@ -1,17 +1,24 @@
-import { AxiosResponse } from "axios";
 import { service } from "./api";
-import { FormState } from "../types";
+import { status } from "./status.service";
 
-const status = (response: AxiosResponse) => {
-    if(response.status >= 200 && response.status < 300){
-        return Promise.resolve(response);
+export const UserService = (() => {
+
+    const getItem = async (url: string) => {
+        return await service.get(url)
+            .then(status)
+            .then(response => Promise.resolve(response.data))
+            .catch(error => Promise.reject(error));
     }
-    return Promise.reject(new Error(response.statusText));
-}
+
+    return{
+        getItem
+    }
+
+})();
 
 export const AuthService = (() => {
 
-    const login = async (data: FormState) => {
+    const login = async (data: unknown) => {
         return await service.post('/auth/signin', data)
                         .then(status)
                         .then((response) => Promise.resolve(response.data))
@@ -29,8 +36,16 @@ export const AuthService = (() => {
             .catch(error => Promise.reject(error));
     }
 
+    const logout = async () => {
+        return await service.post('/auth/logout')
+            .then(status)
+            .then(response => Promise.resolve(response.data))
+            .catch(error => Promise.reject(error));
+    }
+
     return {
         login,
-        refreshToken
+        refreshToken,
+        logout
     }
 })();

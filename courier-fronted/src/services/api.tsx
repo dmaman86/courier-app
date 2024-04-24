@@ -7,7 +7,6 @@ export const service = (() => {
 
     api.interceptors.request.use((config) => {
         config.headers = config.headers || {};
-
         const tokens = localStorage.getItem('auth-token');
         let token = null;
         if(tokens){
@@ -15,9 +14,11 @@ export const service = (() => {
             token = tokenObj.accessToken;
             if(token){
                 config.headers.Authorization = `Bearer ${token}`;
+            }else{
+                delete config.headers.Authorization;
             }
-            
         }
+        config.headers['Content-Type'] = 'application/json';
         return config;
     });
 

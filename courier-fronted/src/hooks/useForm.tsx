@@ -1,17 +1,18 @@
 import { useState, ChangeEvent } from 'react';
 
-export const useForm = <T extends Record<string, any>>(initialState: T) => {
-    const [values, setValues] = useState<T>(initialState);
+interface FormValues{
+    [key: string]: string;
+}
 
-    // Asegurarse de que el evento y la destructuración del target estén correctamente tipados
-    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-        setValues(prevValues => ({
-            ...prevValues,
-            [name]: value
-        }));
-    };
+export const useForm = (initialState: FormValues) => {
+    const [values, setValues] = useState<FormValues>(initialState);
 
-    // Explicitar los tipos de retorno para que TypeScript los maneje correctamente
-    return [values, handleInputChange] as const;
-};
+    const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setValues({
+            ...values,
+            [event.target.name]: event.target.value
+        });
+    }
+
+    return { values, onChange };
+}

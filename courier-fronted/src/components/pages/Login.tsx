@@ -3,29 +3,29 @@ import { useNavigate } from "react-router-dom";
 
 import { useForm, useAuth } from "../../hooks";
 import { AuthService } from "../../services";
-import { ReusableInput } from "../shared/ReusableInput";
-import { InputOptions, FormState } from "../../types";
+import { ReusableInput } from "../shared";
+import { InputOptions } from "../../types";
 
 export const Login: React.FC = () => {
 
     const { saveTokens } = useAuth();
     const navigate = useNavigate();
 
-    const [ formValues, handleInputChange ] = useForm<FormState>({
+    const { values, onChange } = useForm({
         username: '',
         password: ''
     });
 
-    const [ usernameError, setUsernameError ] = useState('');
-    const [ passwordError, setPasswordError ] = useState('');
+    // const [ usernameError, setUsernameError ] = useState('');
+    // const [ passwordError, setPasswordError ] = useState('');
 
-    const { username, password } = formValues;
+    const { username, password } = values;
 
-    const usernameOptions: InputOptions = {
+    /*const usernameOptions: InputOptions = {
         label: 'Username',
         type: 'text',
-        value: username,
-        onChange: handleInputChange,
+        value: values.username,
+        onChange: onChange,
         error: usernameError,
         resetError: (errorMessage = '') => setUsernameError(errorMessage),
     };
@@ -33,11 +33,11 @@ export const Login: React.FC = () => {
     const passwordOptions: InputOptions = {
         label: 'Password',
         type: 'password',
-        value: password,
-        onChange: handleInputChange,
+        value: values.password,
+        onChange: onChange,
         error: passwordError,
         resetError: (errorMessage = '') => setPasswordError(errorMessage),
-    };
+    };*/
 
     const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -46,8 +46,8 @@ export const Login: React.FC = () => {
 
         if(username.length && password.length){
             AuthService.login({
-                username,
-                password
+                email: values.username,
+                password: values.password
             }).then((response) => {
                 saveTokens(response);
                 navigate('/home', { replace: true });
@@ -59,8 +59,8 @@ export const Login: React.FC = () => {
 
 
     const sanitazeValues = () => {
-        formValues.username = formValues.username.trim();
-        formValues.password = formValues.password.trim();
+        values.username = values.username.trim();
+        values.password = values.password.trim();
     }
 
     return(
@@ -74,11 +74,28 @@ export const Login: React.FC = () => {
                                     <div className="form-left h-100 py-5 px-5">
                                         <form onSubmit={ handleSubmit } className="row g-4">
                                             <div className="col-12">
-                                                <ReusableInput {...usernameOptions}/>
+                                                <ReusableInput 
+                                                    inputProps={{
+                                                        label: 'username',
+                                                        name: 'username',
+                                                        type: 'text',
+                                                        value: values.username,
+                                                        placeholder: 'Enter your username'
+                                                    }}
+                                                    onChange={onChange}/>
                                             </div>
 
                                             <div className="col-12">
-                                                <ReusableInput {...passwordOptions}/>
+                                                <ReusableInput 
+                                                    inputProps={{
+                                                        label: 'password',
+                                                        name: 'password',
+                                                        type: 'password',
+                                                        value: values.password,
+                                                        placeholder: 'Enter your password'
+                                                    
+                                                    }}
+                                                    onChange={onChange}/>
                                             </div>
 
                                             <div className="col pt-3 text-center">
