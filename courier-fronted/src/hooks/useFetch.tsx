@@ -30,7 +30,8 @@ export const useFetch = (initUrl: string, initOptions = {}) => {
                             })
                         )
         };
-        fetchData();
+        if(url !== '')
+            fetchData();
     }, [url, options]);
 
     const updateUrl = (url: string) => setUrl(url);

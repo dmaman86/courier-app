@@ -1,7 +1,2 @@
-import { Login } from './Login';
-import { Home } from './Home';
-
-export {
-    Login,
-    Home
-}
+export { Login } from './Login';
+export { Home } from './Home';

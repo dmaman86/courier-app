@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import { Navbar } from './components/common';
 import { Login, Home } from './components/pages';
 import { PrivateRoute } from './routes';
-
-import './App.css'
 
 export const App = () => {
   

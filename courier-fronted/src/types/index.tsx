@@ -1,13 +1,5 @@
-import { InputOptions } from './input.options.type';
-import { FormState } from './form.state.type';
-import { FetchState } from './fetch.state.type';
-import { InputProps } from './input.props.type';
-import { GenericInputProps } from './generic.input.props.type';
-
-export type {
-    InputOptions,
-    FormState,
-    FetchState,
-    InputProps,
-    GenericInputProps
-}
+export type { InputOptions } from './input.options.type';
+export type { FormState } from './form.state.type';
+export type { FetchState } from './fetch.state.type';
+export type { InputProps } from './input.props.type';
+export type { GenericInputProps } from './generic.input.props.type';

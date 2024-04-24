@@ -4,13 +4,13 @@ import { useAuth, useFetch } from "../../hooks";
 
 export const Navbar: React.FC = () => {
 
-    const { logout} = useAuth();
+    const { tokens, logout } = useAuth();
 
     const [ toogle, setToogle ] = useState(false);
     const [ show, setShow ] = useState('');
     const [ user, setUser ] = useState(null);
     const [ isLoggingOut, setIsLoggingOut ] = useState(false);
-    const { data, loading, error, updateUrl, updateOptions } = useFetch('/courier/users/me');
+    const { data, loading, error, updateUrl, updateOptions } = useFetch('');
     
 
     const toogleMenu = () => setToogle(!toogle);
@@ -23,6 +23,12 @@ export const Navbar: React.FC = () => {
             setIsLoggingOut(false);
         }
     }, []);
+
+    useEffect(() => {
+        if(tokens){
+            updateUrl('/courier/users/me');
+        }
+    }, [tokens, updateUrl]);
 
     useEffect(() => {
         setShow((!toogle) ? '' : 'show');

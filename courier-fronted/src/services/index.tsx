@@ -1,10 +1,3 @@
-import { service } from './api';
-import { AuthService, UserService } from './auth.service';
-import { status } from './status.service';
-
-export {
-    service,
-    AuthService,
-    UserService,
-    status
-}
+export { service } from './api';
+export { AuthService, UserService } from './auth.service';
+export { status } from './status.service';

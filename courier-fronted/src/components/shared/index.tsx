@@ -1,5 +1,1 @@
-import { ReusableInput } from './ReusableInput';
-
-export {
-    ReusableInput
-}
+export { ReusableInput } from './ReusableInput';

@@ -1,5 +1,1 @@
-import { PrivateRoute } from './PrivateRoute';
-
-export{
-    PrivateRoute
-}
+export { PrivateRoute } from './PrivateRoute';
