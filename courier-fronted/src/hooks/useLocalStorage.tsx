@@ -20,5 +20,14 @@ export const useLocalStorage = (key: string, initialValue: Token | null) => {
         }
     };
 
-    return [storedValue, setValue] as const;
+    const removeStoredValue = () => {
+        try{
+            window.localStorage.removeItem(key);
+            setStoredValue(null);
+        }catch(error){
+            setStoredValue(initialValue);
+        }
+    }
+
+    return [storedValue, setValue, removeStoredValue] as const;
 }

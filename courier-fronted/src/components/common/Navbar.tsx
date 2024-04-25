@@ -41,7 +41,7 @@ export const Navbar: React.FC = () => {
     useEffect(() => {
         if(user === null && !isLoggingOut){
             if(!loading && error === null){
-                setUser(data);
+                setUser(data?.user);
             }
         }
     }, [data, error, isLoggingOut, loading, user]);
@@ -60,6 +60,7 @@ export const Navbar: React.FC = () => {
             method: 'POST'
         });
         setIsLoggingOut(true);
+        setUser(null);
     }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -71,7 +72,7 @@ export const Navbar: React.FC = () => {
 
     return(
         <>
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <nav className="navbar navbar-expand-lg bg-body-tertiary">
                 <div className="container-fluid">
                     <Link to="/" className="navbar-brand">Navbar</Link>
                     {

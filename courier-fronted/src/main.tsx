@@ -1,13 +1,12 @@
-import React, { StrictMode } from 'react'
-import ReactDOM from 'react-dom/client'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './hooks';
-import { App } from './App.tsx'
-import './index.css'
+import { App } from './App.tsx';
 
 
-const divRoot = document.getElementById('root');
-const root = ReactDOM.createRoot(divRoot!);
+const divRoot = document.querySelector('#root');
+const root = createRoot(divRoot!);
 root.render(
   <StrictMode>
     <BrowserRouter>
@@ -16,14 +15,4 @@ root.render(
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>
-)
-
-/*ReactDOM.createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>,
-)*/
+);

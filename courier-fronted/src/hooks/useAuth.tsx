@@ -15,16 +15,16 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
   
 const isTokenExpired = (token: string) => {
     try {
-      const { exp } = JSON.parse(atob(token.split('.')[1])); // Decodifica el payload del JWT
-      return Date.now() >= exp * 1000; // Compara la fecha de expiración con la fecha actual
+      const { exp } = JSON.parse(atob(token.split('.')[1])); // Decode the payload of the token
+      return Date.now() >= exp * 1000; // compare the current time with the expiration time
     } catch {
-      return true; // Asumir que el token está expirado si hay un error al decodificar
+      return true; // assume the token is expired if there is an error
     }
   };
 
 
 export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
-    const [tokens, setTokens] = useLocalStorage('auth-token', null);
+    const [ tokens, setTokens, removeStoredValue ] = useLocalStorage('auth-token', null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
     }
 
     const logout = () => {
-        setTokens(null);
+        removeStoredValue();
         navigate('/login', { replace: true });
     }
 

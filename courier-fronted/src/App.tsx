@@ -1,25 +1,21 @@
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import { Navbar } from './components/common';
-import { Login, Home } from './components/pages';
-import { PrivateRoute } from './routes';
+import { Navbar } from './components';
+import { PrivateRoutes, PublicRoutes } from './routes';
+import { useAuth } from './hooks';
 
 export const App = () => {
   
+  const { tokens } = useAuth();
 
   return (
     <>
       <Navbar />
       <Routes>
-        <Route path='/' element={<PrivateRoute/>}>
-          <Route path="home" element={<Home />} />
-        </Route>
-        <Route path='/login' element={<Login />} />
-
-        <Route path='*' element={<Navigate replace to='/login' />} />
+        <Route path="/" element={<Navigate to={tokens ? "/home" : "/login"} replace />} />
+        <Route path="/*" element={tokens ? <PrivateRoutes /> : <PublicRoutes />} />
       </Routes>
     </>
   )

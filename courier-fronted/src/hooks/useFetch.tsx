@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 
 import { service, status } from '../services';
+import { FetchState } from "../types";
 
 export const useFetch = (initUrl: string, initOptions = {}) => {
 
     const [url, setUrl] = useState(initUrl);
     const [options, setOptions] = useState(initOptions);
-    const [state, setState] = useState({
+    const [state, setState] = useState<FetchState<unknown>>({
         data: null,
         loading: true,
         error: null
@@ -44,44 +45,5 @@ export const useFetch = (initUrl: string, initOptions = {}) => {
         updateOptions
     }
 
-}
-
-export const useAxiosGet = (initUrl: string) => {
-
-    const [url, setUrl] = useState(initUrl);
-    const [state, setState] = useState({
-        data: null,
-        loading: true,
-        error: null
-    });
-
-
-    useEffect(() => {
-        const fetchData = async () => {
-            await service.get(url)
-                        .then(status)
-                        .then(response =>
-                            setState({
-                                data: response.data,
-                                loading: false,
-                                error: null
-                            })
-                        ).catch(error => 
-                            setState({
-                                data: null,
-                                loading: false,
-                                error: error
-                            })
-                        )
-        };
-        fetchData();
-    }, [url]);
-
-    const updateUrl = (url: string) => setUrl(url);
-
-    return {
-        ...state,
-        updateUrl
-    }
 }
 
