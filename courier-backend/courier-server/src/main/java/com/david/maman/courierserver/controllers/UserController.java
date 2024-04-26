@@ -73,7 +73,10 @@ public class UserController {
     public ResponseEntity<?> getUser(@RequestHeader("Authorization") String header){
         try{
             final String refreshToken = getTokenHeader(header);
-            var user = getUserToken(refreshToken);
+            var customUser = getUserToken(refreshToken);
+            var user = userService.loadUserByEmail(customUser.getUsername()).orElseThrow(
+                () -> new Exception("User not found")
+            );
             return ResponseEntity.ok(user);
         }catch(Exception e){
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
@@ -161,11 +164,11 @@ public class UserController {
         if(userEmail == null){
             throw new RuntimeException("Error: Invalid refresh token");
         }
-        CustomUserDetails user = (CustomUserDetails) userDetatailsServiceImpl.loadUserByUsername(userEmail);
-        if(!jwtService.validateToken(token, user)){
+        CustomUserDetails customUser = (CustomUserDetails) userDetatailsServiceImpl.loadUserByUsername(userEmail);
+        if(!jwtService.validateToken(token, customUser)){
             throw new RuntimeException("Error: Invalid refresh token");
         }
-        return user;
+        return customUser;
     }
 
 }

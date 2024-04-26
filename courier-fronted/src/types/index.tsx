@@ -1,8 +1,11 @@
 export type {
     FetchState,
-    FormLoginState,
+    FormState,
     InputProps,
     GenericInputProps,
-    InputOptions,
-    Token
+    Token,
+    ValidationRule,
+    FormField,
+    Role,
+    User
 } from './types';

@@ -1,7 +1,8 @@
 import React from "react";
 import { GenericInputProps } from "../../types";
 
-export const ReusableInput: React.FC<GenericInputProps> = ({ inputProps, onChange }) => {
+export const ReusableInput: React.FC<GenericInputProps> = ({ inputProps, onChange, onFocus, errorMessage }) => {
+
 
     return (
         <div className="mb-3">
@@ -11,8 +12,11 @@ export const ReusableInput: React.FC<GenericInputProps> = ({ inputProps, onChang
                 className="form-control"
                 autoComplete="off"
                 onChange={onChange}
-                // onFocus={onFocusReset}
+                onFocus={() => onFocus(inputProps.name)}
             />
+            {errorMessage && (
+                <div className="text-danger errormessage">{errorMessage}</div>
+            )}
         </div>
     );
 }

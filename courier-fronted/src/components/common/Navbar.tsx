@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { useAuth, useFetch } from "../../hooks";
+import { useFetch } from "../../hooks";
+import { Token, User } from "../../types"; 
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+    tokens: Token | null;
+    logout: () => void;
+    user: User | null;
+    setUser: (user: User | null) => void;
+}
 
-    const { tokens, logout } = useAuth();
+export const Navbar: React.FC<NavbarProps> = (props) => {
+
+    const { tokens, logout, user, setUser } = props;
 
     const [ toogle, setToogle ] = useState(false);
     const [ show, setShow ] = useState('');
-    const [ user, setUser ] = useState(null);
     const [ isLoggingOut, setIsLoggingOut ] = useState(false);
     const { data, loading, error, updateUrl, updateOptions } = useFetch('');
     
 
-    const toogleMenu = () => setToogle(!toogle);
+    const toogleMenu = () => {
+        setToogle(!toogle);
+    }
 
 
     useEffect(() => {
@@ -40,19 +49,20 @@ export const Navbar: React.FC = () => {
 
     useEffect(() => {
         if(user === null && !isLoggingOut){
-            if(!loading && error === null){
-                setUser(data?.user);
+            if(!loading && error === null && isUserData(data)){
+                setUser(data);
             }
         }
-    }, [data, error, isLoggingOut, loading, user]);
+    }, [data, error, isLoggingOut, loading, setUser, user]);
 
     useEffect(() => {
         if(isLoggingOut){
             if(!loading && error === null){
+                setUser(null);
                 logout();
             }
         }
-    }, [error, isLoggingOut, loading, logout]);
+    }, [error, isLoggingOut, loading, logout, setUser]);
 
     const changeSource = () => {
         updateUrl('/auth/logout');
@@ -60,13 +70,27 @@ export const Navbar: React.FC = () => {
             method: 'POST'
         });
         setIsLoggingOut(true);
-        setUser(null);
     }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         changeSource();
+    }
+
+    const isUserData = (data: unknown): data is User => {
+        return (data as User).id !== undefined && (data as User).email !== undefined;
+    }
+
+    const extractRoleNames = (user: User) => {
+        const formattedRoles = user.roles.map((role) => {
+            return role.name.replace(/^ROLE_/, '');
+        });
+        return `[${formattedRoles.join(', ')}]`;
+    }
+
+    const capitalizeFirstLetter = (word: string) => {
+        return word.replace(/^\w/, (c) => c.toUpperCase());
     }
 
 
@@ -84,7 +108,7 @@ export const Navbar: React.FC = () => {
                                     onClick={toogleMenu}>
                                     <span className="navbar-toggler-icon"></span>
                                 </button>
-                                <div className={"collapse navbar-collapse" + show}>
+                                <div className={"collapse navbar-collapse" + (show ? " show" : "")}>
                                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                                         <li className="nav-item">
                                             <NavLink
@@ -97,7 +121,10 @@ export const Navbar: React.FC = () => {
                                         
                                     </ul>
                                     <div className="d-flex logout">
-                                        
+                                        Logged user: <span>{capitalizeFirstLetter(user.name) + ' ' + capitalizeFirstLetter(user.lastName)}</span>
+                                        &nbsp;
+                                        Roles: <span>{ extractRoleNames(user) }</span>
+                                        &nbsp;
                                         <form onSubmit={ handleSubmit }>
                                             <input type="submit"
                                                 className="btn btn-sm btn-outline-danger"

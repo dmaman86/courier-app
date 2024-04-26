@@ -1,53 +1,46 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useForm, useAuth } from "../../hooks";
 import { AuthService } from "../../services";
 import { ReusableInput } from "../shared";
-import { InputOptions } from "../../types";
+import { FormState } from "../../types";
+
+const initialState: FormState = {
+    username: {
+        value: '',
+        validation: [
+            {
+                validate: (value: string) => value.length > 0,
+                errorMessage: 'Username is required'
+            }
+        ]
+    },
+    password: {
+        value: '',
+        validation: [
+            {
+                validate: (value: string) => value.length > 0,
+                errorMessage: 'Password is required'
+            }
+        ]
+    }
+};
 
 export const Login: React.FC = () => {
 
     const { saveTokens } = useAuth();
     const navigate = useNavigate();
 
-    const { values, onChange } = useForm({
-        username: '',
-        password: ''
-    });
+    const { values, handleChange, onFocus, validateForm } = useForm(initialState);
 
-    // const [ usernameError, setUsernameError ] = useState('');
-    // const [ passwordError, setPasswordError ] = useState('');
-
-    const { username, password } = values;
-
-    /*const usernameOptions: InputOptions = {
-        label: 'Username',
-        type: 'text',
-        value: values.username,
-        onChange: onChange,
-        error: usernameError,
-        resetError: (errorMessage = '') => setUsernameError(errorMessage),
-    };
-
-    const passwordOptions: InputOptions = {
-        label: 'Password',
-        type: 'password',
-        value: values.password,
-        onChange: onChange,
-        error: passwordError,
-        resetError: (errorMessage = '') => setPasswordError(errorMessage),
-    };*/
-
-    const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        sanitazeValues();
-
-        if(username.length && password.length){
+        if(validateForm()){
             AuthService.login({
-                email: values.username,
-                password: values.password
+                email: values.username.value,
+                password: values.password.value
             }).then((response) => {
                 saveTokens(response);
                 navigate('/home', { replace: true });
@@ -55,12 +48,6 @@ export const Login: React.FC = () => {
                 console.log(error);
             });
         }
-    }
-
-
-    const sanitazeValues = () => {
-        values.username = values.username.trim();
-        values.password = values.password.trim();
     }
 
     return(
@@ -72,17 +59,19 @@ export const Login: React.FC = () => {
                             <div className="row justify-content-center">
                                 <div className="col-md-7 pe-0">
                                     <div className="form-left h-100 py-5 px-5">
-                                        <form onSubmit={ handleSubmit } className="row g-4">
+                                        <form onSubmit={ onSubmit } className="row g-4">
                                             <div className="col-12">
                                                 <ReusableInput 
                                                     inputProps={{
                                                         label: 'username',
                                                         name: 'username',
                                                         type: 'text',
-                                                        value: values.username,
-                                                        placeholder: 'Enter your username'
+                                                        value: values.username.value,
+                                                        placeholder: 'Enter your username',
                                                     }}
-                                                    onChange={onChange}/>
+                                                    onChange={handleChange}
+                                                    onFocus={onFocus}
+                                                    errorMessage={values.username.error}/>
                                             </div>
 
                                             <div className="col-12">
@@ -91,11 +80,12 @@ export const Login: React.FC = () => {
                                                         label: 'password',
                                                         name: 'password',
                                                         type: 'password',
-                                                        value: values.password,
+                                                        value: values.password.value,
                                                         placeholder: 'Enter your password'
-                                                    
                                                     }}
-                                                    onChange={onChange}/>
+                                                    onChange={handleChange}
+                                                    onFocus={onFocus}
+                                                    errorMessage={values.password.error}/>
                                             </div>
 
                                             <div className="col pt-3 text-center">
