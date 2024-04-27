@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { useFetch } from "../../hooks";
-import { Token, User } from "../../types"; 
-
-interface NavbarProps {
-    tokens: Token | null;
-    logout: () => void;
-    user: User | null;
-    setUser: (user: User | null) => void;
-}
+import { useFetch, useRouteConfig } from "../../hooks";
+import { User, NavbarProps } from "../../types";
 
 export const Navbar: React.FC<NavbarProps> = (props) => {
 
-    const { tokens, logout, user, setUser } = props;
+    const { tokens, logout, user, isLoggingIn, updateLogginIn } = props;
 
     const [ toogle, setToogle ] = useState(false);
     const [ show, setShow ] = useState('');
     const [ isLoggingOut, setIsLoggingOut ] = useState(false);
     const { data, loading, error, updateUrl, updateOptions } = useFetch('');
-    
+
+
+    const { getLinks } = useRouteConfig(user?.roles || []);
 
     const toogleMenu = () => {
         setToogle(!toogle);
@@ -28,16 +23,16 @@ export const Navbar: React.FC<NavbarProps> = (props) => {
     useEffect(() => {
         return () => {
             setToogle(false);
-            setUser(null);
+            // updateLogginIn(false);
             setIsLoggingOut(false);
         }
     }, []);
 
     useEffect(() => {
         if(tokens){
-            updateUrl('/courier/users/me');
+            updateLogginIn(true);
         }
-    }, [tokens, updateUrl]);
+    }, [tokens, updateLogginIn]);
 
     useEffect(() => {
         setShow((!toogle) ? '' : 'show');
@@ -47,28 +42,21 @@ export const Navbar: React.FC<NavbarProps> = (props) => {
         if(user !== null) console.log(user);
     }, [user]);
 
-    useEffect(() => {
-        if(user === null && !isLoggingOut){
-            if(!loading && error === null && isUserData(data)){
-                setUser(data);
-            }
-        }
-    }, [data, error, isLoggingOut, loading, setUser, user]);
 
     useEffect(() => {
-        if(isLoggingOut){
+        if(!isLoggingIn && isLoggingOut){
             if(!loading && error === null){
-                setUser(null);
                 logout();
             }
         }
-    }, [error, isLoggingOut, loading, logout, setUser]);
+    }, [error, isLoggingIn, isLoggingOut, loading, logout]);
 
     const changeSource = () => {
         updateUrl('/auth/logout');
         updateOptions({
             method: 'POST'
         });
+        updateLogginIn(false);
         setIsLoggingOut(true);
     }
 
@@ -76,10 +64,6 @@ export const Navbar: React.FC<NavbarProps> = (props) => {
         event.preventDefault();
 
         changeSource();
-    }
-
-    const isUserData = (data: unknown): data is User => {
-        return (data as User).id !== undefined && (data as User).email !== undefined;
     }
 
     const extractRoleNames = (user: User) => {
@@ -110,15 +94,18 @@ export const Navbar: React.FC<NavbarProps> = (props) => {
                                 </button>
                                 <div className={"collapse navbar-collapse" + (show ? " show" : "")}>
                                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                                        <li className="nav-item">
-                                            <NavLink
-                                                to="/profile"
-                                                className={ ({ isActive }) => 'nav-link ' + ( isActive ? 'active' : '')}
-                                            >
-                                                Profile
-                                            </NavLink>
-                                        </li>
-                                        
+                                        {
+                                            getLinks().map((link, index) => (
+                                                <li key={index} className="nav-item">
+                                                    <NavLink
+                                                        to={link.path}
+                                                        className={ ({ isActive }) => 'nav-link ' + ( isActive ? 'active' : '')}
+                                                    >
+                                                        {link.label}
+                                                    </NavLink>
+                                                </li>
+                                            ))
+                                        }
                                     </ul>
                                     <div className="d-flex logout">
                                         Logged user: <span>{capitalizeFirstLetter(user.name) + ' ' + capitalizeFirstLetter(user.lastName)}</span>

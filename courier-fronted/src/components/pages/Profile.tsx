@@ -1,6 +1,7 @@
 import React from "react";
+import { RoutesProps } from "../../types";
 
-export const Profile: React.FC = () => {
+export const Profile: React.FC<RoutesProps> = ({tokens, user}) => {
 
     return(
         <>

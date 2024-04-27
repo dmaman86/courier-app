@@ -7,5 +7,8 @@ export type {
     ValidationRule,
     FormField,
     Role,
-    User
+    User,
+    RouteConfig,
+    RoutesProps,
+    NavbarProps
 } from './types';

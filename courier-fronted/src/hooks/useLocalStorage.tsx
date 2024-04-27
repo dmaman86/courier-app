@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Token } from '../types/token.type';
+import { Token } from '../types';
 
 export const useLocalStorage = (key: string, initialValue: Token | null) => {
     const [storedValue, setStoredValue] = useState<Token | null>(() => {

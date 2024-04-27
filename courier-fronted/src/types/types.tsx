@@ -1,3 +1,5 @@
+import React, { ReactNode } from "react";
+
 export interface FetchState<T>{
     data: T | null;
     loading: boolean;
@@ -50,4 +52,24 @@ export interface User {
     lastName: string;
     phone: string;
     roles: Role[];
+}
+
+export interface RoutesProps {
+    tokens?: Token | null;
+    user?: User | null;
+}
+
+export interface RouteConfig{
+    path: string;
+    label: string;
+    element: ReactNode | ((props?: RoutesProps) => ReactNode);
+    allowedRoles: string[];
+}
+
+export interface NavbarProps {
+    tokens: Token | null;
+    logout: () => void;
+    user: User | null;
+    isLoggingIn: boolean;
+    updateLogginIn: (loading: boolean) => void;
 }

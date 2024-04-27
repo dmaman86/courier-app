@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 
-import { Token } from '../types/token.type';
+import { Token } from '../types';
 import { useLocalStorage } from "./useLocalStorage";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services";

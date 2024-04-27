@@ -1,12 +1,8 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Login } from "../components";
+import { Token } from "../types";
 
-import { useAuth } from "../hooks";
-import { Token } from "../types/token.type";
-
-export const PublicRoutes = () => {
-
-    const { tokens } = useAuth();
+export const PublicRoutes = ({tokens}: {tokens: Token | null}) => {
 
     return(
         <Routes>
