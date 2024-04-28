@@ -1,62 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { useFetch, useRouteConfig } from "../../hooks";
-import { User, NavbarProps } from "../../types";
+import { useAuth, useFetch, useRouteConfig } from "../../hooks";
+import { User } from "../../types";
+import { paths } from "../../constants/paths";
 
-export const Navbar: React.FC<NavbarProps> = (props) => {
+export const Navbar: React.FC = () => {
 
-    const { tokens, logout, user, isLoggingIn, updateLogginIn } = props;
+    const { userDetails, logout } = useAuth();
+    const { getLinks } = useRouteConfig();
 
     const [ toogle, setToogle ] = useState(false);
     const [ show, setShow ] = useState('');
     const [ isLoggingOut, setIsLoggingOut ] = useState(false);
-    const { data, loading, error, updateUrl, updateOptions } = useFetch('');
+    const { data, loading, error, updateUrl, updateOptions } = useFetch();
 
-
-    const { getLinks } = useRouteConfig(user?.roles || []);
 
     const toogleMenu = () => {
         setToogle(!toogle);
     }
 
-
     useEffect(() => {
         return () => {
             setToogle(false);
-            // updateLogginIn(false);
             setIsLoggingOut(false);
         }
     }, []);
 
     useEffect(() => {
-        if(tokens){
-            updateLogginIn(true);
-        }
-    }, [tokens, updateLogginIn]);
-
-    useEffect(() => {
         setShow((!toogle) ? '' : 'show');
     }, [toogle]);
 
-    useEffect(() => {
-        if(user !== null) console.log(user);
-    }, [user]);
-
 
     useEffect(() => {
-        if(!isLoggingIn && isLoggingOut){
+        if(isLoggingOut){
             if(!loading && error === null){
                 logout();
             }
         }
-    }, [error, isLoggingIn, isLoggingOut, loading, logout]);
+    }, [error, isLoggingOut, loading, logout]);
 
     const changeSource = () => {
-        updateUrl('/auth/logout');
+        updateUrl(paths.auth.logout);
         updateOptions({
             method: 'POST'
         });
-        updateLogginIn(false);
         setIsLoggingOut(true);
     }
 
@@ -84,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = (props) => {
                 <div className="container-fluid">
                     <Link to="/" className="navbar-brand">Navbar</Link>
                     {
-                        user && (
+                        userDetails && (
                             <>
                                 <button
                                     className="navbar-toggler" 
@@ -108,9 +95,9 @@ export const Navbar: React.FC<NavbarProps> = (props) => {
                                         }
                                     </ul>
                                     <div className="d-flex logout">
-                                        Logged user: <span>{capitalizeFirstLetter(user.name) + ' ' + capitalizeFirstLetter(user.lastName)}</span>
+                                        Logged user: <span>{capitalizeFirstLetter(userDetails.name) + ' ' + capitalizeFirstLetter(userDetails.lastName)}</span>
                                         &nbsp;
-                                        Roles: <span>{ extractRoleNames(user) }</span>
+                                        Roles: <span>{ extractRoleNames(userDetails) }</span>
                                         &nbsp;
                                         <form onSubmit={ handleSubmit }>
                                             <input type="submit"

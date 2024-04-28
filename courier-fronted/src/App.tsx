@@ -5,32 +5,26 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 
 import { Navbar } from './components';
 import { PrivateRoutes, PublicRoutes } from './routes';
-import { useAuth, useUser } from './hooks';
-import { NavbarProps } from './types';
+import { useAuth } from './hooks';
+import { ErrorPage, ErrorBoundry } from './components';
 
 export const App = () => {
   
-  const { tokens, logout } = useAuth();
-  const { user, isLoggingIn, updateLogginIn } = useUser();
-
-  const initNavBar: NavbarProps = {
-    tokens,
-    logout,
-    user,
-    isLoggingIn,
-    updateLogginIn
-  }
+  const { tokens, navigateToErrorPage } = useAuth();
 
 
   return (
     <>
-      <Navbar 
-        {...initNavBar}
-      />
+      <Navbar />
       <Routes>
           <Route path="/" element={<Navigate to={tokens ? "/home" : "/login"} replace />} />
-          <Route path="/*" element={tokens ? <PrivateRoutes tokens={tokens} user={user} /> : 
-                                            <PublicRoutes tokens={tokens}/>} />
+          <Route path="/*" element={
+            <ErrorBoundry navigateToErrorPage={navigateToErrorPage}>
+              { tokens ? <PrivateRoutes /> : <PublicRoutes /> }
+            </ErrorBoundry>
+            } />
+
+          <Route path='/error' element={<ErrorPage />} />
       </Routes>
     </>
   )

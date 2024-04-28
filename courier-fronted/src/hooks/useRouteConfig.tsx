@@ -1,30 +1,20 @@
-import { Role, RoutesProps } from "../types";
 import { routes } from "../routes";
-import { Navigate } from "react-router-dom";
+import { useAuth } from "./useAuth";
+import React from "react";
 
-export const useRouteConfig = (userRoles: Role[]) => {
+export const useRouteConfig = () => {
+
+    const { userDetails } = useAuth();
 
     const getRoutes = () => {
-        if(!userRoles.length){
-            return [{path: '/login', label: 'Login', element: <Navigate to='/login' replace/>, allowedRoles: []}];
-        }
-        return routes.filter(route => checkPermission(route.allowedRoles))
+        return routes.filter(route => route.allowedRoles.length === 0 || checkPermission(route.allowedRoles))
                         .map(route => ({
                             ...route,
-                            element: (props?: RoutesProps) => {
-                                if (typeof route.element === 'function') {
-                                    return route.element(props);
-                                } else {
-                                    return route.element;
-                                }
-                            }
+                            element: typeof route.element === 'function' ? React.createElement(route.element) : route.element
                         }));
     }
 
     const getLinks = () => {
-        if(!userRoles.length){
-            return [{ path: '/login', label: 'Login' }];
-        }
         return routes.filter(route => route.path !== '/login' && route.path !== '/home' && route.path !== '*' && checkPermission(route.allowedRoles))
                             .map(route => ({
                                 path: route.path,
@@ -33,6 +23,9 @@ export const useRouteConfig = (userRoles: Role[]) => {
     }
 
     const checkPermission = (allowedRoles: string[]): boolean => {
+        if(!userDetails || !userDetails.roles.length) return false;
+        const userRoles = userDetails.roles;
+
         return allowedRoles.some(allowedRole => 
             userRoles.some(userRole => userRole.name === allowedRole)
         );

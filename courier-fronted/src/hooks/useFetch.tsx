@@ -1,43 +1,63 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { service, status } from '../services';
-import { FetchState } from "../types";
+import { FetchConfig, FetchOptions, FetchState } from "../types";
+import axios from "axios";
 
-export const useFetch = (initUrl: string, initOptions = {}) => {
+export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {}) => {
 
     const [url, setUrl] = useState(initUrl);
     const [options, setOptions] = useState(initOptions);
+    const [ isActive, setIsActive ] = useState(false);
     const [state, setState] = useState<FetchState<unknown>>({
         data: null,
         loading: true,
         error: null
     });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            await service(url, options)
-                        .then(status)
-                        .then(response =>
-                            setState({
-                                data: response.data,
-                                loading: false,
-                                error: null
-                            })
-                        ).catch(error => 
+    const fetchData = useCallback( () => {
+        if(url === undefined || url === '' || !isActive) return;
+
+        const source = axios.CancelToken.source();
+        setState({ data: null, loading: true, error: null });
+
+        service(url, options)
+                    .then(status)
+                    .then(response =>
+                        setState({
+                            data: response.data,
+                            loading: false,
+                            error: null
+                        })
+                    ).catch(error => {
+                        if(!axios.isCancel(error)){
                             setState({
                                 data: null,
                                 loading: false,
                                 error: error
                             })
-                        )
-        };
-        if(url !== '')
-            fetchData();
-    }, [url, options]);
+                        }
+                    }).finally(() => setIsActive(false));
+        // return function to cleaned canceled request
+        return () => source.cancel();
+    }, [url, options, isActive]);
 
-    const updateUrl = (url: string) => setUrl(url);
+    useEffect(() => {
+        if(isActive){
+            const cancelFetch = fetchData();
+            return cancelFetch;
+        }
+    }, [fetchData, isActive]);
 
-    const updateOptions = (options: object) => setOptions(options);
+    const updateUrl = (url: string) => {
+        setUrl(url);
+        setIsActive(true);
+    }
+
+    const updateOptions = (options: FetchOptions) => {
+        setOptions(prev => ({...prev, ...options}));
+        setIsActive(true);
+    }
 
     return {
         ...state,

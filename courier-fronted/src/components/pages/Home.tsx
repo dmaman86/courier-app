@@ -1,10 +1,13 @@
 import React from "react";
-import { RoutesProps, User } from "../../types";
+import { User } from "../../types";
 import { HomeAdmin } from "./admin/HomeAdmin";
 import { HomeClient } from "./client/HomeClient";
 import { HomeCourier } from "./courier/HomeCourier";
+import { useAuth } from "../../hooks";
 
-export const Home: React.FC<RoutesProps> = ({tokens, user}) => {
+export const Home: React.FC = () => {
+
+    const { userDetails } = useAuth();
 
     const getComponent = (localUser: User) => {
         for(const role of localUser.roles)
@@ -12,14 +15,14 @@ export const Home: React.FC<RoutesProps> = ({tokens, user}) => {
     }
 
     const page = (role: string) => ({
-        "ROLE_ADMIN": <HomeAdmin tokens={tokens} user={user} />,
-        "ROLE_COURIER": <HomeCourier tokens={tokens} user={user} />,
-        "ROLE_CLIENT": <HomeClient tokens={tokens} user={user} />
+        "ROLE_ADMIN": <HomeAdmin />,
+        "ROLE_COURIER": <HomeCourier />,
+        "ROLE_CLIENT": <HomeClient  />
     })[role];
 
     return(
         <>
-            { user ? getComponent(user) : <div>Loading user data...</div>}
+            { userDetails ? getComponent(userDetails) : <div>Loading user data...</div>}
         </>
     )
 }

@@ -62,7 +62,7 @@ export interface RoutesProps {
 export interface RouteConfig{
     path: string;
     label: string;
-    element: ReactNode | ((props?: RoutesProps) => ReactNode);
+    element: ReactNode | (() => ReactNode);
     allowedRoles: string[];
 }
 
@@ -72,4 +72,27 @@ export interface NavbarProps {
     user: User | null;
     isLoggingIn: boolean;
     updateLogginIn: (loading: boolean) => void;
+}
+
+export interface LoginCredentials {
+    email: string;
+    password: string;
+}
+
+export interface FetchOptions {
+    method?: string;
+    headers?: Record<string, string>;
+    data?: unknown
+}
+
+export interface FetchConfig {
+    url?: string;
+    options?: FetchOptions
+}
+
+export interface ModalProps {
+    title: string;
+    body: () => ReactNode;
+    show: boolean;
+    onClose: () => void;
 }

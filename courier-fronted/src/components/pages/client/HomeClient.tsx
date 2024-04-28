@@ -1,6 +1,6 @@
-import { RoutesProps } from "../../../types"
 
-export const HomeClient: React.FC<RoutesProps> = ({tokens, user}) => {
+
+export const HomeClient: React.FC = () => {
 
     return (
         <>

@@ -1,7 +1,6 @@
-import { RoutesProps } from "../../../types"
 
 
-export const HomeCourier: React.FC<RoutesProps> = ({tokens, user}) => {
+export const HomeCourier: React.FC = () => {
 
     return (
         <>

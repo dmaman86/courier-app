@@ -1,16 +1,18 @@
-import React, { useEffect } from "react"
-import { RoutesProps } from "../../../types"
+import React, { useEffect } from "react";
+import { useAuth } from "../../../hooks";
 
 
-export const HomeAdmin: React.FC<RoutesProps> = ({tokens, user}) => {
+export const HomeAdmin: React.FC = () => {
+
+    const { userDetails } = useAuth();
 
     useEffect(() => {
-        if(user) console.log('Home Admin: ', user);
-    }, [user]);
+        if(userDetails) console.log('Home Admin: ', userDetails);
+    }, [userDetails]);
 
     return(
         <>
-            <h1>Home Admin {user?.name}</h1>
+            <h1>Home Admin {userDetails?.name}</h1>
         </>
     )
 }

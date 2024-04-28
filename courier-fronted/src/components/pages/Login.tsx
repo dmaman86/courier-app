@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useForm, useAuth } from "../../hooks";
-import { AuthService } from "../../services";
+import { useForm, useAuth, useFetch } from "../../hooks";
 import { ReusableInput } from "../shared";
-import { FormState } from "../../types";
+import { FormState, Token } from "../../types";
+import { paths } from "../../constants/paths";
+import { LoginCredentials } from "../../types/types";
 
 const initialState: FormState = {
     username: {
@@ -34,19 +35,28 @@ export const Login: React.FC = () => {
 
     const { values, handleChange, onFocus, validateForm } = useForm(initialState);
 
+    const { data, loading, error, updateUrl, updateOptions } = useFetch();
+
+    useEffect(() => {
+        if(!loading && !error){
+            saveTokens(data as Token);
+            navigate('/home', { replace: true });
+        }
+    }, [data, error, loading]);
+
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if(validateForm()){
-            AuthService.login({
+            updateUrl(paths.auth.login);
+            const credentials: LoginCredentials = {
                 email: values.username.value,
                 password: values.password.value
-            }).then((response) => {
-                saveTokens(response);
-                navigate('/home', { replace: true });
-            }).catch((error) => {
-                console.log(error);
-            });
+            }
+            updateOptions({
+                method: 'POST',
+                data: JSON.stringify(credentials)
+            })
         }
     }
 
