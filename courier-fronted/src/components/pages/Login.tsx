@@ -4,26 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { useForm, useAuth, useFetch } from "../../hooks";
 import { ReusableInput } from "../shared";
 import { FormState, Token } from "../../types";
-import { paths } from "../../constants/paths";
+import { paths, validatorForm } from "../../helpers";
 import { LoginCredentials } from "../../types/types";
 
 const initialState: FormState = {
     username: {
         value: '',
         validation: [
-            {
-                validate: (value: string) => value.length > 0,
-                errorMessage: 'Username is required'
-            }
+            validatorForm.validaNotEmpty
         ]
     },
     password: {
         value: '',
         validation: [
-            {
-                validate: (value: string) => value.length > 0,
-                errorMessage: 'Password is required'
-            }
+            validatorForm.validaNotEmpty
         ]
     }
 };

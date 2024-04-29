@@ -27,7 +27,7 @@ export const useForm = <T extends FormState>(initialState: T) => {
         for(const validationRule of field.validation){
             const isValid = validationRule.validate(value);
             if(!isValid){
-                return { isValid: false, error: validationRule.errorMessage };
+                return { isValid: false, error: validationRule.message };
             }
         }
         return { isValid: true, error: '' };

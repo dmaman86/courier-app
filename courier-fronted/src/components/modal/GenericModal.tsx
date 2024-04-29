@@ -5,27 +5,17 @@ import { Modal } from "bootstrap";
 
 export const GenericModal: React.FC<ModalProps> = ({ title, body, show, onClose }) => {
 
-    const modalRef = useRef<HTMLDivElement>(null);
+    const displayClass = show ? 'd-block' : 'd-none';
 
     const handleClose = () => {
         onClose();
     }
 
-    useEffect(() => {
-        if(modalRef.current){
-            const modal = new Modal(modalRef.current);
-            show ? modal.show() : modal.hide();
-        }
-        
-    }, [show]);
-
     return(
         <>
             <div id="genericModal"
-                className={`modal ${show ? 'show' : ''}`}
-                tabIndex={-1}
-                style={{ display: show ? 'block' : 'none' }}
-                ref={modalRef}>
+                className={`modal ${displayClass} show`}
+                tabIndex={-1} >
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -33,10 +23,10 @@ export const GenericModal: React.FC<ModalProps> = ({ title, body, show, onClose 
                                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={handleClose}></button>
                             </div>
                             <div className="modal-body">
-                                {body()}
+                                {body}
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={handleClose}>Cerrar</button>
                             </div>
                         </div>
                     </div>

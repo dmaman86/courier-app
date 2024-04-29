@@ -10,17 +10,11 @@ export const Profile: React.FC = () => {
     const [ showModal, setShowModal ] = useState(false);
 
 
-    const handleOpenModal = () => {
-        setShowModal(true);
-      };
-    
-      const handleCloseModal = () => {
-        setShowModal(false);
-      };
+    const toogleModal = () => setShowModal(!showModal);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        handleOpenModal();
+        toogleModal();
     }
 
     const extractRoleNames = (user: User) => {
@@ -74,7 +68,7 @@ export const Profile: React.FC = () => {
                 </div>
             </div>
             {                
-                showModal && <GenericModal title="Generic modal" body={() => <UpdatePassword user={userDetails} onClose={handleCloseModal} />} show={showModal} onClose={handleCloseModal} />
+                showModal && <GenericModal title="Generic modal" body={<UpdatePassword user={userDetails} onClose={toogleModal} />} show={showModal} onClose={toogleModal} />
             }
         </>
     );

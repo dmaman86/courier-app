@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { useAuth, useFetch, useRouteConfig } from "../../hooks";
 import { User } from "../../types";
-import { paths } from "../../constants/paths";
+import { paths } from "../../helpers/paths";
 
 export const Navbar: React.FC = () => {
 

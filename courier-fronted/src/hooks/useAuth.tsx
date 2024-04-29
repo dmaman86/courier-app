@@ -4,7 +4,7 @@ import { Token, User } from '../types';
 import { useLocalStorage } from "./useLocalStorage";
 import { useNavigate } from "react-router-dom";
 import { useFetch } from "./useFetch";
-import { paths } from "../constants/paths";
+import { paths } from "../helpers/paths";
 
 interface AuthContextType {
     tokens: Token | null;

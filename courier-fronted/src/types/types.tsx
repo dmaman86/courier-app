@@ -8,7 +8,7 @@ export interface FetchState<T>{
 
 export interface ValidationRule{
     validate: (value: string) => boolean;
-    errorMessage: string;
+    message: string;
 }
 
 export interface FormField<T>{
@@ -92,7 +92,7 @@ export interface FetchConfig {
 
 export interface ModalProps {
     title: string;
-    body: () => ReactNode;
+    body: ReactNode;
     show: boolean;
     onClose: () => void;
 }
