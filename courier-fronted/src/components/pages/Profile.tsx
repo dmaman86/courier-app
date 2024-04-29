@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../hooks";
-import { Role, User } from "../../types";
-import { GenericModal } from "../modal/GenericModal";
-import { UpdatePassword } from "../modal/UpdatePassword";
+import { Role } from "../../types";
+import { GenericModal, UpdatePassword } from "../modal";
 
 export const Profile: React.FC = () => {
 
@@ -17,15 +16,15 @@ export const Profile: React.FC = () => {
         toogleModal();
     }
 
-    const extractRoleNames = (user: User) => {
-        const formattedRoles = user.roles.map((role: Role) => {
+    const extractRoleNames = () => {
+        const formattedRoles = userDetails?.roles.map((role: Role) => {
             return role.name.replace(/^ROLE_/, '');
         });
-        return `[${formattedRoles.join(', ')}]`;
+        return `[${formattedRoles?.join(', ')}]`;
     }
 
-    const capitalizeFirstLetter = (word: string) => {
-        return word.replace(/^\w/, (c) => c.toUpperCase());
+    const capitalizeFirstLetter = (word: string | undefined) => {
+        return word ? word.replace(/^\w/, (c) => c.toUpperCase()) : '';
     }
 
     return(
@@ -40,16 +39,16 @@ export const Profile: React.FC = () => {
                                         <form onSubmit={ handleSubmit } className="row g-4 text-center">
                                             <h1>Acccount Overview</h1>
                                             <div className="col-12">
-                                                <h4>Email: {(userDetails !== null) && <span>{ userDetails.email }</span>}</h4>
+                                                <h4>Email: <span>{ userDetails?.email }</span></h4>
                                             </div>
                                             <div className="col-12">
-                                                <h4>Full name: {(userDetails !== null) && <span>{ capitalizeFirstLetter(userDetails.name) + ' ' + capitalizeFirstLetter(userDetails.lastName) }</span>}</h4>
+                                                <h4>Full name: <span>{ capitalizeFirstLetter(userDetails?.name) + ' ' + capitalizeFirstLetter(userDetails?.lastName) }</span></h4>
                                             </div>
                                             <div className="col-12">
-                                                <h4>Phone: {(userDetails !== null) && <span>{ userDetails.phone }</span>}</h4>
+                                                <h4>Phone: <span>{ userDetails?.phone }</span></h4>
                                             </div>
                                             <div className="col-12">
-                                                <h4>Roles: {(userDetails !== null) && <span>{ extractRoleNames(userDetails) }</span>}</h4>
+                                                <h4>Roles: <span>{ extractRoleNames() }</span></h4>
                                             </div>
 
                                             <div className="col pt-3 text-center">

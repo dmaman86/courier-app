@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { ModalProps } from "../../types";
-import { Modal } from "bootstrap";
 
 
 export const GenericModal: React.FC<ModalProps> = ({ title, body, show, onClose }) => {
