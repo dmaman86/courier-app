@@ -2,20 +2,26 @@ import { useForm } from "../../hooks";
 import { FormState, User } from "../../types";
 import { ReusableInput } from "../shared";
 import { validatorForm } from "../../helpers";
+import { PasswordRulesList } from "../partials/PasswordRulesList";
+import { useEffect, useState } from "react";
 
 
 const initialState: FormState = {
     passwordOne: {
         value: '',
         validation: [
-            validatorForm.validaNotEmpty
-        ]
+            validatorForm.validateNotEmpty,
+            validatorForm.validateMinLength
+        ],
+        validateRealTime: true
     },
     passwordTwo: {
         value: '',
         validation: [
-            validatorForm.validaNotEmpty
-        ]
+            validatorForm.validateNotEmpty,
+            validatorForm.validateMinLength
+        ],
+        validateRealTime: true
     }
 };
 
@@ -24,18 +30,44 @@ interface UpdatePasswordProps {
     onClose: () => void;
 }
 
+const validateEquals = (valueOne: string, valueTwo: string) => {
+    return {
+        isValid: valueOne === valueTwo,
+        error: 'Passwords must be equal'
+    }
+}
+
 export const UpdatePassword: React.FC<UpdatePasswordProps> = ({user, onClose}) => {
 
-    const { values, handleChange, onFocus, validateForm } = useForm(initialState);
+    const { values, handleChange, onFocus } = useForm(initialState);
+
+    const { passwordOne, passwordTwo } = values;
+
+    const { value: passwordOneValue, error: passwordOneError } = passwordOne;
+    const { value: passwordTwoValue, error: passwordTwoError } = passwordTwo;
+
+    const [ error, setError ] = useState<string>('');
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if(validateForm()){
-            console.log('Updating password');
-            onClose();
+        if(error === '' && validateErrors()){
+            console.log(passwordOneValue, passwordTwoValue, error);
+        }else{
+            console.log('Form is not valid: ', passwordOneError, passwordTwoError, error);
         }
 
+    }
+
+    useEffect( () => {
+        if(passwordOneValue !== '' && passwordTwoValue !== ''){
+            const res = validateEquals(passwordOneValue, passwordTwoValue);
+            !res.isValid ? setError(res.error) : setError('');
+        }
+    }, [passwordOneValue, passwordTwoValue]);
+
+    const validateErrors = () => {
+        return passwordOneError === '' && passwordTwoError === '';
     }
 
     return(
@@ -53,12 +85,12 @@ export const UpdatePassword: React.FC<UpdatePasswordProps> = ({user, onClose}) =
                             label: 'password one',
                             name: 'passwordOne',
                             type: 'password',
-                            value: values.passwordOne.value,
+                            value: passwordOneValue,
                             placeholder: 'Enter your password'
                         }}
                         onChange={handleChange}
-                        onFocus={onFocus}
-                        errorMessage={values.passwordOne.error}/>
+                        onFocus={onFocus}/>
+                        <PasswordRulesList rules={passwordOne.validation} value={passwordOneValue}/>
                 </div>
                 <div className="col-12">
                     <ReusableInput 
@@ -66,12 +98,15 @@ export const UpdatePassword: React.FC<UpdatePasswordProps> = ({user, onClose}) =
                             label: 'password two',
                             name: 'passwordTwo',
                             type: 'password',
-                            value: values.passwordTwo.value,
-                            placeholder: 'Enter your password'
+                            value: passwordTwoValue,
+                            placeholder: 'Enter your password again'
                         }}
                         onChange={handleChange}
-                        onFocus={onFocus}
-                        errorMessage={values.passwordTwo.error}/>
+                        onFocus={onFocus}/>
+                        <PasswordRulesList rules={passwordTwo.validation} value={passwordTwoValue}/>
+                        {error !== '' && (
+                            <div className="text-danger errormessage">{error}</div>
+                        )}
                 </div>
                 <div className="col pt-3 text-center">
                     <button className="btn btn-primary" type="submit">Update</button>

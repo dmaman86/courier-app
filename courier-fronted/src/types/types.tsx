@@ -16,6 +16,7 @@ export interface FormField<T>{
     validation: ValidationRule[];
     isValid?: boolean;
     error?: string;
+    validateRealTime?: boolean;
 }
 
 export type FormState = Record<string, FormField<string>>;
@@ -95,4 +96,17 @@ export interface ModalProps {
     body: ReactNode;
     show: boolean;
     onClose: () => void;
+}
+
+export interface OptionType {
+    value: string;
+    label: string;
+}
+
+export interface SelectProps {
+    value: string | string[];
+    options: OptionType[];
+    onChange: (value: string | string[]) => void;
+    placeholder?: string;
+    isMulti?: boolean;
 }

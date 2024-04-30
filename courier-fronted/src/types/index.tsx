@@ -13,5 +13,7 @@ export type {
     NavbarProps,
     FetchOptions,
     FetchConfig,
-    ModalProps
+    ModalProps,
+    OptionType,
+    SelectProps
 } from './types';

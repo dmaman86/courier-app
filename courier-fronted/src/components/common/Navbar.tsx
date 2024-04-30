@@ -12,7 +12,7 @@ export const Navbar: React.FC = () => {
     const [ toogle, setToogle ] = useState(false);
     const [ show, setShow ] = useState('');
     const [ isLoggingOut, setIsLoggingOut ] = useState(false);
-    const { data, loading, error, updateUrl, updateOptions } = useFetch();
+    const { loading, error, updateUrl, updateOptions } = useFetch();
 
 
     const toogleMenu = () => {

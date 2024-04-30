@@ -11,14 +11,16 @@ const initialState: FormState = {
     username: {
         value: '',
         validation: [
-            validatorForm.validaNotEmpty
-        ]
+            validatorForm.validateNotEmpty
+        ],
+        validateRealTime: false
     },
     password: {
         value: '',
         validation: [
-            validatorForm.validaNotEmpty
-        ]
+            validatorForm.validateNotEmpty
+        ],
+        validateRealTime: false
     }
 };
 
@@ -28,6 +30,11 @@ export const Login: React.FC = () => {
     const navigate = useNavigate();
 
     const { values, handleChange, onFocus, validateForm } = useForm(initialState);
+
+    const { username, password } = values;
+
+    const { value: usernameValue, error: usernameError } = username;
+    const { value: passwordValue, error: passwordError } = password;
 
     const { data, loading, error, updateUrl, updateOptions } = useFetch();
 
@@ -40,12 +47,12 @@ export const Login: React.FC = () => {
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
+        
         if(validateForm()){
             updateUrl(paths.auth.login);
             const credentials: LoginCredentials = {
-                email: values.username.value,
-                password: values.password.value
+                email: usernameValue,
+                password: passwordValue
             }
             updateOptions({
                 method: 'POST',
@@ -70,12 +77,12 @@ export const Login: React.FC = () => {
                                                         label: 'username',
                                                         name: 'username',
                                                         type: 'text',
-                                                        value: values.username.value,
+                                                        value: usernameValue,
                                                         placeholder: 'Enter your username',
                                                     }}
                                                     onChange={handleChange}
                                                     onFocus={onFocus}
-                                                    errorMessage={values.username.error}/>
+                                                    errorMessage={usernameError}/>
                                             </div>
 
                                             <div className="col-12">
@@ -84,12 +91,12 @@ export const Login: React.FC = () => {
                                                         label: 'password',
                                                         name: 'password',
                                                         type: 'password',
-                                                        value: values.password.value,
+                                                        value: passwordValue,
                                                         placeholder: 'Enter your password'
                                                     }}
                                                     onChange={handleChange}
                                                     onFocus={onFocus}
-                                                    errorMessage={values.password.error}/>
+                                                    errorMessage={passwordError}/>
                                             </div>
 
                                             <div className="col pt-3 text-center">

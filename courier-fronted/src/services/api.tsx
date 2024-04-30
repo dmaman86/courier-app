@@ -11,14 +11,14 @@ export const service = (() => {
         let token = null;
         if(tokens){
             const tokenObj = JSON.parse(tokens);
-            token = tokenObj.accessToken;
+            token = tokenObj?.accessToken;
             if(token){
                 config.headers.Authorization = `Bearer ${token}`;
             }else{
                 delete config.headers.Authorization;
             }
         }
-        config.headers['Content-Type'] = 'application/json';
+        config.headers['Content-Type'] = config.headers['Content-Type'] || 'application/json';
         return config;
     });
 

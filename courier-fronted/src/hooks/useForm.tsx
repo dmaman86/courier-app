@@ -7,10 +7,22 @@ export const useForm = <T extends FormState>(initialState: T) => {
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
-        setValues(prev => ({
-            ...prev,
-            [name]: { ...prev[name], value}
-        }));
+        setValues(prev => {
+            const shouldValidateRealTime = prev[name].validateRealTime;
+
+            if(shouldValidateRealTime){
+                const { isValid, error } = validateField(name, value);
+                return {
+                    ...prev,
+                    [name]: { ...prev[name], value, isValid, error }
+                }
+            }else{
+                return {
+                    ...prev,
+                    [name]: { ...prev[name], value }
+                }
+            }
+        });
     }
 
     const onFocus = (fieldName: string) => {
@@ -24,8 +36,10 @@ export const useForm = <T extends FormState>(initialState: T) => {
         const field = values[fieldName];
         if(!field) return { isValid: true, error: '' };
 
+        const sanitizedValue = sanitizeString(value);
+
         for(const validationRule of field.validation){
-            const isValid = validationRule.validate(value);
+            const isValid = validationRule.validate(sanitizedValue);
             if(!isValid){
                 return { isValid: false, error: validationRule.message };
             }
@@ -34,7 +48,6 @@ export const useForm = <T extends FormState>(initialState: T) => {
     }
 
     const validateForm = () => {
-        sanitizeValues();
         const newValues = { ...values };
         let isFormValid = true;
         for(const key in newValues){
@@ -45,17 +58,6 @@ export const useForm = <T extends FormState>(initialState: T) => {
         }
         setValues(newValues);
         return isFormValid;
-    }
-
-    const sanitizeValues = () => {
-        const newValues = { ...values };
-        Object.keys(newValues).forEach((fieldName) => {
-            const field = newValues[fieldName];
-            if(field.value && typeof field.value === 'string'){
-                field.value = sanitizeString(field.value);
-            }
-        });
-        setValues(newValues);
     }
 
     const sanitizeString = (value: string) => {

@@ -21,15 +21,21 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
         const source = axios.CancelToken.source();
         setState({ data: null, loading: true, error: null });
 
-        service(url, options)
+        service(url, {
+            method: options?.method || 'GET',
+            data: options?.data,              
+            headers: options?.headers,        
+            cancelToken: source.token         
+        })
                     .then(status)
-                    .then(response =>
+                    .then(response =>{
                         setState({
                             data: response.data,
                             loading: false,
                             error: null
                         })
-                    ).catch(error => {
+                    
+                    }).catch(error => {
                         if(!axios.isCancel(error)){
                             setState({
                                 data: null,
@@ -66,4 +72,3 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
     }
 
 }
-

@@ -5,9 +5,14 @@ const isNotEmpty = (value: string): boolean => value.length > 0;
 
 export const validatorForm = ( () => {
 
-    const validaNotEmpty: ValidationRule = {
+    const validateNotEmpty: ValidationRule = {
         validate: (value: string): boolean => isNotEmpty(value),
         message: 'This field is required'
+    }
+
+    const validateMinLength: ValidationRule = {
+        validate: (value: string): boolean => value.length >= 5,
+        message: 'Password must contain at least 5 characters'
     }
 
     const isCellularNumber: ValidationRule = {
@@ -16,7 +21,8 @@ export const validatorForm = ( () => {
     }
 
     return {
-        validaNotEmpty,
+        validateNotEmpty,
+        validateMinLength,
         isCellularNumber
     }
 
