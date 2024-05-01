@@ -2,6 +2,7 @@ package com.david.maman.authenticationserver.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.david.maman.authenticationserver.exceptions.TokenValidationException;
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.UserDetailsServiceImpl;
 import com.david.maman.authenticationserver.models.dto.LoginDto;
@@ -98,17 +100,19 @@ public class AuthController {
 
     @PostMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String header){
-        try{
+        try {
             final String token = getTokenHeader(header);
             var user = getUserToken(token);
-            var isTokenValid = tokenRepository.findByToken(token)
-                                        .map(t -> !t.getIsExpired() && !t.getIsRevoked())
-                                        .orElse(false);
-            if(!jwtService.validateToken(token, user) || !isTokenValid)
-                throw new RuntimeException("Error: Invalid token");
+            boolean isTokenValid = tokenRepository.findByToken(token)
+                    .map(t -> !t.getIsExpired() && !t.getIsRevoked())
+                    .orElse(false);
+            if (!jwtService.validateToken(token, user) || !isTokenValid)
+                throw new TokenValidationException("Invalid token");
             return ResponseEntity.ok().build();
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (TokenValidationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
 
     }

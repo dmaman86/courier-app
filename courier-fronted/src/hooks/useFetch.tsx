@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 
-import { service, status } from '../services';
 import { FetchConfig, FetchOptions, FetchState } from "../types";
 import axios from "axios";
+import { service } from "../services";
 
 export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {}) => {
 
@@ -21,13 +21,13 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
         const source = axios.CancelToken.source();
         setState({ data: null, loading: true, error: null });
 
-        service(url, {
+        service({
+            url,
             method: options?.method || 'GET',
             data: options?.data,              
             headers: options?.headers,        
             cancelToken: source.token         
         })
-                    .then(status)
                     .then(response =>{
                         setState({
                             data: response.data,

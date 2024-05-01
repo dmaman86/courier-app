@@ -3,7 +3,7 @@ import React, { ReactNode } from "react";
 export interface FetchState<T>{
     data: T | null;
     loading: boolean;
-    error: Error | null;
+    error: unknown;
 }
 
 export interface ValidationRule{

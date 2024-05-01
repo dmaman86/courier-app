@@ -1,115 +1,70 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { Token, User } from '../types';
 import { useLocalStorage } from "./useLocalStorage";
 import { useNavigate } from "react-router-dom";
-import { useFetch } from "./useFetch";
+import { service } from "../services";
 import { paths } from "../helpers";
+
 
 interface AuthContextType {
     tokens: Token | null;
     userDetails: User | null;
-    error: string | null;
     saveTokens: (tokens: Token) => void;
     logout: () => void;
+    error: unknown | null;
     navigateToErrorPage: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-  
-const isTokenExpired = (token: string) => {
-    try {
-      const { exp } = JSON.parse(atob(token.split('.')[1])); // Decode the payload of the token
-      return Date.now() >= exp * 1000; // compare the current time with the expiration time
-    } catch {
-      return true; // assume the token is expired if there is an error
-    }
-  };
 
 
 export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
     const [ tokens, setTokens, removeStoredValue ] = useLocalStorage('auth-token', null);
     const [ userDetails, setUserDetails ] = useState<User | null>(null);
-    const [ error, setError ] = useState<string | null>(null);
-
-    const { data, loading, error: errorResponse, updateUrl, updateOptions } = useFetch();
+    const [ error, setError ] = useState<unknown | null>(null);
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const checkTokenExpiration = async () => {
-            if (tokens){
-                const accessTokenExpired = isTokenExpired(tokens.accessToken);
-                const refreshTokenExpired = isTokenExpired(tokens.refreshToken);
+    const saveTokens = useCallback((data: Token) => {
+        setTokens(data);
+    }, [setTokens]);
 
-                if(!accessTokenExpired){
-                    if(!userDetails){
-                        updateUrl(paths.courier.userDetails);
-                    }
-                    return;
-                }
+    const logout = useCallback(() => {
+        removeStoredValue();
+        setUserDetails(null);
+        navigate('/login', { replace: true });
+    }, [navigate, removeStoredValue]);
 
-                if(accessTokenExpired && !refreshTokenExpired){
-                    updateUrl(paths.courier.refreshToken);
-                    updateOptions({
-                        method: 'POST',
-                        headers: {
-                            Authorization: `Bearer ${tokens.refreshToken}`
-                        }
-                    });
-                    return;
-                }
-                logout();
-            }
-        };
-        checkTokenExpiration();
+    const navigateToErrorPage = useCallback(() => {
+        navigate('/error', { replace: true });
+    }, [navigate]);
+
+    const fetchUserDetails = useCallback( async () => {
+        if(!tokens || !tokens.accessToken) return;
+        try{
+            const response = await service.get(paths.courier.userDetails);
+            setUserDetails(response.data);
+            setError(null);
+        }catch(error){
+            setUserDetails(null);
+            setError(error);
+        }
     }, [tokens]);
 
     useEffect(() => {
-        if(!loading){
-            if(!errorResponse && data){
-                if(isTokens(data)) setTokens(data);
-                else if(isUser(data)) setUserDetails(data);
-                setError(null);
-            }else{
-                setError(errorResponse?.message || null);
-            }
-        }
-    }, [data, loading, errorResponse]);
-
-    const saveTokens = (data: Token) => {
-        setTokens(data);
-    }
-
-    const logout = () => {
-        removeStoredValue();
-        setUserDetails(null);
-        setError(null);
-        navigate('/login', { replace: true });
-    }
-
-    const navigateToErrorPage = () => {
-        navigate('/error', { replace: true });
-    }
-
-    const isUser = (data: unknown): data is User => {
-        return (data as User) && (data as User).id !== undefined;
-    }
-
-    const isTokens = (data: unknown): data is Token => {
-        return (data as Token) && (
-            (data as Token).accessToken !== undefined
-            && (data as Token).refreshToken !== undefined);
-    }
+        if(!userDetails)
+            fetchUserDetails();
+    }, [fetchUserDetails, userDetails]);
 
     const value = useMemo(() => ({
         tokens,
         userDetails,
-        error,
         saveTokens,
         logout,
-        navigateToErrorPage
-    }), [tokens, userDetails, error]);
+        navigateToErrorPage,
+        error
+    }), [tokens, userDetails, saveTokens, logout, navigateToErrorPage, error]);
 
 
     return <AuthContext.Provider value={value}>

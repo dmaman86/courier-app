@@ -6,7 +6,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { Navbar } from './components';
 import { PrivateRoutes, PublicRoutes } from './routes';
 import { useAuth } from './hooks';
-import { ErrorPage, ErrorBoundry } from './components';
+import { ErrorPage, ErrorBoundary } from './components';
 
 export const App = () => {
   
@@ -19,9 +19,9 @@ export const App = () => {
       <Routes>
           <Route path="/" element={<Navigate to={tokens ? "/home" : "/login"} replace />} />
           <Route path="/*" element={
-            <ErrorBoundry navigateToErrorPage={navigateToErrorPage}>
-              { tokens ? <PrivateRoutes /> : <PublicRoutes /> }
-            </ErrorBoundry>
+              <ErrorBoundary navigateToErrorPage={navigateToErrorPage}>
+                { tokens ? <PrivateRoutes /> : <PublicRoutes /> }
+              </ErrorBoundary>
             } />
 
           <Route path='/error' element={<ErrorPage />} />

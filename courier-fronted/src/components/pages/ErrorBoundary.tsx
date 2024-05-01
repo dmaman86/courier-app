@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../hooks";
 import { useNavigate } from "react-router-dom";
 
-interface ErrorBoundryProps {
+interface ErrorBoundaryProps {
     children: React.ReactNode;
     navigateToErrorPage: () => void;
 }
 
-export const ErrorBoundry = ({ children, navigateToErrorPage }: ErrorBoundryProps): React.ReactNode => {
+export const ErrorBoundary = ({ children, navigateToErrorPage }: ErrorBoundaryProps): React.ReactNode => {
 
     const [ hasError, setHasError ] = useState(false);
     const { tokens, error } = useAuth();
