@@ -20,13 +20,6 @@ export const Navbar: React.FC = () => {
     }
 
     useEffect(() => {
-        return () => {
-            setToogle(false);
-            setIsLoggingOut(false);
-        }
-    }, []);
-
-    useEffect(() => {
         setShow((!toogle) ? '' : 'show');
     }, [toogle]);
 
@@ -34,6 +27,8 @@ export const Navbar: React.FC = () => {
     useEffect(() => {
         if(isLoggingOut){
             if(!loading && error === null){
+                setToogle(false);
+                setIsLoggingOut(false);
                 logout();
             }
         }

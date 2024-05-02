@@ -3,13 +3,14 @@ import { useState, useEffect, useCallback } from "react";
 import { FetchConfig, FetchOptions, FetchState } from "../types";
 import axios from "axios";
 import { service } from "../services";
+import { Cache } from "../services";
 
 export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {}) => {
 
-    const [url, setUrl] = useState(initUrl);
-    const [options, setOptions] = useState(initOptions);
+    const [ url, setUrl ] = useState(initUrl);
+    const [ options, setOptions ] = useState(initOptions);
     const [ isActive, setIsActive ] = useState(false);
-    const [state, setState] = useState<FetchState<unknown>>({
+    const [ state, setState ] = useState<FetchState<unknown>>({
         data: null,
         loading: true,
         error: null
@@ -17,6 +18,17 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
 
     const fetchData = useCallback( () => {
         if(url === undefined || url === '' || !isActive) return;
+
+        const cacheKey = url + JSON.stringify(options); // create a unique key for the cache
+        const cachedData = Cache.getValue(cacheKey);
+        if(cachedData){
+            setState({
+                data: cachedData,
+                loading: false,
+                error: null
+            })
+            return;
+        }
 
         const source = axios.CancelToken.source();
         setState({ data: null, loading: true, error: null });
@@ -29,6 +41,7 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
             cancelToken: source.token         
         })
                     .then(response =>{
+                        Cache.setValue(cacheKey, response.data);
                         setState({
                             data: response.data,
                             loading: false,

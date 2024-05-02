@@ -8,6 +8,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.david.maman.authenticationserver.configuration.JwtAuthenticationFilter;
 import com.david.maman.authenticationserver.services.LogoutService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -32,7 +33,7 @@ public class SecurityConfiguration {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/validate", "/api/auth/signin").permitAll()
                 .anyRequest().authenticated())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
@@ -40,7 +41,7 @@ public class SecurityConfiguration {
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .addLogoutHandler(logoutService)
-                .logoutSuccessHandler((request, response, authentication) -> response.setStatus(200)));
+                .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)));
         return http.build();
     }
 
