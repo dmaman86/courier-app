@@ -1,9 +1,10 @@
+import { AxiosError } from "axios";
 import React, { ReactNode } from "react";
 
 export interface FetchState<T>{
     data: T | null;
     loading: boolean;
-    error: unknown;
+    error: AxiosError | null;
 }
 
 export interface ValidationRule{
@@ -65,14 +66,6 @@ export interface RouteConfig{
     label: string;
     element: ReactNode | (() => ReactNode);
     allowedRoles: string[];
-}
-
-export interface NavbarProps {
-    tokens: Token | null;
-    logout: () => void;
-    user: User | null;
-    isLoggingIn: boolean;
-    updateLogginIn: (loading: boolean) => void;
 }
 
 export interface LoginCredentials {

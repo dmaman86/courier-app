@@ -1,18 +1,20 @@
-import axios from "axios";
+import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
 import { status } from './status.service';
-import { refreshTokenFetch } from "./refreshTokenFetch";
+import { Token } from "../types";
 
-
-const isTokenExpired = (token: string) => {
+const isTokenExpired = (token: string): boolean => {
     try {
       const { exp } = JSON.parse(atob(token.split('.')[1])); // Decode the payload of the token
       return Date.now() >= exp * 1000; // compare the current time with the expiration time
     } catch {
       return true; // assume the token is expired if there is an error
     }
-};
+}
 
 export const service = (() => {
+
+    let isTokenRefreshing = false;
+
     const api = axios.create({
         baseURL: 'http://localhost:8080/api',
         headers: {
@@ -20,7 +22,40 @@ export const service = (() => {
         }
     });
 
-    api.interceptors.request.use((config) => {
+    const validateToken = async (): Promise<Token> => {
+        const storedTokens = localStorage.getItem('auth-token');
+
+        if(!storedTokens) throw new Error("No tokens found");
+
+        const { refreshToken } = JSON.parse(storedTokens);
+        if(isTokenExpired(refreshToken)) throw new Error("No access token found");
+
+        return refreshTokenFetch(refreshToken);
+    }
+
+    const refreshTokenFetch = async (token: string): Promise<Token> => {
+
+        return await api.post('/auth/refresh-token', {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(status)
+            .then(response => {
+                const { accessToken, refreshToken: newRefreshToken } = response.data;
+                if (!accessToken || !newRefreshToken) {
+                    throw new Error('Invalid response from server');
+                }
+
+                const newTokens: Token = { accessToken, refreshToken: newRefreshToken };
+                return newTokens;
+            })
+            .catch(error => {
+                console.error('Error refreshing token:', error);
+                throw new Error('Error during token refresh');
+            });
+    }
+
+    const onRequest = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
         config.headers = config.headers || {};
         const tokens = localStorage.getItem('auth-token');
         let token = null;
@@ -30,34 +65,41 @@ export const service = (() => {
         }
         config.headers.Authorization = token ? `Bearer ${token}` : null;
         return config;
-    });
+    }
 
+    const onRequestError = (error: AxiosError): Promise<AxiosError> => {
+        return Promise.reject(error);
+    }
 
-    api.interceptors.response.use(
-        async response => await status(response),
-        async error => {
+    const onResponse = (response: AxiosResponse): Promise<AxiosResponse> => {
+        return status(response);
+    }
+
+    const onResponseError = async(error: AxiosError): Promise<unknown> => {
+        if(error.response && error.response.status === 401 && !isTokenRefreshing && error.config){
+            isTokenRefreshing = true;
             const originalRequest = error.config;
-            if(error.response && error.response.status === 401 && !originalRequest._retry){
-                originalRequest._retry = true;
-
-                const storedTokens = localStorage.getItem('auth-token');
-                if(!storedTokens) return Promise.reject(error);
-
-                const { refreshToken } = JSON.parse(storedTokens);
-                if(isTokenExpired(refreshToken)) return Promise.reject(new Error("Refresh token has expired"));
-                
-                try{
-                    const newTokens = await refreshTokenFetch(refreshToken);
-                    localStorage.setItem('auth-token', JSON.stringify(newTokens));
-                    originalRequest.headers.Authorization = `Bearer ${newTokens.refreshToken}`;
-                    return api(originalRequest);
-                }catch(refreshError){
-                    return Promise.reject({ ...error, logoutRequired: true });
-                }
+            try{
+                const newTokens = await validateToken();
+                localStorage.setItem('auth-token', JSON.stringify(newTokens));
+                api.defaults.headers.common['Authorization'] = `Bearer ${newTokens.accessToken}`;
+                isTokenRefreshing = false;
+                return api(originalRequest);
+            }catch(refreshError){
+                isTokenRefreshing = false;
+                return Promise.reject(refreshError);
             }
-            return Promise.reject(error);
         }
-    )
+
+        return Promise.reject(error);
+    }
+
+    const setupInterceptors = () => {
+        api.interceptors.request.use(onRequest, onRequestError);
+        api.interceptors.response.use(onResponse, onResponseError);
+    }
+
+    setupInterceptors();
 
     return api;
 })();

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useForm, useAuth, useFetch } from "../../hooks";
@@ -38,17 +38,25 @@ export const Login: React.FC = () => {
 
     const { data, loading, error, updateUrl, updateOptions } = useFetch();
 
+    const [ errorResponse, setErrorResponse ] = useState('');
+
+    useEffect(() => {
+        if(!loading && error && error.response){
+            setErrorResponse(error.response.data as string);
+        }
+    }, [error, loading]);
+
     useEffect(() => {
         if(!loading && !error){
             saveTokens(data as Token);
             navigate('/home', { replace: true });
         }
-    }, [data, error, loading]);
+    }, [data, error, loading, navigate, saveTokens]);
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         
-        if(validateForm()){
+        if(validateForm() && errorResponse === ''){
             updateUrl(paths.auth.login);
             const credentials: LoginCredentials = {
                 email: usernameValue,
@@ -60,6 +68,13 @@ export const Login: React.FC = () => {
             })
         }
     }
+
+    const handleOnFocus = (name: string) => {
+        setErrorResponse('');
+        onFocus(name);
+    }
+
+    const isButtonDisabled = (usernameValue === '' || passwordValue === '');
 
     return(
         <>
@@ -81,7 +96,7 @@ export const Login: React.FC = () => {
                                                         placeholder: 'Enter your username',
                                                     }}
                                                     onChange={handleChange}
-                                                    onFocus={onFocus}
+                                                    onFocus={handleOnFocus}
                                                     errorMessage={usernameError}/>
                                             </div>
 
@@ -95,12 +110,15 @@ export const Login: React.FC = () => {
                                                         placeholder: 'Enter your password'
                                                     }}
                                                     onChange={handleChange}
-                                                    onFocus={onFocus}
+                                                    onFocus={handleOnFocus}
                                                     errorMessage={passwordError}/>
                                             </div>
+                                            {errorResponse !== '' && (
+                                                    <div className="text-danger errormessage">{errorResponse}</div>
+                                                )}
 
                                             <div className="col pt-3 text-center">
-                                                <button type="submit" className="btn btn-primary">Login</button>
+                                                <button type="submit" className="btn btn-primary" disabled={isButtonDisabled}>Login</button>
                                             </div>
                                         </form>
                                     </div>

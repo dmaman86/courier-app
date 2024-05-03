@@ -10,10 +10,9 @@ export type {
     User,
     RouteConfig,
     RoutesProps,
-    NavbarProps,
     FetchOptions,
     FetchConfig,
     ModalProps,
     OptionType,
-    SelectProps
+    SelectProps,
 } from './types';
