@@ -1,9 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { debounce } from "lodash";
-import { FetchState } from "../types";
+import { useEffect, useRef, useState } from "react";
+import { CustomError, FetchState } from "../types";
 import { service } from "../services";
-
-
 
 export const useFetchQuery = ({ baseUrl, defaultQuery = '', debounceDelay = 300}: { baseUrl: string, defaultQuery: string, debounceDelay: number}) => {
 
@@ -14,31 +11,58 @@ export const useFetchQuery = ({ baseUrl, defaultQuery = '', debounceDelay = 300}
         loading: true,
         error: null
     });
+    const fetchRef = useRef<number | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
-    const fetchData = useCallback(debounce(async (currentQuery: string) => {
-        if (currentQuery === '' || !isActive){
-            setState({ data: null, loading: false, error: null });
-            return;
+    useEffect(() => {
+        const fetchData = async () => {
+            if(searchItem.trim() === '' || !isActive){
+                setState({ data: null, loading: false, error: null });
+                return;
+            }
+
+            if(abortControllerRef.current){
+                abortControllerRef.current.abort();
+            }
+    
+            abortControllerRef.current = new AbortController();
+            setState({ data: null, loading: true, error: null });
+
+            await service.get(`${baseUrl}/${encodeURIComponent(searchItem)}`,
+                                 { signal: abortControllerRef.current?.signal })
+                        .then(response => setState({ data: response.data, loading: false, error: null }))
+                        .catch(error => {
+                            const customError = error as CustomError;
+                            if(!customError.cancelled){
+                                setState({
+                                    data: null,
+                                    loading: false,
+                                    error: customError
+                                })
+                            }
+                        })
+                        .finally(() => setIsActive(false));
         }
 
-        setState({ data: null, loading: true, error: null });
-        const url = `${baseUrl}/${encodeURIComponent(currentQuery)}`;
-        await service.get(url)
-            .then(response => setState({ data: response.data, loading: false, error: null }))
-            .catch(error => setState({ data: null, loading: false, error: error }))
-            .finally(() => setIsActive(false));
-    }, debounceDelay), [baseUrl, isActive, debounceDelay]);
+        if(fetchRef.current){
+            clearTimeout(fetchRef.current);
+        }
+        fetchRef.current = setTimeout(fetchData, debounceDelay);
 
+        return () => {
+            if(fetchRef.current)
+                clearTimeout(fetchRef.current);
+            if(abortControllerRef.current)
+                abortControllerRef.current.abort();
+        }
 
-    useEffect( () => {
-        fetchData(searchItem);
-
-        return () => fetchData.cancel();
-    }, [fetchData, searchItem]);
+    }, [searchItem, isActive, debounceDelay, baseUrl]);
 
     const updateSearchItem = (value: string) => {
-        setSearchItem(value);
-        setIsActive(true);
+        if(value.trim() !== ''){
+            setSearchItem(value.trim())
+            setIsActive(true);
+        }
     }
 
     return {

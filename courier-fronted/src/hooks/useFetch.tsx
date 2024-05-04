@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
 import { CustomError, FetchConfig, FetchOptions, FetchState } from "../types";
-import axios from "axios";
 import { service } from "../services";
 import { Cache } from "../services";
 
@@ -30,14 +29,14 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
             return;
         }
 
-        const source = axios.CancelToken.source();
+        const controller = new AbortController();
         setState({ data: null, loading: true, error: null });
 
         service({
             url,
             method: options?.method || 'GET',
             data: options?.data,                
-            cancelToken: source.token
+            signal: controller.signal
         })
                     .then(response =>{
                         Cache.setValue(cacheKey, response.data);
@@ -58,7 +57,7 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
                         }
                     }).finally(() => setIsActive(false));
         // return function to cleaned canceled request
-        return () => source.cancel();
+        return () => controller.abort();
     }, [url, options, isActive]);
 
     useEffect(() => {

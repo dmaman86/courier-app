@@ -1,32 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "../../hooks";
 import { useNavigate } from "react-router-dom";
 
 interface ErrorBoundaryProps {
     children: React.ReactNode;
-    navigateToErrorPage: () => void;
 }
 
-export const ErrorBoundary = ({ children, navigateToErrorPage }: ErrorBoundaryProps): React.ReactNode => {
+export const ErrorBoundary = ({ children }: ErrorBoundaryProps): React.ReactNode => {
 
-    const [ hasError, setHasError ] = useState(false);
     const { tokens, error } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        return () => {
-            setHasError(false);
+        if(error){
+            const { cancelled, needLogout } = error;
+            if(cancelled)
+                navigate('/error', { replace: true });
+            else if(needLogout){
+                navigate('/login', { replace: true });
+            }
         }
-    }, []);
-
-    useEffect(() => {
-        if(error)
-            setHasError(true);
     }, [error, navigate, tokens]);
-
-    if(hasError){
-        navigateToErrorPage();
-    }
 
     return children;
 }

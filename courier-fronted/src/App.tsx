@@ -10,7 +10,7 @@ import { ErrorPage, ErrorBoundary } from './components';
 
 export const App = () => {
   
-  const { tokens, navigateToErrorPage } = useAuth();
+  const { tokens } = useAuth();
 
 
   return (
@@ -19,8 +19,8 @@ export const App = () => {
       <Routes>
           <Route path="/" element={<Navigate to={tokens ? "/home" : "/login"} replace />} />
           <Route path="/*" element={
-              <ErrorBoundary navigateToErrorPage={navigateToErrorPage}>
-                { tokens ? <PrivateRoutes /> : <PublicRoutes /> }
+              <ErrorBoundary>
+                { tokens  ? <PrivateRoutes /> : <PublicRoutes /> }
               </ErrorBoundary>
             } />
 

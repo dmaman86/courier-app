@@ -13,7 +13,6 @@ interface AuthContextType {
     saveTokens: (tokens: Token) => void;
     logout: () => void;
     error: CustomError | null;
-    navigateToErrorPage: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,35 +35,31 @@ export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
         navigate('/login', { replace: true });
     }, [navigate, removeStoredValue]);
 
-    const navigateToErrorPage = useCallback(() => {
-        navigate('/error', { replace: true });
-    }, [navigate]);
-
-    const fetchUserDetails = useCallback( async () => {
-        if(!tokens || !tokens.accessToken) return;
-        try{
-            const response = await service.get(paths.courier.userDetails);
-            setUserDetails(response.data);
-            setError(null);
-        }catch(error){
-            setUserDetails(null);
-            setError(error as CustomError);
-        }
-    }, [tokens]);
-
     useEffect(() => {
-        if(!userDetails)
+        const fetchUserDetails = async () => {
+            await service.get(paths.courier.userDetails)
+                    .then(response =>{
+                        setUserDetails(response.data)
+                        setError(null);
+                    })
+                    .catch(error => {
+                        setUserDetails(null);
+                        setError(error as CustomError);
+                    })
+        }
+
+
+        if(!userDetails && tokens && tokens.accessToken)
             fetchUserDetails();
-    }, [fetchUserDetails, userDetails]);
+    }, [tokens, userDetails]);
 
     const value = useMemo(() => ({
         tokens,
         userDetails,
         saveTokens,
         logout,
-        navigateToErrorPage,
         error
-    }), [tokens, userDetails, saveTokens, logout, navigateToErrorPage, error]);
+    }), [tokens, userDetails, saveTokens, logout, error]);
 
 
     return <AuthContext.Provider value={value}>
