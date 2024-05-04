@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CustomError, FetchState } from "../types";
-import { service } from "../services";
+import { Cache, service } from "../services";
 
 export const useFetchQuery = ({ baseUrl, defaultQuery = '', debounceDelay = 300}: { baseUrl: string, defaultQuery: string, debounceDelay: number}) => {
 
@@ -21,6 +21,17 @@ export const useFetchQuery = ({ baseUrl, defaultQuery = '', debounceDelay = 300}
                 return;
             }
 
+            const cachekey = `${baseUrl}/${encodeURIComponent(searchItem)}`;
+            const cachedData = Cache.getValue(cachekey);
+            if(cachedData){
+                setState({
+                    data: cachedData,
+                    loading: false,
+                    error: null
+                })
+                return;
+            }
+
             if(abortControllerRef.current){
                 abortControllerRef.current.abort();
             }
@@ -28,9 +39,11 @@ export const useFetchQuery = ({ baseUrl, defaultQuery = '', debounceDelay = 300}
             abortControllerRef.current = new AbortController();
             setState({ data: null, loading: true, error: null });
 
-            await service.get(`${baseUrl}/${encodeURIComponent(searchItem)}`,
-                                 { signal: abortControllerRef.current?.signal })
-                        .then(response => setState({ data: response.data, loading: false, error: null }))
+            await service.get(cachekey, { signal: abortControllerRef.current?.signal })
+                        .then(response => {
+                            Cache.setValue(cachekey, response.data);
+                            setState({ data: response.data, loading: false, error: null })
+                        })
                         .catch(error => {
                             const customError = error as CustomError;
                             if(!customError.cancelled){
