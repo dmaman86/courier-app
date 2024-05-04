@@ -15,4 +15,5 @@ export type {
     ModalProps,
     OptionType,
     SelectProps,
+    CustomError
 } from './types';

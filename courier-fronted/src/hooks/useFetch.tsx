@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
-import { FetchConfig, FetchOptions, FetchState } from "../types";
-import axios, { AxiosError } from "axios";
+import { CustomError, FetchConfig, FetchOptions, FetchState } from "../types";
+import axios from "axios";
 import { service } from "../services";
 import { Cache } from "../services";
 
@@ -36,8 +36,7 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
         service({
             url,
             method: options?.method || 'GET',
-            data: options?.data,              
-            headers: options?.headers,        
+            data: options?.data,                
             cancelToken: source.token
         })
                     .then(response =>{
@@ -48,12 +47,13 @@ export const useFetch = ({url: initUrl, options: initOptions}: FetchConfig = {})
                             error: null
                         })
                     
-                    }).catch((error: AxiosError) => {
-                        if(!axios.isCancel(error)){
+                    }).catch((error) => {
+                        const customError = error as CustomError;
+                        if(!customError.cancelled){
                             setState({
                                 data: null,
                                 loading: false,
-                                error: error
+                                error: customError
                             })
                         }
                     }).finally(() => setIsActive(false));

@@ -1,10 +1,16 @@
 import { AxiosError } from "axios";
 import React, { ReactNode } from "react";
 
+export interface CustomError {
+    error: Error | AxiosError | null;
+    cancelled: boolean;
+    needLogout: boolean;
+}
+
 export interface FetchState<T>{
     data: T | null;
     loading: boolean;
-    error: AxiosError | null;
+    error: CustomError | null;
 }
 
 export interface ValidationRule{
@@ -75,7 +81,6 @@ export interface LoginCredentials {
 
 export interface FetchOptions {
     method?: string;
-    headers?: Record<string, string>;
     data?: unknown
 }
 

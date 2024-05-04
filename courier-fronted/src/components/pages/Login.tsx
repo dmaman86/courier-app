@@ -6,6 +6,7 @@ import { ReusableInput } from "../shared";
 import { FormState, Token } from "../../types";
 import { paths, validatorForm } from "../../helpers";
 import { LoginCredentials } from "../../types/types";
+import { AxiosError } from "axios";
 
 const initialState: FormState = {
     username: {
@@ -41,8 +42,10 @@ export const Login: React.FC = () => {
     const [ errorResponse, setErrorResponse ] = useState('');
 
     useEffect(() => {
-        if(!loading && error && error.response){
-            setErrorResponse(error.response.data as string);
+        if(!loading && error){
+            const { error: err } = error;
+            if(err instanceof AxiosError && err.response)
+                setErrorResponse(err.response.data);
         }
     }, [error, loading]);
 
@@ -74,7 +77,7 @@ export const Login: React.FC = () => {
         onFocus(name);
     }
 
-    const isButtonDisabled = (usernameValue === '' || passwordValue === '');
+    const isButtonDisabled = (usernameValue.trim() === '' || passwordValue.trim() === '');
 
     return(
         <>

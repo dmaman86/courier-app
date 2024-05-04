@@ -75,31 +75,49 @@ export const service = (() => {
         return status(response);
     }
 
-    const onResponseError = async(error: AxiosError): Promise<unknown> => {
-        if(error.response && error.response.status === 401 && !isTokenRefreshing && error.config){
-            isTokenRefreshing = true;
-            const originalRequest = error.config;
-            try{
-                const newTokens = await validateToken();
-                localStorage.setItem('auth-token', JSON.stringify(newTokens));
-                api.defaults.headers.common['Authorization'] = `Bearer ${newTokens.accessToken}`;
-                isTokenRefreshing = false;
-                return api(originalRequest);
-            }catch(refreshError){
-                isTokenRefreshing = false;
-                return Promise.reject(refreshError);
+    const onResponseError = async(error: Error): Promise<unknown> => {
+
+        if(axios.isCancel(error)){
+            return Promise.reject({
+                error: error,
+                cancelled: true,
+                needLogout: false
+            })
+        }
+
+        if(axios.isAxiosError(error)){
+            const err = error as AxiosError;
+            if(err.response?.status === 401 && !isTokenRefreshing && err.config){
+                isTokenRefreshing = true;
+                const originalRequest = err.config;
+
+                try{
+                    const newTokens = await validateToken();
+                    localStorage.setItem('auth-token', JSON.stringify(newTokens));
+                    api.defaults.headers.common['Authorization'] = `Bearer ${newTokens.accessToken}`;
+                    isTokenRefreshing = false;
+                    return api(originalRequest);
+                }catch(refreshError){
+                    isTokenRefreshing = false;
+                    return Promise.reject({
+                        error: refreshError,
+                        cancelled: false,
+                        needLogout: true
+                    });
+                }
             }
         }
 
-        return Promise.reject(error);
+        return Promise.reject({
+            error: error,
+            cancelled: false,
+            needLogout: false
+        });
+        
     }
 
-    const setupInterceptors = () => {
-        api.interceptors.request.use(onRequest, onRequestError);
-        api.interceptors.response.use(onResponse, onResponseError);
-    }
-
-    setupInterceptors();
+    api.interceptors.request.use(onRequest, onRequestError);
+    api.interceptors.response.use(onResponse, onResponseError);
 
     return api;
 })();

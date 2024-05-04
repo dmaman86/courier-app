@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks"
 import { useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
 
 
 export const ErrorPage: React.FC = () => {
 
-    const { tokens, error } = useAuth();
+    const { error } = useAuth();
     const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
     const navigate = useNavigate();
 
@@ -16,11 +17,16 @@ export const ErrorPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if(!error)
-            !tokens ? navigate('/login') : navigate('/home');
-        else
-            setErrorMessage(error);
-    }, [error, tokens, navigate]);
+        if(error){
+            const { error: err, cancelled, needLogout } = error;
+            if(needLogout){
+                navigate('/login', { replace: true });
+            }
+
+            if(err instanceof AxiosError && err.response)
+                setErrorMessage(err.response.data);
+        }
+    }, [error, navigate]);
 
     return(
         <>

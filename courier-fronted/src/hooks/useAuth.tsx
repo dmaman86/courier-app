@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { Token, User } from '../types';
+import { CustomError, Token, User } from '../types';
 import { useLocalStorage } from "./useLocalStorage";
 import { useNavigate } from "react-router-dom";
 import { service } from "../services";
@@ -12,7 +12,7 @@ interface AuthContextType {
     userDetails: User | null;
     saveTokens: (tokens: Token) => void;
     logout: () => void;
-    error: unknown | null;
+    error: CustomError | null;
     navigateToErrorPage: () => void;
 }
 
@@ -22,7 +22,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
     const [ tokens, setTokens, removeStoredValue ] = useLocalStorage('auth-token', null);
     const [ userDetails, setUserDetails ] = useState<User | null>(null);
-    const [ error, setError ] = useState<unknown | null>(null);
+    const [ error, setError ] = useState<CustomError | null>(null);
 
     const navigate = useNavigate();
 
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
             setError(null);
         }catch(error){
             setUserDetails(null);
-            setError(error);
+            setError(error as CustomError);
         }
     }, [tokens]);
 
