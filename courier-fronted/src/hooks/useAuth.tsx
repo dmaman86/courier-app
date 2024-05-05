@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { useNavigate } from 'react-router-dom';
 import { AuthContextType, CustomError, Token, User } from '../types';
 import { useLocalStorage } from './useLocalStorage';
-import { service } from "../services";
+import { serviceRequest } from "../services";
 import { paths } from "../helpers";
 
 
@@ -28,15 +28,17 @@ export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
 
     useEffect(() => {
         const fetchUserDetails = async () => {
-            await service.get(paths.courier.userDetails)
-                    .then(response =>{
-                        setUserDetails(response.data)
-                        setError(null);
-                    })
-                    .catch(error => {
-                        setUserDetails(null);
-                        setError(error as CustomError);
-                    })
+            await serviceRequest.getItem<User>(paths.courier.userDetails)
+                        .call
+                        .then( response => {
+                            setUserDetails(response.data);
+                            setError(null);
+                        })
+                        .catch(error => {
+                            setUserDetails(null);
+                            setError(error as CustomError);
+                        });
+            
         }
 
 
