@@ -1,19 +1,10 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-
-import { CustomError, Token, User } from '../types';
-import { useLocalStorage } from "./useLocalStorage";
-import { useNavigate } from "react-router-dom";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContextType, CustomError, Token, User } from '../types';
+import { useLocalStorage } from './useLocalStorage';
 import { service } from "../services";
 import { paths } from "../helpers";
 
-
-interface AuthContextType {
-    tokens: Token | null;
-    userDetails: User | null;
-    saveTokens: (tokens: Token) => void;
-    logout: () => void;
-    error: CustomError | null;
-}
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

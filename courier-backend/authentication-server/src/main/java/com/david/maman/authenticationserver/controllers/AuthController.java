@@ -47,19 +47,11 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
         try{
 
-            UserCredentials credentials = userCredentialsRepository.findByUserEmail(loginDto.getEmail())
-                                                .orElseThrow(() -> new RuntimeException("Error: User not found"));
+            UserCredentials credentials = getCredentials(loginDto);
 
-            if(credentials.getFirstConnection() && credentials.getPassword().isBlank()){
-                throw new RuntimeException("Error: User must set a password");
-            }
+            validateCredentials(credentials, loginDto.getPassword());
 
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
-            );
-
-            if(!isAuthenticated(authentication))
-                throw new RuntimeException("Error: User not authenticated");
+            Authentication authentication = performAuthentication(loginDto, credentials);
 
             CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(authentication.getName());
 
@@ -134,6 +126,33 @@ public class AuthController {
             throw new RuntimeException("Error: Invalid refresh token");
         }
         return user;
+    }
+
+    private UserCredentials getCredentials(LoginDto loginDto) throws RuntimeException{
+        if(loginDto.getEmail() != null && !loginDto.getEmail().isBlank()){
+            return userCredentialsRepository.findByUserEmail(loginDto.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Error: User not found"));
+        }else if(loginDto.getPhone() != null && !loginDto.getPhone().isBlank()){
+            return userCredentialsRepository.findByUserPhone(loginDto.getPhone())
+                    .orElseThrow(() -> new RuntimeException("Error: User not found"));
+        }
+        throw new RuntimeException("Error: User not found");
+    }
+
+    private void validateCredentials(UserCredentials credentials, String password){
+        if(credentials.getFirstConnection() && credentials.getPassword().isBlank()){
+            throw new RuntimeException("Error: User must set a password");
+        }
+    }
+
+    private Authentication performAuthentication(LoginDto loginDto, UserCredentials credentials){
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginDto.getEmail() != null ? loginDto.getEmail() : loginDto.getPhone(), loginDto.getPassword())
+        );
+
+        if(!isAuthenticated(authentication))
+            throw new RuntimeException("Error: User not authenticated");
+        return authentication;
     }
 
     private boolean isAuthenticated(Authentication authentication) {

@@ -1,7 +1,6 @@
-import React from "react";
 import { GenericInputProps } from "../../types";
 
-export const ReusableInput: React.FC<GenericInputProps> = ({ inputProps, onChange, onFocus, errorMessage }) => {
+export const ReusableInput = ({ inputProps, onChange, onFocus, errorMessage }: GenericInputProps) => {
 
 
     return (

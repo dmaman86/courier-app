@@ -25,7 +25,7 @@ export const routes: RouteConfig[] = [
     {
         path: '*',
         label: '',
-        element: () => <Navigate to="/home" replace />,
+        element: <Navigate to="/home" replace />,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER', 'ROLE_CLIENT']
     }
 ];

@@ -20,10 +20,22 @@ export const validatorForm = ( () => {
         message: 'Please enter a legal cellular number'
     }
 
+    const isEmail: ValidationRule = {
+        validate: (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+        message: 'Please enter a valid email address'
+    }
+
+    const isEmailOrPhone: ValidationRule = {
+        validate: (value: string): boolean => isEmail.validate(value) || isCellularNumber.validate(value),
+        message: 'Please enter a valid email address or cellular number'
+    }
+
     return {
         validateNotEmpty,
         validateMinLength,
-        isCellularNumber
+        isCellularNumber,
+        isEmail,
+        isEmailOrPhone
     }
 
 })();

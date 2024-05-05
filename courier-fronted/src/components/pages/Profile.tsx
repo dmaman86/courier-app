@@ -3,7 +3,7 @@ import { useAuth } from "../../hooks";
 import { Role } from "../../types";
 import { GenericModal, UpdatePassword } from "../modal";
 
-export const Profile: React.FC = () => {
+export const Profile = () => {
 
     const { userDetails } = useAuth();
     const [ showModal, setShowModal ] = useState(false);

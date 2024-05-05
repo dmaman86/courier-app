@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
+
 import { useForm } from "../../hooks";
 import { FormState, User } from "../../types";
-import { ReusableInput } from "../shared";
 import { validatorForm } from "../../helpers";
 import { PasswordRulesList } from "../partials/PasswordRulesList";
-import { useEffect, useState } from "react";
+import { ReusableInput } from "../shared";
+
 
 
 const initialState: FormState = {
@@ -37,7 +39,7 @@ const validateEquals = (valueOne: string, valueTwo: string) => {
     }
 }
 
-export const UpdatePassword: React.FC<UpdatePasswordProps> = ({user, onClose}) => {
+export const UpdatePassword = ({user, onClose}: UpdatePasswordProps) => {
 
     const { values, handleChange, onFocus } = useForm(initialState);
 

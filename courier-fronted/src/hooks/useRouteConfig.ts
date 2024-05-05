@@ -1,6 +1,6 @@
+import React from "react";
 import { routes } from "../routes";
 import { useAuth } from "./useAuth";
-import React from "react";
 
 export const useRouteConfig = () => {
 

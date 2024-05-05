@@ -1,4 +1,3 @@
-import React from "react";
 import { ValidationRule } from "../../types";
 
 interface Props{
@@ -6,7 +5,7 @@ interface Props{
     value: string;
 }
 
-export const PasswordRulesList: React.FC<Props> = ({ rules, value }) => {
+export const PasswordRulesList = ({ rules, value }: Props) => {
 
     return(
         <>

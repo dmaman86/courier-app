@@ -5,7 +5,7 @@ import { HomeClient } from "./client/HomeClient";
 import { HomeCourier } from "./courier/HomeCourier";
 import { useAuth } from "../../hooks";
 
-export const Home: React.FC = () => {
+export const Home = () => {
 
     const { userDetails } = useAuth();
 

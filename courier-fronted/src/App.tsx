@@ -3,10 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 
-import { Navbar } from './components';
-import { PrivateRoutes, PublicRoutes } from './routes';
 import { useAuth } from './hooks';
-import { ErrorPage, ErrorBoundary } from './components';
+import { ErrorBoundary, ErrorPage, Navbar } from './components';
+import { PrivateRoutes, PublicRoutes } from './routes';
 
 export const App = () => {
   

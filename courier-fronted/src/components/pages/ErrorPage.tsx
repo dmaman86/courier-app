@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../hooks"
+import { useAuth } from "../../hooks";
 import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 
 
-export const ErrorPage: React.FC = () => {
+export const ErrorPage = () => {
 
     const { error } = useAuth();
     const [ errorMessage, setErrorMessage ] = useState<string | null>(null);

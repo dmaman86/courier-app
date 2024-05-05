@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { useAuth, useFetch, useRouteConfig } from "../../hooks";
-import { User } from "../../types";
+import { useAuth, useFetchAndLoad, useRouteConfig } from "../../hooks";
+import { FetchResponse, User } from "../../types";
 import { paths } from "../../helpers/paths";
+import { serviceRequest } from "../../services";
 
-export const Navbar: React.FC = () => {
+export const Navbar = () => {
 
     const { userDetails, logout } = useAuth();
     const { getLinks } = useRouteConfig();
@@ -12,7 +13,15 @@ export const Navbar: React.FC = () => {
     const [ toogle, setToogle ] = useState(false);
     const [ show, setShow ] = useState('');
     const [ isLoggingOut, setIsLoggingOut ] = useState(false);
-    const { loading, error, updateUrl, updateOptions } = useFetch();
+    // const { loading, error, updateUrl, updateOptions } = useFetch();
+    const { loading, callEndPoint } = useFetchAndLoad();
+
+    const [ response, setResponse ] = useState<FetchResponse<unknown>>({
+        data: null,
+        error: null
+    });
+
+    const { error } = response;
 
 
     const toogleMenu = () => {
@@ -23,29 +32,25 @@ export const Navbar: React.FC = () => {
         setShow((!toogle) ? '' : 'show');
     }, [toogle]);
 
+    useEffect(() => {
+        if(!loading && !error)
+            setIsLoggingOut(true);
+    }, [error, loading]);
 
     useEffect(() => {
         if(isLoggingOut){
-            if(!loading && error === null){
-                setToogle(false);
-                setIsLoggingOut(false);
-                logout();
-            }
+            setToogle(false);
+            setIsLoggingOut(false);
+            logout();
         }
-    }, [error, isLoggingOut, loading, logout]);
-
-    const changeSource = () => {
-        updateUrl(paths.auth.logout);
-        updateOptions({
-            method: 'POST'
-        });
-        setIsLoggingOut(true);
-    }
+    }, [isLoggingOut, logout]);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        changeSource();
+        // changeSource();
+        const result = await callEndPoint(serviceRequest.postItem(paths.auth.logout));
+        setResponse(result);
     }
 
     const extractRoleNames = (user: User) => {

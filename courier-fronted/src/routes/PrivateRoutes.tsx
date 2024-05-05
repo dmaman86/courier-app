@@ -2,14 +2,13 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import { Token } from "../types";
 import { useAuth, useRouteConfig } from "../hooks";
-import React from "react";
 
 interface PrivateRouteProp{
     tokens?: Token | null;
     children: JSX.Element;
 }
 
-export const PrivateRoutes: React.FC = () => {
+export const PrivateRoutes = () => {
 
     const { tokens, userDetails } = useAuth();
     const { getRoutes } = useRouteConfig();

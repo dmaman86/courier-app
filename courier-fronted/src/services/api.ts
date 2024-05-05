@@ -1,6 +1,13 @@
 import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
-import { status } from './status.service';
 import { Token } from "../types";
+
+const status = (response: AxiosResponse): Promise<AxiosResponse> => {
+    if(response.status >= 200 && response.status < 300){
+        return Promise.resolve(response);
+    }
+
+    return Promise.reject(response);
+}
 
 const isTokenExpired = (token: string): boolean => {
     try {

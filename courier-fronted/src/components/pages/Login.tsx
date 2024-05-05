@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useForm, useAuth, useFetch } from "../../hooks";
+import { useForm, useAuth, useFetchAndLoad } from "../../hooks";
 import { ReusableInput } from "../shared";
-import { FormState, Token } from "../../types";
+import { FetchResponse, FormState, Token } from "../../types";
 import { paths, validatorForm } from "../../helpers";
-import { LoginCredentials } from "../../types/types";
+import { LoginCredentials } from "../../types";
 import { AxiosError } from "axios";
+import { serviceRequest } from "../../services";
 
 const initialState: FormState = {
     username: {
         value: '',
         validation: [
-            validatorForm.validateNotEmpty
+            validatorForm.validateNotEmpty,
+            validatorForm.isEmailOrPhone
         ],
         validateRealTime: false
     },
@@ -25,10 +27,12 @@ const initialState: FormState = {
     }
 };
 
-export const Login: React.FC = () => {
+export const Login = () => {
 
     const { saveTokens } = useAuth();
     const navigate = useNavigate();
+
+    const { isCellularNumber } = validatorForm;
 
     const { values, handleChange, onFocus, validateForm } = useForm(initialState);
 
@@ -37,9 +41,16 @@ export const Login: React.FC = () => {
     const { value: usernameValue, error: usernameError } = username;
     const { value: passwordValue, error: passwordError } = password;
 
-    const { data, loading, error, updateUrl, updateOptions } = useFetch();
+    const { loading, callEndPoint } = useFetchAndLoad();
 
     const [ errorResponse, setErrorResponse ] = useState('');
+
+    const [ response, setResponse ] = useState<FetchResponse<unknown>>({
+        data: null,
+        error: null
+    });
+
+    const { data, error } = response;
 
     useEffect(() => {
         if(!loading && error){
@@ -50,25 +61,25 @@ export const Login: React.FC = () => {
     }, [error, loading]);
 
     useEffect(() => {
-        if(!loading && !error){
+        if(!loading && data){
             saveTokens(data as Token);
             navigate('/home', { replace: true });
         }
-    }, [data, error, loading, navigate, saveTokens]);
+    }, [data, loading, navigate, saveTokens]);
+
+    const removeNonNumeric = (value: string) => value.replace(/\D/g, '');
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         
         if(validateForm() && errorResponse === ''){
-            updateUrl(paths.auth.login);
             const credentials: LoginCredentials = {
-                email: usernameValue,
+                email: !isCellularNumber.validate(usernameValue) ? usernameValue : null,
+                phone: isCellularNumber.validate(usernameValue) ? removeNonNumeric(usernameValue) : null,
                 password: passwordValue
             }
-            updateOptions({
-                method: 'POST',
-                data: JSON.stringify(credentials)
-            })
+            const result = await callEndPoint(serviceRequest.postItem<FetchResponse<unknown>, LoginCredentials>(paths.auth.login, credentials));
+            setResponse(result);
         }
     }
 
@@ -96,7 +107,7 @@ export const Login: React.FC = () => {
                                                         name: 'username',
                                                         type: 'text',
                                                         value: usernameValue,
-                                                        placeholder: 'Enter your username',
+                                                        placeholder: 'Enter your email or phone number',
                                                     }}
                                                     onChange={handleChange}
                                                     onFocus={handleOnFocus}

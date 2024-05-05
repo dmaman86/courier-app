@@ -9,4 +9,8 @@ import com.david.maman.authenticationserver.models.entities.UserCredentials;
 public interface UserCredentialsRepository extends JpaRepository<UserCredentials, Long>{
 
     Optional<UserCredentials> findByUserEmail(String email);
+
+    Optional<UserCredentials> findByUserPhone(String phone);
+
+    Optional<UserCredentials> findByUserEmailOrUserPhone(String email, String phone);
 }

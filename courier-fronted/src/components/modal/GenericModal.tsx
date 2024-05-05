@@ -1,8 +1,7 @@
-import React from "react";
 import { ModalProps } from "../../types";
 
 
-export const GenericModal: React.FC<ModalProps> = ({ title, body, show, onClose }) => {
+export const GenericModal = ({ title, body, show, onClose }: ModalProps) => {
 
     const displayClass = show ? 'd-block' : 'd-none';
 

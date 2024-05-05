@@ -20,15 +20,15 @@ public class UserDetailsServiceImpl implements UserDetailsService{
     private UserCredentialsRepository userCredentialsRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException{
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
         logger.debug("Entering in loadUserByUsername method");
-        
-        UserCredentials credentials = userCredentialsRepository.findByUserEmail(email)
-                .orElseThrow(() -> {
-                    logger.error("Credentials not found for user with email: {}", email);
-                    return new UsernameNotFoundException("Credentials not found for user with email: " + email);
-                });
-        logger.info("Credentials found for user with email: {}", email);
+
+        UserCredentials credentials = userCredentialsRepository.findByUserEmailOrUserPhone(username, username)
+                                            .orElseThrow(() -> {
+                                                logger.error("Credentials not found for user with email or phone: {}", username);
+                                                return new UsernameNotFoundException("Credentials not found for user with email or phone: " + username);
+                                            });
+        logger.info("Credentials found for user with email or phone: {}", username);
         return new CustomUserDetails(credentials);
     }
 }

@@ -1,6 +1,6 @@
 
 
-export const HomeCourier: React.FC = () => {
+export const HomeCourier = () => {
 
     return (
         <>

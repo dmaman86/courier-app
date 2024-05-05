@@ -1,6 +1,6 @@
 
 
-export const HomeClient: React.FC = () => {
+export const HomeClient = () => {
 
     return (
         <>

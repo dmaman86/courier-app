@@ -2,7 +2,7 @@ import React from "react";
 import { useAuth } from "../../../hooks";
 
 
-export const HomeAdmin: React.FC = () => {
+export const HomeAdmin = () => {
 
     const { userDetails } = useAuth();
 
