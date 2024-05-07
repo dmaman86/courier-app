@@ -65,12 +65,11 @@ export const service = (() => {
     const onRequest = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
         config.headers = config.headers || {};
         const tokens = localStorage.getItem('auth-token');
-        let token = null;
+        // let token = null;
         if(tokens){
-            const tokenObj = JSON.parse(tokens);
-            token = tokenObj?.accessToken;
+            const { accessToken } = JSON.parse(tokens);
+            config.headers.Authorization = `Bearer ${accessToken}`;
         }
-        config.headers.Authorization = token ? `Bearer ${token}` : null;
         return config;
     }
 

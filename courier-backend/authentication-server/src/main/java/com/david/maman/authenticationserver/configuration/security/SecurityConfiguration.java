@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.david.maman.authenticationserver.configuration.ExceptionHandlerFilter;
 import com.david.maman.authenticationserver.configuration.JwtAuthenticationFilter;
-import com.david.maman.authenticationserver.services.LogoutService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,21 +27,22 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final LogoutService logoutService;
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
+
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(jwtAuthenticationFilter, ExceptionHandlerFilter.class)
             .authorizeHttpRequests(request -> request
                 .requestMatchers("/api/auth/validate", "/api/auth/signin").permitAll()
                 .anyRequest().authenticated())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .logout(logout -> logout
-                .logoutUrl("/api/auth/logout")
-                .addLogoutHandler(logoutService)
-                .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_OK)));
+            .authenticationProvider(authenticationProvider);
+            
+
+
         return http.build();
     }
 

@@ -11,10 +11,10 @@ export const serviceRequest = (() => {
         }
     }
 
-    const postItem = <R, D>(url: string, data?: D) => {
+    const postItem = <R = void, D = object>(url: string, data?: D) => {
         const controller = loadAbort();
         return {
-            call: service.post<R>(url, data ? data : {}, { signal: controller.signal }), controller
+            call: service.post<R>(url, data ?? {}, { signal: controller.signal }), controller
         }
     }
 

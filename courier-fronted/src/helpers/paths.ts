@@ -6,6 +6,8 @@ export const paths = {
     },
     courier: {
         refreshToken: '/auth/refresh',
-        userDetails: '/courier/users/me'
+        userDetails: '/courier/users/me',
+        users: '/courier/users/',
+        offices: '/courier/office/',
     }
 }

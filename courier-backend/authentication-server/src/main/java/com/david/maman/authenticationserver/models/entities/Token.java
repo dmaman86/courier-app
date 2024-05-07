@@ -32,8 +32,7 @@ public class Token {
     private String token;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private TokenType tokenType = TokenType.BEARER;
+    private TokenType tokenType;
 
     private Boolean isExpired;
     private Boolean isRevoked;

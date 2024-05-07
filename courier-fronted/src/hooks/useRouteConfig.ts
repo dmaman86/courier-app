@@ -26,8 +26,8 @@ export const useRouteConfig = () => {
         if(!userDetails || !userDetails.roles.length) return false;
         const userRoles = userDetails.roles;
 
-        return allowedRoles.some(allowedRole => 
-            userRoles.some(userRole => userRole.name === allowedRole)
+        return userRoles.some(userRole => 
+            allowedRoles.some(allowedRole => userRole.name === allowedRole)
         );
     }
 

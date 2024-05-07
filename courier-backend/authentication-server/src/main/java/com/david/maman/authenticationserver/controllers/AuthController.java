@@ -1,5 +1,6 @@
 package com.david.maman.authenticationserver.controllers;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,10 +24,10 @@ import com.david.maman.authenticationserver.helpers.UserDetailsServiceImpl;
 import com.david.maman.authenticationserver.models.dto.LoginDto;
 import com.david.maman.authenticationserver.models.dto.UserCredentialsPassword;
 import com.david.maman.authenticationserver.models.entities.UserCredentials;
-import com.david.maman.authenticationserver.repositories.TokenRepository;
 import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
 import com.david.maman.authenticationserver.services.AuthService;
 import com.david.maman.authenticationserver.services.JwtService;
+import com.google.common.base.Strings;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +42,6 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
-    private final TokenRepository tokenRepository;
     private final UserCredentialsRepository userCredentialsRepository;
 
     @PostMapping("/signin")
@@ -80,10 +81,10 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String header){
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String header, Authentication authentication){
         try{
             final String refreshToken = getTokenHeader(header);
-            var user = getUserToken(refreshToken);
+            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
             return ResponseEntity.ok(authService.refreshToken(user, refreshToken));
         }catch(Exception e){
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
@@ -91,14 +92,11 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String header){
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String header, Authentication authentication){
         try {
             final String token = getTokenHeader(header);
-            var user = getUserToken(token);
-            boolean isTokenValid = tokenRepository.findByToken(token)
-                    .map(t -> !t.getIsExpired() && !t.getIsRevoked())
-                    .orElse(false);
-            if (!jwtService.validateToken(token, user) || !isTokenValid)
+            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+            if (!jwtService.validateToken(token, user))
                 throw new TokenValidationException("Invalid token");
             return ResponseEntity.ok().build();
         } catch (TokenValidationException e) {
@@ -109,23 +107,24 @@ public class AuthController {
 
     }
 
-    private String getTokenHeader(String header) throws RuntimeException{
-        if(header == null || header.isBlank() || !header.startsWith("Bearer ")){
-            throw new RuntimeException("Error: Refresh token is missing");
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(Authentication authentication){
+        try{
+            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+            authService.logout(user);
+            SecurityContextHolder.clearContext();
+            return ResponseEntity.ok().body("User logged out successfully");
+        }catch(Exception e){
+            SecurityContextHolder.clearContext();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-        return header.substring(7);
     }
 
-    private CustomUserDetails getUserToken(String token) throws RuntimeException{
-        final String userEmail = jwtService.extractUserName(token);
-        if(userEmail == null){
-            throw new RuntimeException("Error: Invalid refresh token");
+    private String getTokenHeader(String header) throws RuntimeException{
+        if(Strings.isNullOrEmpty(header) || !header.startsWith("Bearer ")){
+            throw new RuntimeException("Error: Refresh token is missing");
         }
-        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(userEmail);
-        if(!jwtService.validateToken(token, user)){
-            throw new RuntimeException("Error: Invalid refresh token");
-        }
-        return user;
+        return header.replace("Bearer ", "");
     }
 
     private UserCredentials getCredentials(LoginDto loginDto) throws RuntimeException{

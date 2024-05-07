@@ -7,24 +7,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.courierserver.helpers.CustomUserDetails;
-import com.david.maman.courierserver.helpers.UserDetatailsServiceImpl;
 import com.david.maman.courierserver.models.dto.ClientDto;
 import com.david.maman.courierserver.models.dto.UserDto;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.User;
 import com.david.maman.courierserver.services.ContactService;
-import com.david.maman.courierserver.services.JwtService;
 import com.david.maman.courierserver.services.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -38,8 +36,7 @@ public class UserController {
 
     private final UserService userService;
     private final ContactService contactService;
-    private final JwtService jwtService;
-    private final UserDetatailsServiceImpl userDetatailsServiceImpl;
+
 
     @PostMapping("/user")
     public ResponseEntity<?> register(@RequestBody UserDto userDto){
@@ -70,13 +67,10 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getUser(@RequestHeader("Authorization") String header){
+    public ResponseEntity<?> getUser(Authentication authentication){
         try{
-            final String refreshToken = getTokenHeader(header);
-            var customUser = getUserToken(refreshToken);
-            var user = userService.loadUserByEmail(customUser.getUsername()).orElseThrow(
-                () -> new Exception("User not found")
-            );
+            var customUser = (CustomUserDetails) authentication.getPrincipal();
+            var user = UserDto.toDto(customUser.getUser());
             return ResponseEntity.ok(user);
         }catch(Exception e){
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
@@ -150,25 +144,6 @@ public class UserController {
     @GetMapping("/search/{toSearch}")
     public ResponseEntity<?> searchUsers(String toSearch){
         return ResponseEntity.ok(userService.searchUsers(toSearch));
-    }
-
-    private String getTokenHeader(String header) throws RuntimeException{
-        if(header == null || header.isBlank() || !header.startsWith("Bearer ")){
-            throw new RuntimeException("Error: Refresh token is missing");
-        }
-        return header.substring(7);
-    }
-
-    private CustomUserDetails getUserToken(String token) throws RuntimeException{
-        final String userEmail = jwtService.extractUserName(token);
-        if(userEmail == null){
-            throw new RuntimeException("Error: Invalid refresh token");
-        }
-        CustomUserDetails customUser = (CustomUserDetails) userDetatailsServiceImpl.loadUserByUsername(userEmail);
-        if(!jwtService.validateToken(token, customUser)){
-            throw new RuntimeException("Error: Invalid refresh token");
-        }
-        return customUser;
     }
 
 }

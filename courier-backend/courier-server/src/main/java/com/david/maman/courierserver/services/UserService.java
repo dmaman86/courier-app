@@ -11,6 +11,8 @@ public interface UserService {
 
     Optional<User> loadUserByEmail(String email);
 
+    UserDto loadUserDtoByEmail(String email);
+
     Optional<User> loadUserById(Long id);
 
     void save(User user);

@@ -12,7 +12,7 @@ export const ErrorBoundary = ({ children }: ErrorBoundaryProps): React.ReactNode
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(error){
+        if(!tokens && error){
             const { cancelled, needLogout } = error;
             if(cancelled)
                 navigate('/error', { replace: true });

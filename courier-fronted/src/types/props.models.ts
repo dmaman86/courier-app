@@ -56,3 +56,21 @@ export interface AuthContextType {
     logout: () => void;
     error: CustomError | null;
 }
+
+export interface ValueColumn<T> {
+    key: string;
+    label: string;
+    render?: (item: T) => string;
+}
+
+export interface Action<T> {
+    label: string;
+    method: (item: T) => void;
+}
+
+export interface GenericTableProps<T extends { id: number }>{
+    data: T[] | null;
+    columns: ValueColumn<T>[];
+    actions?: Action<T>[];
+    BodyComponent: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;
+}

@@ -17,7 +17,7 @@ export const PrivateRoutes = () => {
     return(
         <Routes>
             <Route path='/' element={
-                    userDetails ? (
+                    (tokens && userDetails) ? (
                         <PrivateRoute tokens={tokens} children={<Outlet />}/>
                     ): (<div>Loading user data...</div>)
             }>

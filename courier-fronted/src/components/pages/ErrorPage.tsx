@@ -6,7 +6,7 @@ import { AxiosError } from "axios";
 
 export const ErrorPage = () => {
 
-    const { error } = useAuth();
+    const { tokens, error } = useAuth();
     const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
     const navigate = useNavigate();
 
@@ -17,7 +17,7 @@ export const ErrorPage = () => {
     }, []);
 
     useEffect(() => {
-        if(error){
+        if(!tokens && error){
             const { error: err, cancelled, needLogout } = error;
             if(needLogout){
                 navigate('/login', { replace: true });
@@ -26,7 +26,7 @@ export const ErrorPage = () => {
             if(err instanceof AxiosError && err.response)
                 setErrorMessage(err.response.data);
         }
-    }, [error, navigate]);
+    }, [error, navigate, tokens]);
 
     return(
         <>

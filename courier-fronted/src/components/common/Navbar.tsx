@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { useAuth, useFetchAndLoad, useRouteConfig } from "../../hooks";
-import { FetchResponse, User } from "../../types";
+import { User } from "../../types";
 import { paths } from "../../helpers/paths";
 import { serviceRequest } from "../../services";
 
@@ -13,15 +13,7 @@ export const Navbar = () => {
     const [ toogle, setToogle ] = useState(false);
     const [ show, setShow ] = useState('');
     const [ isLoggingOut, setIsLoggingOut ] = useState(false);
-    // const { loading, error, updateUrl, updateOptions } = useFetch();
     const { loading, callEndPoint } = useFetchAndLoad();
-
-    const [ response, setResponse ] = useState<FetchResponse<unknown>>({
-        data: null,
-        error: null
-    });
-
-    const { error } = response;
 
 
     const toogleMenu = () => {
@@ -32,25 +24,27 @@ export const Navbar = () => {
         setShow((!toogle) ? '' : 'show');
     }, [toogle]);
 
-    useEffect(() => {
-        if(!loading && !error)
-            setIsLoggingOut(true);
-    }, [error, loading]);
+    const initiateLogout = async () => {
+        const result = await callEndPoint(serviceRequest.postItem(paths.auth.logout));
+        if(result.error){
+            console.error('Error logging out:', result.error);
+            return;
+        }
+        setIsLoggingOut(false);
+        setToogle(false);
+        logout();
+    }
 
     useEffect(() => {
-        if(isLoggingOut){
-            setToogle(false);
-            setIsLoggingOut(false);
-            logout();
+        if(!loading && isLoggingOut){
+            initiateLogout();
         }
-    }, [isLoggingOut, logout]);
+    }, [isLoggingOut, loading]);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        // changeSource();
-        const result = await callEndPoint(serviceRequest.postItem(paths.auth.logout));
-        setResponse(result);
+        setIsLoggingOut(true);
     }
 
     const extractRoleNames = (user: User) => {
