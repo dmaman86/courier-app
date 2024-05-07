@@ -93,24 +93,27 @@ export const service = (() => {
 
         if(axios.isAxiosError(error)){
             const err = error as AxiosError;
-            if(err.response?.status === 401 && !isTokenRefreshing && err.config){
-                isTokenRefreshing = true;
-                const originalRequest = err.config;
+            if(err.response?.status === 401 && api.defaults.headers.common['Authorization'] && err.config){
+                if(!isTokenRefreshing){
+                    isTokenRefreshing = true;
+                    const originalRequest = err.config;
 
-                try{
-                    const newTokens = await validateToken();
-                    localStorage.setItem('auth-token', JSON.stringify(newTokens));
-                    api.defaults.headers.common['Authorization'] = `Bearer ${newTokens.accessToken}`;
-                    isTokenRefreshing = false;
-                    return api(originalRequest);
-                }catch(refreshError){
-                    isTokenRefreshing = false;
-                    return Promise.reject({
-                        error: refreshError,
-                        cancelled: false,
-                        needLogout: true
-                    });
+                    try{
+                        const newTokens = await validateToken();
+                        localStorage.setItem('auth-token', JSON.stringify(newTokens));
+                        api.defaults.headers.common['Authorization'] = `Bearer ${newTokens.accessToken}`;
+                        isTokenRefreshing = false;
+                        return api(originalRequest);
+                    }catch(refreshError){
+                        isTokenRefreshing = false;
+                        return Promise.reject({
+                            error: refreshError,
+                            cancelled: false,
+                            needLogout: true
+                        });
+                    }
                 }
+                
             }
         }
 

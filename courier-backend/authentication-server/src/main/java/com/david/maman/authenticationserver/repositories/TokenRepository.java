@@ -12,13 +12,17 @@ public interface TokenRepository extends JpaRepository<Token, Long>{
 
     Optional<Token> findByTokenAndIsRevokedAndIsExpired(String token, Boolean isRevoked, Boolean isExpired);
 
-    // List<Token> findByUserIdAndIsExpiredFalseOrIsRevokedFalse(Long userId);
-
     List<Token> findByUserId(Long userId);
 
     Optional<Token> findByUserIdAndToken(Long userId, String token);
 
     Optional<Token> findByUserIdAndTokenType(Long userId, TokenType tokenType);
+
+    Optional<Token> findByUserIdAndTokenAndIsExpired(Long userId, String token, Boolean isExpired);
+
+    Optional<Token> findByUserIdAndTokenAndIsExpiredAndIsRevoked(Long userId, String token, Boolean isExpired, Boolean isRevoked);
+
+    Optional<Token> findByUserIdAndTokenTypeAndIsRevoked(Long userId, TokenType tokenType, Boolean isRevoked);
 
     Optional<Token> findByUserIdAndTokenTypeAndIsRevokedAndIsExpired(Long userId, TokenType tokenType, Boolean isRevoked, Boolean isExpired);
 }

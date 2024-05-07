@@ -59,21 +59,22 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public Boolean validateToken(String token, CustomUserDetails credentials) {
-        return isSameUser(token, credentials) && !isTokenExpired(token) && isTokenValid(token, credentials);
-    }
+        var tokenDb = tokenRepository.findByUserIdAndTokenAndIsExpiredAndIsRevoked(credentials.getUser().getId(), token, false, false);
 
-    private Boolean isTokenValid(String token, CustomUserDetails credentials){
-        
-        var isValidToken = tokenRepository.findByUserIdAndToken(credentials.getUser().getId(), token)
-                .map(t -> !t.getIsRevoked() && !t.getIsExpired())
-                .orElse(false);
-        return isValidToken;
-    }
+        if(tokenDb.isPresent()){
+            Boolean isExpired = isTokenExpired(tokenDb.get().getToken());
 
-    private Boolean isSameUser(String token, CustomUserDetails credentials){
-        return extractUsername(token).equals(credentials.getUsername());
-    }
+            if(isExpired){
+                tokenDb.get().setIsExpired(true);
+                tokenRepository.save(tokenDb.get());
+                return false;
+            }
+            return true;
 
+        }
+        return false;
+
+    }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);

@@ -55,8 +55,9 @@ export const Login = () => {
     useEffect(() => {
         if(!loading && error){
             const { error: err } = error;
-            if(err instanceof AxiosError && err.response)
+            if(err instanceof AxiosError && err.response){
                 setErrorResponse(err.response.data);
+            }
         }
     }, [error, loading]);
 

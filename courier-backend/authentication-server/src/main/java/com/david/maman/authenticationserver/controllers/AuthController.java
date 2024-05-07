@@ -46,77 +46,56 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
-        try{
+        UserCredentials credentials = getCredentials(loginDto);
 
-            UserCredentials credentials = getCredentials(loginDto);
+        validateCredentials(credentials, loginDto.getPassword());
 
-            validateCredentials(credentials, loginDto.getPassword());
+        Authentication authentication = performAuthentication(loginDto, credentials);
 
-            Authentication authentication = performAuthentication(loginDto, credentials);
+        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(authentication.getName());
 
-            CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(authentication.getName());
-
-           return ResponseEntity.ok(authService.login(user));
-        }catch(BadCredentialsException e){
-            return ResponseEntity.badRequest().body("Error: Bad credentials");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+        return ResponseEntity.ok(authService.login(user));
     }
 
     @PutMapping("/update")
     public ResponseEntity<?> updateUserCredentials(@RequestBody UserCredentialsPassword userCredentialsPassword){
-        try{
-            UserCredentials credentials = userCredentialsRepository.findByUserEmail(userCredentialsPassword.getEmail())
+        UserCredentials credentials = userCredentialsRepository.findByUserEmail(userCredentialsPassword.getEmail())
                                                 .orElseThrow(() -> new RuntimeException("Error: User not found"));
 
-            if(!credentials.getFirstConnection() || userCredentialsPassword.getPassword() == null || userCredentialsPassword.getPassword().isBlank()){
-                throw new RuntimeException("Error: User can't update password");
-            }
-            authService.updateUserCredentials(userCredentialsPassword);
-            return ResponseEntity.ok("Password was set successfully");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        if(!credentials.getFirstConnection() || userCredentialsPassword.getPassword() == null || userCredentialsPassword.getPassword().isBlank()){
+            throw new RuntimeException("Error: User can't update password");
         }
+        authService.updateUserCredentials(userCredentialsPassword);
+        return ResponseEntity.ok("Password was set successfully");
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String header, Authentication authentication){
-        try{
-            final String refreshToken = getTokenHeader(header);
-            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            return ResponseEntity.ok(authService.refreshToken(user, refreshToken));
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+        final String refreshToken = getTokenHeader(header);
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(authService.refreshToken(user, refreshToken));
     }
 
     @PostMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String header, Authentication authentication){
-        try {
-            final String token = getTokenHeader(header);
-            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            if (!jwtService.validateToken(token, user))
-                throw new TokenValidationException("Invalid token");
-            return ResponseEntity.ok().build();
-        } catch (TokenValidationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-        }
-
+        final String token = getTokenHeader(header);
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        if (!jwtService.validateToken(token, user))
+            throw new TokenValidationException("Invalid token");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(Authentication authentication){
         try{
-            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            authService.logout(user);
-            SecurityContextHolder.clearContext();
+            if(authentication != null){
+                CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+                authService.logout(user);
+            }
+            
             return ResponseEntity.ok().body("User logged out successfully");
-        }catch(Exception e){
+        }finally{
             SecurityContextHolder.clearContext();
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 

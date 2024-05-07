@@ -1,5 +1,7 @@
 package com.david.maman.authenticationserver.configuration.security;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,11 +11,29 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.david.maman.authenticationserver.helpers.UserDetailsServiceImpl;
 
 @Configuration
 public class ApplicationConfig {
+
+    @Value("${spring.application.name}")
+    private String serviceName;
+
+    @Bean
+    WebClient webClient(){
+        return WebClient.builder()
+                    .baseUrl("http://localhost:8082/api/errors")
+                    .filter((request, next) -> {
+                        return next.exchange(
+                            ClientRequest.from(request)
+                                .header("Service-Name", serviceName)
+                                .build());
+                    })
+                    .build();
+    }
 
     @Bean
     UserDetailsService userDetailsService(){

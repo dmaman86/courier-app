@@ -17,6 +17,7 @@ export const useFetchAndLoad = () => {
             setLoading(false);
             return { data: result.data, error: null };           
         }catch(err){
+            console.log(err);
             const error = err as CustomError;
             setLoading(false);
             if(!error.cancelled){
