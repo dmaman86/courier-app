@@ -1,4 +1,4 @@
-package com.david.maman.springcloudgateway.config;
+package com.david.maman.springcloudgateway.filters;
 
 import java.nio.charset.StandardCharsets;
 
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.david.maman.springcloudgateway.config.RouterValidator;
 import com.david.maman.springcloudgateway.helpers.ApiError;
 
 import reactor.core.publisher.Mono;

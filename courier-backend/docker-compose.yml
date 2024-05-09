@@ -1,37 +1,58 @@
-version: '3.8'
 services:
-  config-server:
-    build: ./config-server
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
     ports:
-      - "8888:8888"
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
 
-  service-registry:
-    build: ./service-registry
+  kafka:
+    image: 'bitnami/kafka:latest'
     ports:
-      - "8761:8761"
+      - '9092:9092'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
-      - config-server
+      - zookeeper
 
-  spring-cloud-gateway:
-    build: ./spring-cloud-gateway
-    ports:
-      - "8080:8080"
-    depends_on:
-      - service-registry
 
-  authentication-server:
-    build: ./authentication-server
-    ports:
-      - "8088:8088"
-    depends_on:
-      - service-registry
 
-  courier-server:
-    build: ./courier-server
-    ports:
-      - "8081:8081"
-    depends_on:
-      - service-registry
-      - authentication-server
+# version: '3.8'
+# services:
+#  config-server:
+#    build: ./config-server
+#    ports:
+#      - "8888:8888"
+
+#  service-registry:
+#    build: ./service-registry
+#    ports:
+#      - "8761:8761"
+#    depends_on:
+#      - config-server
+
+#  spring-cloud-gateway:
+#    build: ./spring-cloud-gateway
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - service-registry
+
+#  authentication-server:
+#    build: ./authentication-server
+#    ports:
+#      - "8088:8088"
+#    depends_on:
+#      - service-registry
+
+#  courier-server:
+#    build: ./courier-server
+#    ports:
+#      - "8081:8081"
+#    depends_on:
+#      - service-registry
+#      - authentication-server
 
 # docker-compose up --build

@@ -1,25 +1,25 @@
 package com.david.maman.authenticationserver.services;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import com.david.maman.authenticationserver.models.entities.ErrorLog;
-
-import lombok.AllArgsConstructor;
+import com.david.maman.authenticationserver.models.dto.ErrorLogDto;
 
 @Service
-@AllArgsConstructor
-public class ErrorLogService {
+public class ErrorLogService{
 
-    private final WebClient webClient;
+    @Autowired
+    private KafkaTemplate<String, ErrorLogDto> kafkaTemplate;
 
-    public void reportError(ErrorLog errorLog) {
-        webClient.post()
-                 .uri("/error-logs")
-                 .bodyValue(errorLog)
-                 .retrieve()
-                 .bodyToMono(Void.class)
-                 .subscribe();
+    /*private String errorTopic = "error-logs";
+
+    public void reportError(ErrorLogDto errorLogDto) {
+        kafkaTemplate.send(errorTopic, errorLogDto);
+    }*/
+
+    public void reportError(ProducerRecord<String, ErrorLogDto> errorLogDto) {
+        kafkaTemplate.send(errorLogDto.topic(), errorLogDto.key(), errorLogDto.value());
     }
-
 }

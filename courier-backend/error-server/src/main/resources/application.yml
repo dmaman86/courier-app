@@ -15,13 +15,26 @@ spring:
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.MySQLDialect
+    kafka:
+        bootstrap-servers: localhost:9092
+        consumer:
+            group-id: error-logs-group
+            properties:
+                spring:
+                    json:
+                        value:
+                            default:
+                                type: com.courier.errorserver.model.dto.ErrorLogDto
+            
+            
+
 
 server:
     port: 8082
 
 eureka:
     client:
-        register-with-eureka: true
-        fetch-registry: true
+        register-with-eureka: false
+        fetch-registry: false
         service-url:
             defaultZone: http://localhost:8761/eureka/
