@@ -13,7 +13,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.david.maman.authenticationserver.models.dto.ErrorLogDto;
 import com.david.maman.authenticationserver.services.ErrorLogService;
