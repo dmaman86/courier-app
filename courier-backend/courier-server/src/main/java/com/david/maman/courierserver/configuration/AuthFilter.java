@@ -58,27 +58,6 @@ public class AuthFilter extends OncePerRequestFilter{
         }
         chain.doFilter(request, response);
 
-        /*if(token == null || token.isBlank() || jwtService.isTokenExpired(token)){
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT token");
-        }else{
-            logger.info("Authorization Token: { " + token + " }");
-            String email = jwtService.extractUserName(token);
-            if(email != null && !email.isBlank()){
-                try{
-                    CustomUserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                    if(jwtService.validateToken(token, userDetails)){
-                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                            
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    }
-                }catch(Exception e){
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-                }
-            }
-        }*/
-
     }
 
     private void authenticateUser(String token, String userEmail, HttpServletRequest request) throws SignatureException{

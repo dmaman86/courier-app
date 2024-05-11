@@ -1,4 +1,4 @@
-package com.david.maman.courierserver.configuration;
+package com.david.maman.courierserver.configuration.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

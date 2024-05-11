@@ -40,54 +40,38 @@ public class UserController {
 
     @PostMapping("/user")
     public ResponseEntity<?> register(@RequestBody UserDto userDto){
-        try{
-            if(userService.loadUserByEmail(userDto.getEmail()).isPresent()){
-                throw new RuntimeException("User already exists");
-            }
-            logger.info(userDto.toString());
-            userService.createUser(userDto);
-            return ResponseEntity.ok("User registered successfully");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        if(userService.loadUserByEmail(userDto.getEmail()).isPresent()){
+            throw new RuntimeException("User already exists");
         }
+        logger.info(userDto.toString());
+        userService.createUser(userDto);
+        return ResponseEntity.ok("User registered successfully");
     }
 
     @PostMapping("/client")
     public ResponseEntity<?> registerClient(@RequestBody ClientDto clientDto){
-        try{
-            if(userService.loadUserByEmail(clientDto.getEmail()).isPresent()){
-                throw new RuntimeException("User already exists");
-            }
-            logger.info(clientDto.toString());
-            userService.saveClientDto(clientDto);
-            return ResponseEntity.ok("Client registered successfully");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        if(userService.loadUserByEmail(clientDto.getEmail()).isPresent()){
+            throw new RuntimeException("User already exists");
         }
+        logger.info(clientDto.toString());
+        userService.saveClientDto(clientDto);
+        return ResponseEntity.ok("Client registered successfully");
     }
 
     @GetMapping("/me")
     public ResponseEntity<?> getUser(Authentication authentication){
-        try{
-            var customUser = (CustomUserDetails) authentication.getPrincipal();
-            var user = UserDto.toDto(customUser.getUser());
-            return ResponseEntity.ok(user);
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+        var customUser = (CustomUserDetails) authentication.getPrincipal();
+        var user = UserDto.toDto(customUser.getUser());
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id){
-        try{
-            User user = userService.loadUserById(id).orElseThrow(
-                () -> new Exception("User not found")
-            );
-            UserDto userDto = UserDto.toDto(user);
-            return ResponseEntity.ok(userDto);
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+        User user = userService.loadUserById(id).orElseThrow(
+            () -> new RuntimeException("User not found")
+        );
+        UserDto userDto = UserDto.toDto(user);
+        return ResponseEntity.ok(userDto);
     }
 
     @GetMapping("/")
@@ -98,47 +82,35 @@ public class UserController {
 
     @DeleteMapping("/id/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id){
-        try{
-            User user = userService.loadUserById(id).orElseThrow(
-                () -> new Exception("User not found")
-            );
-            Contact contact = contactService.findContactByPhone(user.getPhone()).orElse(null);
-            if(contact != null) contactService.deleteContact(contact.getId());
-            userService.delete(user.getId());
-            return ResponseEntity.ok("User deleted successfully");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+        User user = userService.loadUserById(id).orElseThrow(
+                () -> new RuntimeException("User not found")
+        );
+        Contact contact = contactService.findContactByPhone(user.getPhone()).orElse(null);
+        if(contact != null) contactService.deleteContact(contact.getId());
+        userService.delete(user.getId());
+        return ResponseEntity.ok("User deleted successfully");
     }
 
     @PutMapping("/user")
     public ResponseEntity<?> updateUser(@RequestBody UserDto userDto){
-        try{
-            Optional<User> userDb = userService.loadUserById(userDto.getId());
-            if(userDb.isEmpty()){
-                throw new RuntimeException("User not found");
-            }
-            
-            userService.updateUser(userDb.get(), userDto);
-            return ResponseEntity.ok("User updated successfully");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        Optional<User> userDb = userService.loadUserById(userDto.getId());
+        if(userDb.isEmpty()){
+            throw new RuntimeException("User not found");
         }
+            
+        userService.updateUser(userDb.get(), userDto);
+        return ResponseEntity.ok("User updated successfully");
     }
 
     @PutMapping("/client")
     public ResponseEntity<?> updateClient(@RequestBody ClientDto clientDto){
-        try{
-            Optional<User> userDb = userService.loadUserById(clientDto.getId());
-            if(userDb.isEmpty()){
-                throw new RuntimeException("User not found");
-            }
-            
-            userService.updateClient(userDb.get(), clientDto);
-            return ResponseEntity.ok("User updated successfully");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        Optional<User> userDb = userService.loadUserById(clientDto.getId());
+        if(userDb.isEmpty()){
+            throw new RuntimeException("User not found");
         }
+            
+        userService.updateClient(userDb.get(), clientDto);
+        return ResponseEntity.ok("User updated successfully");
     }
 
     @GetMapping("/search/{toSearch}")
