@@ -14,15 +14,4 @@ COPY --from=build /target/*.jar /app.jar
 ENTRYPOINT [ "java", "-jar", "/app.jar" ]
 
 # Expose the port the config server will run on
-EXPOSE 8088
-
-
-
-# FROM openjdk:17
-
-# ARG JAR_FILE=target/*.jar
-
-# COPY ${JAR_FILE} app.jar
-
-# ENTRYPOINT [ "java", "-jar", "./app.jar"]
-
+EXPOSE 8090
