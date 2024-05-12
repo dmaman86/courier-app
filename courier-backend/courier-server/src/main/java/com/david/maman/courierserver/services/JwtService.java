@@ -1,6 +1,7 @@
 package com.david.maman.courierserver.services;
 
 import java.security.Key;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -17,8 +18,15 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    @Value("${security.jwt.signin-key}")
-    private String jwtSigningKey;
+    
+    private PublicKey jwtPublicKey;
+
+    private volatile boolean isPublicKeyAvailable = false;
+
+    public void setPublicKey(PublicKey publicKey){
+        this.jwtPublicKey = publicKey;
+        this.isPublicKeyAvailable = true;
+    }
 
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -30,6 +38,9 @@ public class JwtService {
     }
 
     public Boolean validateToken(String token, CustomUserDetails user){
+        if(!isPublicKeyAvailable){
+            throw new IllegalStateException("Public key not available for token validation.");
+        }
         final String username = extractUserName(token);
         return (username.equals(user.getUsername()) && !isTokenExpired(token));
     }
@@ -40,7 +51,7 @@ public class JwtService {
 
     public Claims extractAllClaims(String token){
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(this.jwtPublicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -48,11 +59,6 @@ public class JwtService {
 
     public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
-    }
-
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSigningKey);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 
 }

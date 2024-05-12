@@ -99,14 +99,9 @@ public class GlobalExceptionsHandler {
             .path(request.getDescription(false))
             .build();
 
-        this.reportErrorToKafka(error);
+        errorLogService.reportError(error);
 
         return error;
-    }
-
-    private void reportErrorToKafka(ErrorLogDto error){
-        ProducerRecord<String, ErrorLogDto> errorRecord = new ProducerRecord<String,ErrorLogDto>("test-topic", error);
-        errorLogService.reportError(errorRecord);
     }
 
 }

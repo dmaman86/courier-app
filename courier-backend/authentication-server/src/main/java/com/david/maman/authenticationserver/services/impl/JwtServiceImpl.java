@@ -1,12 +1,12 @@
 package com.david.maman.authenticationserver.services.impl;
 
-import java.security.Key;
+import java.security.KeyPair;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
@@ -15,29 +15,24 @@ import com.david.maman.authenticationserver.services.JwtService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 @Service
 public class JwtServiceImpl implements JwtService{
 
-    private String jwtSigningKey;
+    private KeyPair jwtKeyPair;
 
-    private long jwtExpiration;
+    private long jwtExpiration = 86400000; // 1 day
 
-    private long jwtRefreshExpiration;
+    private long jwtRefreshExpiration = 604800000; // 7 days
 
-    private final TokenRepository tokenRepository;
+    @Autowired
+    private TokenRepository tokenRepository;
 
 
-    public JwtServiceImpl(  @Value("${security.jwt.signin-key}") String jwtSigningKey,
-                            @Value("${security.jwt.expiration}") long jwtExpiration,
-                            @Value("${security.jwt.refresh-token.expiration}") long jwtRefreshExpiration,
-                            TokenRepository tokenRepository) {
-        this.jwtSigningKey = jwtSigningKey;
-        this.jwtExpiration = jwtExpiration;
-        this.jwtRefreshExpiration = jwtRefreshExpiration;
-        this.tokenRepository = tokenRepository;
+    @Override
+    public void setKeyPair(KeyPair keyPair) {
+        this.jwtKeyPair = keyPair;
     }
 
     @Override
@@ -91,7 +86,7 @@ public class JwtServiceImpl implements JwtService{
                     .setSubject(credentials.getUsername())
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                    .signWith(getSigningKey())
+                    .signWith(jwtKeyPair.getPrivate(), SignatureAlgorithm.RS256)
                     .compact();
     }
 
@@ -105,15 +100,10 @@ public class JwtServiceImpl implements JwtService{
 
     private Claims extractAllClaims(String token){
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(jwtKeyPair.getPublic())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSigningKey);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 
 }

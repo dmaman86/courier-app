@@ -13,7 +13,7 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
 
 
-    @Bean
+    /*@Bean
     NewTopic generateTopic(){
 
         Map<String, String> configs = new HashMap<>();
@@ -27,6 +27,6 @@ public class KafkaTopicConfig {
                             .replicas(2)
                             .configs(configs)
                             .build();
-    }
+    }*/
 
 }

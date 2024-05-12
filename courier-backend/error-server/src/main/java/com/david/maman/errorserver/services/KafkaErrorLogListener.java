@@ -27,19 +27,6 @@ public class KafkaErrorLogListener {
     @Autowired
     private ObjectMapper objectMapper;
 
-    /*@KafkaListener(topics = "error-logs")
-    public void listen(ErrorLogDto errorLogDto) {
-        ErrorLog errorLog = ErrorLog.builder()
-                .message(errorLogDto.getMessage())
-                .details(errorLogDto.getDetails())
-                .path(errorLogDto.getPath())
-                .timestamp(LocalDateTime.now())
-                .build();
-
-        logger.info("Received error log: {}", errorLog);
-        errorLogRepository.save(errorLog);
-    }*/
-
     @KafkaListener(topics = "test-topic")
     public void listen(ConsumerRecord<String, String> record){
         try{

@@ -50,6 +50,14 @@ public class GlobalExceptionsHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getDetails());
     }
 
+    @ExceptionHandler(value = PublicKeyNotAvailableException.class)
+    public ResponseEntity<?> handlePublicKeyNotAvailableException(PublicKeyNotAvailableException e, WebRequest request) {
+
+        ErrorLogDto error = createErrorLog(e, e.getMessage(), request);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error.getDetails());
+    }
+
+
     @ExceptionHandler(value = BadCredentialsException.class)
     public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException e, WebRequest request) {
 

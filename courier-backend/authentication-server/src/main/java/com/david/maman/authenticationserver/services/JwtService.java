@@ -1,5 +1,7 @@
 package com.david.maman.authenticationserver.services;
 
+import java.security.KeyPair;
+
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 
 public interface JwtService {
@@ -10,5 +12,7 @@ public interface JwtService {
 
     String extractUsername(String token);
 
-    Boolean validateToken(String token, CustomUserDetails credentials);    
+    Boolean validateToken(String token, CustomUserDetails credentials);
+
+    void setKeyPair(KeyPair keyPair);
 }

@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.david.maman.courierserver.exceptions.PublicKeyNotAvailableException;
 import com.david.maman.courierserver.helpers.CustomUserDetails;
 import com.david.maman.courierserver.helpers.UserDetatailsServiceImpl;
 import com.david.maman.courierserver.services.JwtService;
@@ -55,21 +56,30 @@ public class AuthFilter extends OncePerRequestFilter{
 
         } catch (SignatureException | MalformedJwtException e) {
             throw new JwtException(e.getMessage());
+        } catch(IllegalStateException e){
+            throw new PublicKeyNotAvailableException(e.getMessage());
         }
         chain.doFilter(request, response);
 
     }
 
-    private void authenticateUser(String token, String userEmail, HttpServletRequest request) throws SignatureException{
-        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(userEmail);
+    private void authenticateUser(String token, String userEmail, HttpServletRequest request){
 
-        if(jwtService.validateToken(token, user)){
-            Authentication authToken = new UsernamePasswordAuthenticationToken(
-                user,
-                null,  
-                user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-        }else{
+        try{
+            CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(userEmail);
+
+            if(jwtService.validateToken(token, user)){
+                Authentication authToken = new UsernamePasswordAuthenticationToken(
+                    user,
+                    null,  
+                    user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }else{
+                throw new SignatureException("Invalid or expired JWT token");
+            }
+        } catch(IllegalStateException e){
+            throw new IllegalStateException(e.getMessage());
+        } catch(SignatureException e){
             throw new SignatureException("Invalid or expired JWT token");
         }
     }

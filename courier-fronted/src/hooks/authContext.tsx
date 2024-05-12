@@ -42,9 +42,9 @@ export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
             }
             
         }
-        if(!userDetails && tokens && tokens.accessToken)
+        if(!userDetails && tokens && tokens.accessToken && !error)
             fetchUserDetails();
-    }, [tokens, userDetails, callEndPoint]);
+    }, [tokens, userDetails, callEndPoint, error]);
 
     const value = useMemo(() => ({
         tokens,
