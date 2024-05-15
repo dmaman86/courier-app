@@ -9,5 +9,6 @@ export const paths = {
         userDetails: '/courier/users/me',
         users: '/courier/users/',
         offices: '/courier/office/',
+        roles: '/courier/role/',
     }
 }

@@ -1,6 +1,6 @@
 import React, { ReactElement, ReactNode } from "react";
 import { Token, User } from "./models";
-import { CustomError } from "./axios.models";
+import { ActionMeta, MultiValue, SingleValue } from "react-select";
 
 export interface InputProps{
     label: string;
@@ -37,16 +37,15 @@ export interface ModalProps {
 }
 
 export interface OptionType {
-    value: string;
+    value: number;
     label: string;
 }
 
-export interface SelectProps {
-    value: string | string[];
+export interface SelectProps{
     options: OptionType[];
-    onChange: (value: string | string[]) => void;
-    placeholder?: string;
     isMulti?: boolean;
+    onChange: (selected: MultiValue<OptionType> | SingleValue<OptionType>, actionMeta: ActionMeta<OptionType>) => void;
+    value: MultiValue<OptionType> | SingleValue<OptionType>;
 }
 
 export interface AuthContextType {
@@ -54,7 +53,6 @@ export interface AuthContextType {
     userDetails: User | null;
     saveTokens: (tokens: Token) => void;
     logout: () => void;
-    error: CustomError | null;
 }
 
 export interface ValueColumn<T> {

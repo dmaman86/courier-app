@@ -5,6 +5,7 @@ import { serviceRequest } from "../../../services";
 import { paths } from "../../../helpers";
 import { ReusableTable } from "../../shared";
 import { UserList } from "../../partials/UserList";
+import { GenericModal, UserForm } from "../../modal";
 
 const extractRoleNames = (user: User) => {
     const formattedRoles = user.roles.map((role) => {
@@ -31,16 +32,12 @@ const userColumns: ValueColumn<User>[] = [
     }
 ];
 
-const userActions: Action<User>[] = [
-    { label: 'Edit', method: (item: User) => console.log('Edit', item) },
-    { label: 'Delete', method: (item: User) => console.log('Delete', item) }
-];
-
 
 export const UsersPageAdmin = () => {
 
     const { userDetails } = useAuth();
-
+    const [ showModal, setShowModal ] = useState(false);
+    const [ selectedUser, setSelectedUser ] = useState<User | undefined>(undefined);
     const { items, setAllItems, addItem, updateItem, removeItem } = useList<User>([]);
     const [ response, setResponse ] = useState<FetchResponse<User[]>>({
         data: null,
@@ -51,6 +48,7 @@ export const UsersPageAdmin = () => {
 
     const { data, error } = response;
 
+    const toogleModal = () => setShowModal(!showModal);
 
     useEffect(() => {
         if(!loading && data) setAllItems(data);
@@ -81,6 +79,25 @@ export const UsersPageAdmin = () => {
         if(items.length) console.log(items);
     }, [items]);
 
+    const handleEditUser = (user: User) => {
+        setSelectedUser(user);
+        setShowModal(true);
+    }
+
+    const handleDeleteUser = (id: number) => {
+        console.log('Delete', id);
+    }
+
+    const handleFormSubmit = (updateUser: User) => {
+        console.log(updateUser);
+        setShowModal(false);
+    }
+
+    const userActions: Action<User>[] = [
+        { label: 'Edit', method: (item: User) => handleEditUser(item) },
+        { label: 'Delete', method: (item: User) => handleDeleteUser(item.id) }
+    ];
+
     return(
         <>
             <h1>Users Page Admin</h1>
@@ -93,6 +110,10 @@ export const UsersPageAdmin = () => {
                         BodyComponent={UserList}
                     />
                 )
+            }
+
+            {                
+                showModal && <GenericModal title="Edit User" body={<UserForm user={selectedUser} onSubmit={handleFormSubmit} />} show={showModal} onClose={toogleModal} />
             }
         </>
     )

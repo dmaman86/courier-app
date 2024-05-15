@@ -3,8 +3,10 @@ package com.david.maman.authenticationserver.services.impl;
 import java.security.KeyPair;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,9 +83,25 @@ public class JwtServiceImpl implements JwtService{
     }
 
     public String buildToken(Map<String, Object> extraClaims, CustomUserDetails credentials, long expirationTime) {
+
+        List<Map<String, Object>> roles = credentials.getUser().getRoles().stream()
+                .map(role -> {
+                    Map<String, Object> roleMap = new HashMap<>();
+                    roleMap.put("id", role.getId());
+                    roleMap.put("name", role.getName());
+                    return roleMap;
+                })
+                .collect(Collectors.toList());
+
         return Jwts.builder()
                     .setClaims(extraClaims)
                     .setSubject(credentials.getUsername())
+                    .claim("id", credentials.getUser().getId())
+                    .claim("name", credentials.getUser().getName())
+                    .claim("lastname", credentials.getUser().getLastName())
+                    .claim("email", credentials.getUser().getEmail())
+                    .claim("phone", credentials.getUser().getPhone())
+                    .claim("roles", roles)
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                     .signWith(jwtKeyPair.getPrivate(), SignatureAlgorithm.RS256)

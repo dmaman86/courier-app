@@ -1,10 +1,19 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContextType, CustomError, Token, User } from '../types';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
+
+
+import { AuthContextType, Token, User, Role } from '../types';
 import { useLocalStorage } from './useLocalStorage';
-import { serviceRequest } from "../services";
-import { paths } from "../helpers";
-import { useFetchAndLoad } from './useFetchAndLoad';
+
+interface MyJwtPayload extends JwtPayload {
+    id: string;
+    name: string;
+    lastname: string;
+    email: string;
+    phone: string;
+    roles: Role[];
+}
 
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -13,9 +22,6 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
     const [ tokens, setTokens, removeStoredValue ] = useLocalStorage('auth-token', null);
     const [ userDetails, setUserDetails ] = useState<User | null>(null);
-    const [ error, setError ] = useState<CustomError | null>(null);
-
-    const { callEndPoint } = useFetchAndLoad();
 
     const navigate = useNavigate();
 
@@ -29,30 +35,27 @@ export const AuthProvider = ({ children } : { children: React.ReactNode }) => {
         navigate('/login', { replace: true });
     }, [navigate, removeStoredValue]);
 
+
     useEffect(() => {
-        const fetchUserDetails = async () => {
-            
-            const result = await callEndPoint(serviceRequest.getItem<User>(paths.courier.userDetails));
-            if(!result.error){
-                setUserDetails(result.data);
-                setError(null);
-            }else{
-                setUserDetails(null);
-                setError(result.error as CustomError);
-            }
-            
+        if(tokens && tokens.accessToken){
+            const decode = jwtDecode<MyJwtPayload>(tokens.accessToken);
+            setUserDetails({
+                id: parseInt(decode.id),
+                email: decode.email,
+                name: decode.name,
+                lastName: decode.lastname,
+                phone: decode.phone,
+                roles: decode.roles
+            });
         }
-        if(!userDetails && tokens && tokens.accessToken && !error)
-            fetchUserDetails();
-    }, [tokens, userDetails, callEndPoint, error]);
+    }, [tokens]);
 
     const value = useMemo(() => ({
         tokens,
         userDetails,
         saveTokens,
         logout,
-        error
-    }), [tokens, userDetails, saveTokens, logout, error]);
+    }), [tokens, userDetails, saveTokens, logout]);
 
 
     return <AuthContext.Provider value={value}>

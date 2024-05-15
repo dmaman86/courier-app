@@ -1,7 +1,11 @@
 package com.david.maman.authenticationserver.services;
 
 import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PublicKey;
+import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -81,6 +85,7 @@ public class JwtKeyService {
         BigInteger n = new BigInteger(primeProductDto.getProduct());
         BigInteger phi = new BigInteger(primeProductDto.getPhiProduct());
         // RSAKeyGenerator rsaKeyGenerator = new RSAKeyGenerator(n, phi);
+
         RSAKeyManager rsaKeyManager = new RSAKeyManager(n, phi);
         logger.info("Generated RSA keys: {}", rsaKeyManager);
 
@@ -88,6 +93,34 @@ public class JwtKeyService {
         kafkaTemplate.send("public-key-topic", publicKeyString);
 
         jwtService.setKeyPair(rsaKeyManager.getKeyPair());
+    }
+
+
+    private BigInteger findCoprime(BigInteger phi){
+        BigInteger e = BigInteger.valueOf(2);
+        Boolean find_coprime = false;
+
+        while(e.compareTo(phi) < 0 && !find_coprime){
+            if(e.gcd(phi).equals(BigInteger.ONE)){
+                find_coprime = true;
+            }
+            e = e.add(BigInteger.ONE);
+        }
+        return e;
+    }
+
+    private KeyPair initializeKeys(BigInteger n, BigInteger e, BigInteger d){
+        try {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(new RSAKeyGenParameterSpec(n.bitLength(), e));
+            return keyPairGenerator.generateKeyPair();
+        } catch (Exception exception) {
+            throw new RuntimeException("Error initializing RSA keys", exception);
+        }
+    }
+
+    public String getPublicKeyAsBase64(KeyPair keyPair) {
+        return Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
     }
 
 }

@@ -8,19 +8,15 @@ interface ErrorBoundaryProps {
 
 export const ErrorBoundary = ({ children }: ErrorBoundaryProps): React.ReactNode => {
 
-    const { tokens, error } = useAuth();
+    const { tokens, userDetails } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(!tokens && error){
-            const { cancelled, needLogout } = error;
-            if(cancelled)
-                navigate('/error', { replace: true });
-            else if(needLogout){
-                navigate('/login', { replace: true });
-            }
+        if(!tokens){
+            
+            userDetails ? navigate('/error', { replace: true }) : navigate('/login', { replace: true });
         }
-    }, [error, navigate, tokens]);
+    }, [tokens, userDetails, navigate]);
 
     return children;
 }

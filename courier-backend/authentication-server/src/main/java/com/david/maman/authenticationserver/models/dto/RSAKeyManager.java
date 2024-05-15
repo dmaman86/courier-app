@@ -17,6 +17,8 @@ public class RSAKeyManager {
         BigInteger e = findCoprime(phi);
         BigInteger d = e.modInverse(phi);
 
+        System.out.println("d: " + d);
+
         initializeKeys(n, e, d);
     }
 
