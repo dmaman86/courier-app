@@ -143,7 +143,7 @@ export const UserForm = ({ user, onSubmit }: UserFormProps) => {
                     />    
                 </div>
                 <div className='row'>
-                    <div className='col-8'>
+                    <div className='col-6'>
                         <ReusableInput
                             inputProps={{
                                 label: 'Email',
@@ -157,7 +157,7 @@ export const UserForm = ({ user, onSubmit }: UserFormProps) => {
                             errorMessage={values.email.error}
                         />    
                     </div>
-                    <div className='col-4'>
+                    <div className='col-6'>
                         <ReusableInput
                             inputProps={{
                                 label: 'Phone',

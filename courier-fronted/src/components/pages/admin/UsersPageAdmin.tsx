@@ -3,7 +3,7 @@ import { Action, FetchResponse, User, ValueColumn } from "../../../types";
 import { useAuth, useFetchAndLoad, useList } from "../../../hooks";
 import { serviceRequest } from "../../../services";
 import { paths } from "../../../helpers";
-import { ReusableTable } from "../../shared";
+import { PageHeader, ReusableTable } from "../../shared";
 import { UserList } from "../../partials/UserList";
 import { GenericModal, UserForm } from "../../modal";
 
@@ -37,7 +37,7 @@ export const UsersPageAdmin = () => {
 
     const { userDetails } = useAuth();
     const [ showModal, setShowModal ] = useState(false);
-    const [ selectedUser, setSelectedUser ] = useState<User | undefined>(undefined);
+    const [ selectedUser, setSelectedUser ] = useState<User | null>(null);
     const { items, setAllItems, addItem, updateItem, removeItem } = useList<User>([]);
     const [ response, setResponse ] = useState<FetchResponse<User[]>>({
         data: null,
@@ -91,6 +91,16 @@ export const UsersPageAdmin = () => {
     const handleFormSubmit = (updateUser: User) => {
         console.log(updateUser);
         setShowModal(false);
+        setSelectedUser(null);
+    }
+
+    const handleSearch = (query: string) => {
+        console.log('Search', query);
+    }
+
+    const handleCreateUser = () => {
+        setSelectedUser(null);
+        setShowModal(true);
     }
 
     const userActions: Action<User>[] = [
@@ -100,7 +110,7 @@ export const UsersPageAdmin = () => {
 
     return(
         <>
-            <h1>Users Page Admin</h1>
+            <PageHeader title="Users" onSearch={handleSearch} onCreate={handleCreateUser} />
             {
                 data && (
                     <ReusableTable<User>

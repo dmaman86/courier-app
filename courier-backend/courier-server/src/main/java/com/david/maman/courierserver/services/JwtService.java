@@ -28,6 +28,10 @@ public class JwtService {
         this.isPublicKeyAvailable = true;
     }
 
+    public Boolean isPublicKeyAvailable(){
+        return this.isPublicKeyAvailable;
+    }
+
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);
     }

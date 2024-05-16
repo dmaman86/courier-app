@@ -102,6 +102,7 @@ public class JwtServiceImpl implements JwtService{
                     .claim("email", credentials.getUser().getEmail())
                     .claim("phone", credentials.getUser().getPhone())
                     .claim("roles", roles)
+                    .setIssuer(credentials.getAuthorities().iterator().next().getAuthority())
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                     .signWith(jwtKeyPair.getPrivate(), SignatureAlgorithm.RS256)
