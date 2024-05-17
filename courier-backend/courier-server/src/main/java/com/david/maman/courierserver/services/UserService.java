@@ -15,17 +15,17 @@ public interface UserService {
 
     Optional<User> loadUserById(Long id);
 
-    void save(User user);
+    User save(User user);
 
-    void createUser(UserDto userDto);
+    User createUser(UserDto userDto);
 
     void saveClientDto(ClientDto clientDto);
 
-    void updateUser(User user, UserDto userDto);
+    User updateUser(User user, UserDto userDto);
 
     void updateClient(User user, ClientDto clientDto);
 
-    void delete(Long id);
+    void delete(User user);
 
     List<UserDto> getAll();
 

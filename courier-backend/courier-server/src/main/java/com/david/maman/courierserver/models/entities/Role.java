@@ -1,6 +1,7 @@
 package com.david.maman.courierserver.models.entities;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.david.maman.courierserver.models.dto.RoleDto;

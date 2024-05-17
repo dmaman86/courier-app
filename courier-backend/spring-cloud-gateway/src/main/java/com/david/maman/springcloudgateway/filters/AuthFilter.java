@@ -20,7 +20,7 @@ import com.david.maman.springcloudgateway.config.RouterValidator;
 
 import reactor.core.publisher.Mono;
 
-@Component
+/*@Component
 public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config>{
 
     private static final Logger logger = LoggerFactory.getLogger(AuthFilter.class);
@@ -69,4 +69,4 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config>{
     public static class Config{
 
     }
-}
+}*/

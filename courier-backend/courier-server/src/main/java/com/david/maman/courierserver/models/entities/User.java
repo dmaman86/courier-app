@@ -33,6 +33,7 @@ public class User {
     private String lastName;
     private String phone;
     private String email;
+    private Boolean isActive;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(

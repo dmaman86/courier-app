@@ -2,7 +2,7 @@ spring:
     application:
         name: error-server
     datasource:
-        url: jdbc:mysql://localhost:3306/courierdb?createDatabaseIfNotExist=true&serverTimezone=UTC
+        url: jdbc:mysql://localhost:3306/errordb?createDatabaseIfNotExist=true&serverTimezone=UTC
         username: root
         password: root-workbench
         driver-class-name: com.mysql.cj.jdbc.Driver
@@ -17,12 +17,6 @@ spring:
         bootstrap-servers: localhost:9092
         consumer:
             group-id: error-logs-group
-            properties:
-                spring:
-                    json:
-                        value:
-                            default:
-                                type: com.courier.errorserver.model.dto.ErrorLogDto
             
             
 

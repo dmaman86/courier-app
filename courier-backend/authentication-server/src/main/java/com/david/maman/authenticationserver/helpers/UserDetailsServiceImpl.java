@@ -28,6 +28,9 @@ public class UserDetailsServiceImpl implements UserDetailsService{
                                                 logger.error("Credentials not found for user with email or phone: {}", username);
                                                 return new UsernameNotFoundException("Credentials not found for user with email or phone: " + username);
                                             });
+        if(!credentials.getUser().getIsActive()){
+            throw new UsernameNotFoundException("User is not active");
+        }
         logger.info("Credentials found for user with email or phone: {}", username);
         return new CustomUserDetails(credentials);
     }

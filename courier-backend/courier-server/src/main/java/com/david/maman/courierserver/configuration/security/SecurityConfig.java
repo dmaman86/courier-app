@@ -13,8 +13,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.david.maman.courierserver.configuration.AuthFilter;
 import com.david.maman.courierserver.configuration.ExceptionHandlerFilter;
 
-import org.springframework.security.authentication.AuthenticationProvider;
-
 import lombok.RequiredArgsConstructor;
 
 @EnableWebSecurity
@@ -24,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final AuthFilter authFilter;
-    private final AuthenticationProvider authenticationProvider;
     private final ExceptionHandlerFilter exceptionHandlerFilter;
     
     @Bean
@@ -35,8 +32,7 @@ public class SecurityConfig {
             .addFilterAfter(authFilter, ExceptionHandlerFilter.class)
             .authorizeHttpRequests(request -> request 
                 .requestMatchers("/api/courier/**").authenticated())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider);
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }

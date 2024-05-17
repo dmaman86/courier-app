@@ -9,7 +9,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.david.maman.courierserver.models.entities.User;
-import com.david.maman.courierserver.models.entities.UserCredentials;
 
 public class CustomUserDetails implements UserDetails{
 
@@ -17,9 +16,9 @@ public class CustomUserDetails implements UserDetails{
     private String password;
     Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(UserCredentials credentials){
-        this.user = credentials.getUser();
-        this.password = credentials.getPassword();
+    public CustomUserDetails(User user, String password){
+        this.user = user;
+        this.password = password;
         this.authorities = user.getRoles().stream()
                                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                                 .collect(Collectors.toList());
@@ -66,7 +65,7 @@ public class CustomUserDetails implements UserDetails{
 
     @Override
     public String toString() {
-        return "CustomUserDetails [user=" + user + ", password=" + password + ", authorities=" + authorities + "]";
+        return "CustomUserDetails [user=" + user + ", authorities=" + authorities + "]";
     }
     
 }

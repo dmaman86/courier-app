@@ -44,8 +44,9 @@ public class UserController {
             throw new RuntimeException("User already exists");
         }
         logger.info(userDto.toString());
-        userService.createUser(userDto);
-        return ResponseEntity.ok("User registered successfully");
+        User createdUser = userService.createUser(userDto);
+        UserDto createdUserDto = UserDto.toDto(createdUser);
+        return ResponseEntity.ok(createdUserDto);
     }
 
     @PostMapping("/client")
@@ -87,7 +88,7 @@ public class UserController {
         );
         Contact contact = contactService.findContactByPhone(user.getPhone()).orElse(null);
         if(contact != null) contactService.deleteContact(contact.getId());
-        userService.delete(user.getId());
+        userService.delete(user);
         return ResponseEntity.ok("User deleted successfully");
     }
 
@@ -98,8 +99,9 @@ public class UserController {
             throw new RuntimeException("User not found");
         }
             
-        userService.updateUser(userDb.get(), userDto);
-        return ResponseEntity.ok("User updated successfully");
+        User updateUser = userService.updateUser(userDb.get(), userDto);
+        UserDto updatedUserDto = UserDto.toDto(updateUser);
+        return ResponseEntity.ok(updatedUserDto);
     }
 
     @PutMapping("/client")

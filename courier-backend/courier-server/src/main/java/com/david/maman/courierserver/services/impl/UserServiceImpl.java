@@ -12,16 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.david.maman.courierserver.models.dto.ClientDto;
+import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.dto.UserDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
-import com.david.maman.courierserver.models.entities.UserCredentials;
-import com.david.maman.courierserver.repositories.UserCredentialsRepository;
 import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.ContactService;
+import com.david.maman.courierserver.services.KafkaProducerUser;
+import com.david.maman.courierserver.services.RoleService;
 import com.david.maman.courierserver.services.UserService;
 
 import jakarta.transaction.Transactional;
@@ -38,53 +39,60 @@ public class UserServiceImpl implements UserService{
     private ContactService contactService;
 
     @Autowired
-    private UserCredentialsRepository userCredentialsRepository;
+    private RoleService roleService;
+
+    @Autowired
+    private KafkaProducerUser kafkaProducerUser;
 
     @Override
     public Optional<User> loadUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmailAndIsActive(email, true);
     }
 
     @Override
     public UserDto loadUserDtoByEmail(String email) {
-        User user = userRepository.findByEmail(email).get();
+        User user = userRepository.findByEmailAndIsActive(email, true).get();
         return UserDto.toDto(user);
     }
 
     @Override
     public Optional<User> loadUserById(Long id) {
-        return userRepository.findById(id);
+        return userRepository.findByIdAndIsActive(id, true);
     }
 
     @Override
-    public void save(User user) {
-        userRepository.save(user);
+    public User save(User user) {
+        User savedUser = userRepository.save(user);
+        kafkaProducerUser.sendUser(savedUser);
+        return savedUser;
     }
 
     @Override
     @Transactional
-    public void createUser(UserDto userDto) {
+    public User createUser(UserDto userDto) {
+
+        Set<Role> roles = new HashSet<>();
+        for(RoleDto roleDto : userDto.getRoles()){
+            Optional<Role> role = roleService.findRole(roleDto.getId());
+            if(!role.isPresent()) throw new RuntimeException("Role not found: " + roleDto.getName());
+
+            roles.add(role.get());
+        }
+
         User user = User.builder()
             .name(userDto.getName())
             .lastName(userDto.getLastName())
             .email(userDto.getEmail())
             .phone(userDto.getPhone())
-            .roles(Role.toEntity(userDto.getRoles()))
+            .isActive(true)
+            .roles(roles)
             .build();
 
-        this.save(user);
-        userCredentialsRepository.save(this.buildUserCredentials(user));
-    }
-
-    private UserCredentials buildUserCredentials(User user){
-        return UserCredentials.builder()
-            .user(user)
-            .firstConnection(true)
-            .build();
+        return this.save(user);
     }
 
     @Override
-    public void updateUser(User user, UserDto userDto) {
+    public User updateUser(User user, UserDto userDto) {
         user.setName(userDto.getName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
@@ -103,7 +111,7 @@ public class UserServiceImpl implements UserService{
         Set<Role> roles = Role.toEntity(userDto.getRoles());
 
         user.setRoles(roles);
-        this.save(user);
+        return this.save(user);
     }
 
     @Override
@@ -135,14 +143,15 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void delete(Long id) {
-        userRepository.deleteById(id);
+    public void delete(User user) {
+        user.setIsActive(false);
+        this.save(user);
     }
 
     @Override
     public List<UserDto> getAll() {
         List<User> users = new ArrayList<>();
-        userRepository.findAll().forEach(users::add);
+        userRepository.findByIsActive(true).forEach(users::add);
 
         return UserDto.toDto(users);
     }
@@ -151,10 +160,10 @@ public class UserServiceImpl implements UserService{
     public List<User> searchUsers(String toSearch) {
         List<User> users = new ArrayList<>();
 
-        users.addAll(userRepository.findByNameContaining(toSearch));
-        users.addAll(userRepository.findByLastNameContaining(toSearch));
-        users.addAll(userRepository.findByPhoneContaining(toSearch));
-        users.addAll(userRepository.findByEmailContaining(toSearch));
+        users.addAll(userRepository.findByNameContainingAndIsActive(toSearch, true));
+        users.addAll(userRepository.findByLastNameContainingAndIsActive(toSearch, true));
+        users.addAll(userRepository.findByPhoneContainingAndIsActive(toSearch, true));
+        users.addAll(userRepository.findByEmailContainingAndIsActive(toSearch, true));
 
         Set<User> uniqueUsers = new HashSet<>(users);
         return new ArrayList<>(uniqueUsers);
@@ -162,11 +171,12 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public Optional<UserDto> findUserByUserDto(UserDto userDto) {
-        User user = userRepository.findByNameAndLastNameAndPhoneAndEmail(
+        User user = userRepository.findByNameAndLastNameAndPhoneAndEmailAndIsActive(
             userDto.getName(),
             userDto.getLastName(),   
             userDto.getPhone(), 
-            userDto.getEmail()).orElse(null);
+            userDto.getEmail(),
+            true).orElse(null);
 
         return Optional.ofNullable(UserDto.toDto(user));
     }

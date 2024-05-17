@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.david.maman.authenticationserver.exceptions.TokenValidationException;
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.UserDetailsServiceImpl;
 import com.david.maman.authenticationserver.models.dto.LoginDto;
@@ -24,7 +23,6 @@ import com.david.maman.authenticationserver.models.dto.UserCredentialsPassword;
 import com.david.maman.authenticationserver.models.entities.UserCredentials;
 import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
 import com.david.maman.authenticationserver.services.AuthService;
-import com.david.maman.authenticationserver.services.JwtService;
 import com.google.common.base.Strings;
 
 import lombok.RequiredArgsConstructor;
@@ -38,7 +36,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
     private final UserCredentialsRepository userCredentialsRepository;
 
@@ -72,15 +69,6 @@ public class AuthController {
         final String refreshToken = getTokenHeader(header);
         CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
         return ResponseEntity.ok(authService.refreshToken(user, refreshToken));
-    }
-
-    @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String header, Authentication authentication){
-        final String token = getTokenHeader(header);
-        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-        if (!jwtService.validateToken(token, user))
-            throw new TokenValidationException("Invalid token");
-        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/logout")

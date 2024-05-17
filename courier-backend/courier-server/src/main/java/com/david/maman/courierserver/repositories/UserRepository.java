@@ -9,22 +9,24 @@ import com.david.maman.courierserver.models.entities.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
 
-    Optional<User> findById(Long id);
+    Optional<User> findByIdAndIsActive(Long id, Boolean isActive);
 
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailAndIsActive(String email, Boolean isActive);
 
-    Optional<User> findByPhone(String phone);
+    Optional<User> findByPhoneAndIsActive(String phone, Boolean isActive);
 
-    Optional<User> findByNameAndLastName(String firstName, String lastName);
+    Optional<User> findByNameAndLastNameAndIsActive(String firstName, String lastName, Boolean isActive);
 
-    Optional<User> findByNameAndLastNameAndPhoneAndEmail(String firstName, String lastName, String phone, String email);
+    Optional<User> findByNameAndLastNameAndPhoneAndEmailAndIsActive(String firstName, String lastName, String phone, String email, Boolean isActive);
 
-    List<User> findByNameContaining(String firstName);
-    List<User> findByLastNameContaining(String lastName);
-    List<User> findByPhoneContaining(String phone);
-    List<User> findByEmailContaining(String email);
+    List<User> findByNameContainingAndIsActive(String firstName, Boolean isActive);
+    List<User> findByLastNameContainingAndIsActive(String lastName, Boolean isActive);
+    List<User> findByPhoneContainingAndIsActive(String phone, Boolean isActive);
+    List<User> findByEmailContainingAndIsActive(String email, Boolean isActive);
 
 
     List<User> findAll();
+
+    List<User> findByIsActive(Boolean isActive);
 
 }
