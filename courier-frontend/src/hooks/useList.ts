@@ -1,29 +1,29 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 
 export const useList = <T extends { id: number }>(initialState: T[]) => {
 
     const [ items, setItems ] = useState<T[]>(initialState);
 
-    const setAllItems = (newItems: T[]) => {
+    const setAllItems = useCallback((newItems: T[]) => {
         setItems(newItems);
-    }
+    }, []);
 
-    const addItem = (item: T) => {
+    const addItem = useCallback((item: T) => {
         setItems(prev => [ ...prev, item ]);
-    }
+    }, []);
 
-    const updateItem = (updateItem: T) => {
+    const updateItem = useCallback((updateItem: T) => {
         setItems(prev => prev.map(item => item.id === updateItem.id ? updateItem : item));
-    }
+    }, []);
 
-    const removeItem = (id: number) => {
+    const removeItem = useCallback((id: number) => {
         setItems(prev => prev.filter(item => item.id !== id));
-    }
+    }, []);
 
-    const existItem = (id: number) => {
+    const existItem = useCallback((id: number) => {
         return items.some(item => item.id === id);
-    }
+    }, [items]);
 
     return { items, setAllItems, addItem, updateItem, removeItem, existItem };
 }

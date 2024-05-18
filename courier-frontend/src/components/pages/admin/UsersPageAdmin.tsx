@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { CircularProgress } from "@mui/material";
+
 import { Action, AxiosCall, FetchResponse, User, ValueColumn } from "../../../types";
 import { useAuth, useFetchAndLoad, useList } from "../../../hooks";
 import { serviceRequest } from "../../../services";
@@ -42,7 +44,25 @@ export const UsersPageAdmin = () => {
         error: null
     });
 
+    const [ deleteResponse, setDeleteResponse ] = useState<FetchResponse<string>>({
+        data: null,
+        error: null
+    });
+
     const { loading, callEndPoint } = useFetchAndLoad();
+
+    useEffect(() => {
+        return () => {
+            setShowModal(false);
+            setShowAlertDialog(false);
+            setSelectedUser(null);
+            setUserToDelete(null);
+            setResponseList({ data: null, error: null });
+            setResponseUser({ data: null, error: null });
+            setDeleteResponse({ data: null, error: null });
+        }
+    }, []);
+
 
     const toggleModal = () => setShowModal(!showModal);
 
@@ -58,9 +78,15 @@ export const UsersPageAdmin = () => {
         setResponseUser(result);
     }, [callEndPoint]);
 
+    const deleteUser = useCallback(async (userId: number) => {
+        const url = `${paths.courier.deleteUser}/${userId}`;
+        const result = await callEndPoint(serviceRequest.deleteItem<string>(url));
+        setDeleteResponse(result);
+    }, [callEndPoint]);
+
     useEffect(() => {
         if(userDetails && !responseList.data && !responseList.error) fetchUsers();
-    }, [fetchUsers, userDetails, responseList]);
+    }, [fetchUsers, userDetails]);
 
     useEffect(() => {
         if(!loading && responseList.data && !responseList.error) setAllItems(responseList.data);
@@ -76,14 +102,21 @@ export const UsersPageAdmin = () => {
         setShowAlertDialog(true);
     }
 
-    const confirmDeleteUser = () => {
+    const confirmDeleteUser = async () => {
         if(userToDelete){
             console.log('Delete user', userToDelete);
-            // removeItem(userToDelete.id);
-            setShowAlertDialog(false);
-            setUserToDelete(null);
+            await deleteUser(userToDelete.id);
         }
     }
+
+    useEffect(() => {
+        if(!loading && deleteResponse.data && !deleteResponse.error){
+            removeItem(userToDelete!.id);
+            setUserToDelete(null);
+            setShowAlertDialog(false);
+            setDeleteResponse({ data: null, error: null });
+        }
+    }, [deleteResponse, loading, removeItem, userToDelete]);
 
     const handleFormSubmit = async (updateUser: User) => {
         console.log(updateUser);
@@ -107,9 +140,13 @@ export const UsersPageAdmin = () => {
         }
     }, [addItem, existItem, loading, responseUser, updateItem]);
 
-    const handleSearch = (query: string) => {
-        console.log('Search', query);
-    }
+    const handleSearch = useCallback(async (query: string) => {
+        if(query){
+            console.log('Search', query);
+            const result = await callEndPoint(serviceRequest.getItem<User[]>(`${paths.courier.users}/search?query=${query}`));
+            setResponseList(result);
+        }
+    }, [callEndPoint]);
 
     const handleCreateUser = () => {
         setSelectedUser(null);
@@ -123,19 +160,19 @@ export const UsersPageAdmin = () => {
 
     return(
         <>
-            <PageHeader title="Users" buttonName="Create User" onSearch={handleSearch} onCreate={handleCreateUser} />
-            {
-                items.length && (
-                    <div className="container">
+            <PageHeader title="Users" placeholder="Search user..." buttonName="Create User" onSearch={handleSearch} onCreate={handleCreateUser} />
+            <div className="container">
+                {
+                    loading ? <CircularProgress disableShrink /> : !items.length ? <div>Not found data.</div> : (
                         <ReusableTable<User>
                             data={items}
                             columns={userColumns}
                             actions={userActions}
                             BodyComponent={UserList}
                         />
-                    </div>
-                )
-            }
+                    )
+                }
+            </div>
             {                
                 showModal && <GenericModal title="Edit User" body={<UserForm user={selectedUser} onSubmit={handleFormSubmit} />} show={showModal} onClose={toggleModal} />
             }

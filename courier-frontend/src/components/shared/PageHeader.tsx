@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { ReusableInput } from "./ReusableInput";
 import { FormState } from "../../types";
 import { useForm } from "../../hooks";
+import _ from 'lodash';
+
 
 interface PageHeaderProps {
     title: string;
+    placeholder: string;
     buttonName: string;
-    onSearch: (query: string) => void;
+    onSearch?: (query: string) => void;
     onCreate: () => void;
+    delay?: number;
 }
 
 const initialState: FormState = {
@@ -18,13 +22,21 @@ const initialState: FormState = {
     }
 }
 
-export const PageHeader = ({ title, buttonName, onSearch, onCreate }: PageHeaderProps) => {
+export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate, delay = 250 }: PageHeaderProps) => {
 
     const { values, handleChange } = useForm(initialState);
 
+    const sendBack = useCallback(() => {
+        onSearch && onSearch(values.search.value);
+    }, [onSearch, values.search.value]);
+
+    const debouncedRequest = useMemo(() => {
+        return _.debounce(sendBack, delay);
+    }, [delay, sendBack]);
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         handleChange(e);
-        onSearch(e.target.value);
+        debouncedRequest();
     }
 
     return(
@@ -34,21 +46,25 @@ export const PageHeader = ({ title, buttonName, onSearch, onCreate }: PageHeader
                     <div className="col-12 col-md-6">
                         <h1>{title}</h1>
                     </div>
-                    <div className="col-12 col-md-6 justify-content-end align-items-center mt-3 mt-md-0">
-                        <div className="row d-flex">
-                            <div className="col-8">
-                                <ReusableInput
-                                    inputProps={{
-                                        name: 'search',
-                                        type: 'text',
-                                        value: values.search.value,
-                                        placeholder: 'Search user...'
-                                    }}
-                                    onChange={handleSearchChange}
-                                    onFocus={() => {}}
-                                />
-                            </div>
-                            <div className="col-4">
+                    <div className="col-12 col-md-6 mt-3 mt-md-0">
+                        <div className="row d-flex justify-content-end">
+                            {
+                                onSearch && (
+                                    <div className="col-8">
+                                        <ReusableInput
+                                            inputProps={{
+                                                name: 'search',
+                                                type: 'text',
+                                                value: values.search.value,
+                                                placeholder: placeholder
+                                            }}
+                                            onChange={handleSearchChange}
+                                            onFocus={() => {}}
+                                        />
+                                    </div>
+                                )
+                            }
+                            <div className={`col-${onSearch ? '4' : '12'} d-flex justify-content-end`}>
                                 <button onClick={onCreate} className="btn btn-primary ms-3">{buttonName}</button>
                             </div>
                         </div>

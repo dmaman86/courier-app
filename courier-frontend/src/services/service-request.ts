@@ -25,9 +25,17 @@ export const serviceRequest = (() => {
         }
     }
 
+    const deleteItem = <T>(url: string) => {
+        const controller = loadAbort();
+        return {
+            call: service.delete<T>(url, { signal: controller.signal }), controller
+        }
+    }
+
     return {
         getItem,
         postItem,
-        putItem
+        putItem,
+        deleteItem
     }
 })();

@@ -1,7 +1,6 @@
 import { Navigate } from "react-router-dom";
-import { Home, Login, Profile } from "../components";
+import { Home, Login, Profile, SettingsAdmin, UsersPageAdmin } from "../components";
 import { RouteConfig } from "../types";
-import { UsersPageAdmin } from "../components/pages/admin/UsersPageAdmin";
 
 
 export const routes: RouteConfig[] = [
@@ -22,6 +21,12 @@ export const routes: RouteConfig[] = [
         label: 'Profile',
         element: <Profile />,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER', 'ROLE_CLIENT']
+    },
+    {
+        path: '/settings',
+        label: 'Settings',
+        element: <SettingsAdmin />,
+        allowedRoles: ['ROLE_ADMIN']
     },
     {
         path: '/login',

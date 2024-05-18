@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
@@ -28,5 +29,7 @@ public interface UserRepository extends JpaRepository<User, Long>{
     List<User> findAll();
 
     List<User> findByIsActive(Boolean isActive);
+
+    List<User> findAllByRolesAndIsActive(Role role, Boolean isActive);
 
 }

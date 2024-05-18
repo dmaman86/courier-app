@@ -102,7 +102,7 @@ export const Login = () => {
                                             <div className="col-12">
                                                 <ReusableInput 
                                                     inputProps={{
-                                                        label: 'username',
+                                                        label: 'Email or Phone Number',
                                                         name: 'username',
                                                         type: 'text',
                                                         value: usernameValue,
@@ -116,7 +116,7 @@ export const Login = () => {
                                             <div className="col-12">
                                                 <ReusableInput 
                                                     inputProps={{
-                                                        label: 'password',
+                                                        label: 'Password',
                                                         name: 'password',
                                                         type: 'password',
                                                         value: passwordValue,

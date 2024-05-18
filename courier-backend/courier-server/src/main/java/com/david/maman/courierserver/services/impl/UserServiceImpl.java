@@ -21,7 +21,7 @@ import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
 import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.ContactService;
-import com.david.maman.courierserver.services.KafkaProducerUser;
+import com.david.maman.courierserver.services.KafkaProducerService;
 import com.david.maman.courierserver.services.RoleService;
 import com.david.maman.courierserver.services.UserService;
 
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService{
     private RoleService roleService;
 
     @Autowired
-    private KafkaProducerUser kafkaProducerUser;
+    private KafkaProducerService kafkaProducerUser;
 
     @Override
     public Optional<User> loadUserByEmail(String email) {

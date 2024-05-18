@@ -14,7 +14,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
-import com.david.maman.courierserver.models.dto.ErrorLogDto;
 
 @Configuration
 @EnableKafka
@@ -22,27 +21,6 @@ public class KafkaProviderConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
-
-    /*@Bean
-    Map<String, Object> producerConfig() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-
-        return props;
-    }
-
-    @Bean
-    ProducerFactory<String, ErrorLogDto> producerFactory(){
-        return new DefaultKafkaProducerFactory<>(producerConfig(), new StringSerializer(),
-                new JsonSerializer<ErrorLogDto>());
-    }
-
-    @Bean
-    KafkaTemplate<String, ErrorLogDto> kafkaTemplate(){
-        return new KafkaTemplate<>(producerFactory());
-    }*/
 
     @Bean
     <T> ProducerFactory<String, T> producerFactory(){

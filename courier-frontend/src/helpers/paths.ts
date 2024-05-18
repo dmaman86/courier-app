@@ -10,6 +10,7 @@ export const paths = {
         users: '/courier/users/',
         offices: '/courier/office/',
         roles: '/courier/role/',
-        createOrUpdateUser: '/courier/users/user'
+        createOrUpdateUser: '/courier/users/user',
+        deleteUser: '/courier/users/id',
     }
 }

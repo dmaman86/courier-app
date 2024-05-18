@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.courierserver.helpers.CustomUserDetails;
@@ -115,9 +116,9 @@ public class UserController {
         return ResponseEntity.ok("User updated successfully");
     }
 
-    @GetMapping("/search/{toSearch}")
-    public ResponseEntity<?> searchUsers(String toSearch){
-        return ResponseEntity.ok(userService.searchUsers(toSearch));
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(@RequestParam String query){
+        return ResponseEntity.ok(userService.searchUsers(query));
     }
 
 }

@@ -5,9 +5,10 @@ interface AlertDialogProps {
     onClose: () => void;
     onConfirm: () => void;
     title: string;
+    isConfirm?: boolean
 }
 
-export const AlertDialog = ({ open, onClose, onConfirm, title }: AlertDialogProps) => {
+export const AlertDialog = ({ open, onClose, onConfirm, title, isConfirm = true }: AlertDialogProps) => {
 
 
     return(
@@ -20,7 +21,7 @@ export const AlertDialog = ({ open, onClose, onConfirm, title }: AlertDialogProp
                 <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
                 <DialogActions>
                     <button onClick={onClose} className="btn btn-secondary">Close</button>
-                    <button onClick={onConfirm} className="btn btn-danger">Sure</button>
+                    { isConfirm && <button onClick={onConfirm} className="btn btn-danger">Sure</button> }
                 </DialogActions>
             </Dialog>
         </>

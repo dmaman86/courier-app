@@ -4,11 +4,6 @@ server:
 spring:
     application:
         name: spring-cloud-gateway
-    kafka:
-        producer:
-            bootstrap-servers: localhost:9092
-            key-serializer: org.apache.kafka.common.serialization.StringSerializer
-            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     cloud:
         gateway:
             discovery.locator.enabled: true

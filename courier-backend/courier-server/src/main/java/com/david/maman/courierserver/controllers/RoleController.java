@@ -50,12 +50,10 @@ public class RoleController {
     @PostMapping("/")
     public ResponseEntity<?> saveRole(@RequestBody RoleDto roleDto) {
         try{
-            Role optionalRole = roleService.findRoleByName(roleDto.getName());
-            if(optionalRole != null){
+            if(roleService.findRoleByName(roleDto.getName()) != null){
                 throw new Exception("Role already exists: " + roleDto.getName());
             }
-            Role role = Role.toEntity(roleDto);
-            roleService.saveRole(role);
+            Role role = roleService.saveRole(roleDto);
             return ResponseEntity.ok(role);
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -65,12 +63,11 @@ public class RoleController {
     @PutMapping("/")
     public ResponseEntity<?> updateRole(@RequestBody Role role) {
         try{
-            Optional<Role> optionalRole = roleService.findRole(role.getId());
-            if(optionalRole.isEmpty()){
+            if(roleService.findRole(role.getId()).isEmpty()){
                 throw new Exception("Role not found: " + role.getId());
             }
-            roleService.saveRole(role);
-            return ResponseEntity.ok(role);
+            Role updateRole = roleService.saveRole(role);
+            return ResponseEntity.ok(updateRole);
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -79,11 +76,8 @@ public class RoleController {
     @DeleteMapping("/id/{id}")
     public ResponseEntity<?> deleteRole(@PathVariable Long id) {
         try{
-            Optional<Role> role = roleService.findRole(id);
-            if(role.isEmpty()){
-                throw new Exception("Role not found: " + id);
-            }
-            roleService.deleteRole(id);
+            Role role = roleService.findRole(id).orElseThrow(() -> new Exception("Role not found: " + id));
+            roleService.deleteRole(role);
             return ResponseEntity.ok("Role deleted");
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());

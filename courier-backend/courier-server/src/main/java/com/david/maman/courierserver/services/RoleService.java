@@ -3,6 +3,7 @@ package com.david.maman.courierserver.services;
 import java.util.List;
 import java.util.Optional;
 
+import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.entities.Role;
 
 public interface RoleService {
@@ -11,9 +12,11 @@ public interface RoleService {
 
     Role findRoleByName(String name);
 
-    void saveRole(Role role);
+    Role saveRole(Role role);
 
-    void deleteRole(Long id);
+    Role saveRole(RoleDto roleDto);
+
+    void deleteRole(Role role);
 
     List<Role> findAllRoles();
 }
