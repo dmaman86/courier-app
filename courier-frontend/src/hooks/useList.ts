@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react";
+import { Item } from "../types";
 
 
-export const useList = <T extends { id: number }>(initialState: T[]) => {
+export const useList = <T extends Item>(initialItems: T[]) => {
 
-    const [ items, setItems ] = useState<T[]>(initialState);
+    const [ items, setItems ] = useState<T[]>(initialItems);
 
     const setAllItems = useCallback((newItems: T[]) => {
         setItems(newItems);

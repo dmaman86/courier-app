@@ -30,5 +30,5 @@ export interface FetchConfig {
 
 export interface AxiosCall<T> {
     call: Promise<AxiosResponse<T>>;
-    controller: AbortController;
+    controller?: AbortController;
 }

@@ -19,6 +19,22 @@ public class UserDetailsServiceImpl implements UserDetailsService{
     @Autowired
     private UserCredentialsRepository userCredentialsRepository;
 
+    
+    public UserDetails loadUserByEmailOrPhone(String email, String phone) throws UsernameNotFoundException{
+        logger.debug("Entering in loadUserByUsername method");
+
+        UserCredentials credentials = userCredentialsRepository.findByUserEmailOrUserPhone(email, phone)
+                                            .orElseThrow(() -> {
+                                                logger.error("Credentials not found for user with email or phone: {}", email != null ? email : phone);
+                                                return new UsernameNotFoundException("Credentials not found for user with email or phone: " + (email != null ? email : phone));
+                                            });
+        if(!credentials.getUser().getIsActive()){
+            throw new UsernameNotFoundException("User is not active");
+        }
+        logger.info("Credentials found for user with email or phone: {}", email != null ? email : phone);
+        return new CustomUserDetails(credentials);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
         logger.debug("Entering in loadUserByUsername method");

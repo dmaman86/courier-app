@@ -1,30 +1,57 @@
-import React, { useState, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import React, { useEffect, useReducer, useCallback } from "react";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import { useAuth, useFetchAndLoad, useRouteConfig } from "../../hooks";
 import { User } from "../../types";
 import { paths } from "../../helpers/paths";
 import { serviceRequest } from "../../services";
 import { AlertDialog } from "../shared";
 
+interface State {
+    toggle: boolean;
+    show: string;
+    isLoggingOut: boolean;
+    showAlertDialog: boolean;
+}
+
+const initialState: State = {
+    toggle: false,
+    show: '',
+    isLoggingOut: false,
+    showAlertDialog: false
+}
+
+type Action = | { type: 'TOGGLE_MENU' } | { type: 'START_LOGOUT' } | { type: 'CANCEL_LOGOUT' } | { type: 'SHOW_ALERT_DIALOG' };
+
+const reducer = (state: State, action: Action): State => {
+    switch(action.type){
+        case 'TOGGLE_MENU':
+            return { ...state, toggle: !state.toggle, show: !state.toggle ? 'show' : '' };
+        case 'START_LOGOUT':
+            return { ...state, isLoggingOut: true };
+        case 'CANCEL_LOGOUT':
+            return { ...state, showAlertDialog: false, isLoggingOut: false };
+        case 'SHOW_ALERT_DIALOG':
+            return { ...state, showAlertDialog: true };
+        default:
+            return state;
+    }
+}
+
 export const Navbar = () => {
 
     const { userDetails, logout } = useAuth();
     const { getLinks } = useRouteConfig();
 
-    const [ toogle, setToogle ] = useState(false);
-    const [ show, setShow ] = useState('');
-    const [ isLoggingOut, setIsLoggingOut ] = useState(false);
-    const [ showAlertDialog, setShowAlertDialog ] = useState(false);
     const { loading, callEndPoint } = useFetchAndLoad();
+    const location = useLocation();
+    const [ state, dispatch ] = useReducer(reducer, initialState);
 
-
-    const toogleMenu = () => {
-        setToogle(!toogle);
-    }
 
     useEffect(() => {
-        setShow((!toogle) ? '' : 'show');
-    }, [toogle]);
+        if(!loading && state.isLoggingOut){
+            initiateLogout();
+        }
+    }, [state.isLoggingOut, loading]);
 
     const initiateLogout = async () => {
         const result = await callEndPoint(serviceRequest.postItem(paths.auth.logout));
@@ -32,30 +59,20 @@ export const Navbar = () => {
             console.error('Error logging out:', result.error);
             return;
         }
-        setIsLoggingOut(false);
-        setToogle(false);
+        dispatch({ type: 'CANCEL_LOGOUT' });
         logout();
     }
 
-    useEffect(() => {
-        if(!loading && isLoggingOut){
-            initiateLogout();
-        }
-    }, [isLoggingOut, loading]);
+    
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        setShowAlertDialog(true);
+        dispatch({ type: 'SHOW_ALERT_DIALOG' });
     }
 
     const handleConfirmLogout = () => {
-        setShowAlertDialog(false);
-        setIsLoggingOut(true);
-    }
-
-    const handleCancelLogout = () => {
-        setShowAlertDialog(false);
+        dispatch({ type: 'START_LOGOUT' });
     }
 
     const extractRoleNames = (user: User) => {
@@ -69,6 +86,31 @@ export const Navbar = () => {
         return word.replace(/^\w/, (c) => c.toUpperCase());
     }
 
+    const renderUserDetails = useCallback(() => (
+        <>
+            Logged user: <span>{capitalizeFirstLetter(userDetails!.name) + ' ' + capitalizeFirstLetter(userDetails!.lastName)}</span>
+            &nbsp;
+            Roles: <span>{ extractRoleNames(userDetails!) }</span>
+            &nbsp;
+            <form onSubmit={ handleSubmit }>
+                <input type="submit" className="btn btn-sm btn-outline-danger" value="Logout"/>
+            </form>
+        </>
+    ), [userDetails]);
+
+    const renderLinks = useCallback(() => (
+        getLinks().map((link, index) => (
+            <li key={index} className="nav-item">
+                <NavLink
+                    to={link.path}
+                    className={ ({ isActive }) => 'nav-link ' + ( isActive ? 'active' : '')}
+                >
+                    {link.label}
+                </NavLink>
+            </li>
+        ))
+    ), [getLinks]);
+
 
     return(
         <>
@@ -76,49 +118,38 @@ export const Navbar = () => {
                 <div className="container-fluid">
                     <Link to="/" className="navbar-brand">Navbar</Link>
                     {
-                        userDetails && (
+                        userDetails ? (
                             <>
                                 <button
                                     className="navbar-toggler" 
                                     type="button" 
-                                    onClick={toogleMenu}>
+                                    onClick={() => dispatch({ type: 'TOGGLE_MENU' })}
+                                    aria-expanded={state.toggle}
+                                    aria-label="Toggle navigation"
+                                    >
                                     <span className="navbar-toggler-icon"></span>
                                 </button>
-                                <div className={"collapse navbar-collapse" + (show ? " show" : "")}>
+                                <div className={"collapse navbar-collapse" + (state.show ? " show" : "")}>
                                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                                        {
-                                            getLinks().map((link, index) => (
-                                                <li key={index} className="nav-item">
-                                                    <NavLink
-                                                        to={link.path}
-                                                        className={ ({ isActive }) => 'nav-link ' + ( isActive ? 'active' : '')}
-                                                    >
-                                                        {link.label}
-                                                    </NavLink>
-                                                </li>
-                                            ))
-                                        }
+                                        { renderLinks() }
                                     </ul>
                                     <div className="d-flex logout">
-                                        Logged user: <span>{capitalizeFirstLetter(userDetails.name) + ' ' + capitalizeFirstLetter(userDetails.lastName)}</span>
-                                        &nbsp;
-                                        Roles: <span>{ extractRoleNames(userDetails) }</span>
-                                        &nbsp;
-                                        <form onSubmit={ handleSubmit }>
-                                            <input type="submit"
-                                                className="btn btn-sm btn-outline-danger"
-                                                value="Logout"/>
-                                        </form>
+                                        { renderUserDetails() }
                                     </div>
                                 </div>
                             </>
+                        ) : (
+                            <div className="d-flex ml-auto">
+                                { location.pathname !== '/login' && (<Link to='/login' className="btn btn-sm btn-outline-primary">Login</Link>) }
+                                { location.pathname !== '/signup' && (<Link to='/signup' className="btn btn-sm btn-outline-secondary ml-2">Signup</Link>) }
+                            </div>
                         )
                     }
                 </div>
             </nav>
             {
-                showAlertDialog && (
-                    <AlertDialog open={showAlertDialog} onClose={handleCancelLogout} onConfirm={handleConfirmLogout} title="Are your sure you want to logout?"/>
+                state.showAlertDialog && (
+                    <AlertDialog open={state.showAlertDialog} onClose={() => dispatch({ type: 'CANCEL_LOGOUT' })} onConfirm={handleConfirmLogout} title="Are your sure you want to logout?"/>
                 )
             }
         </>

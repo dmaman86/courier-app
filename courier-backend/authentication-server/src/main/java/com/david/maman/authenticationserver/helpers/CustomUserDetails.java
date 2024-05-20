@@ -12,14 +12,12 @@ import com.david.maman.authenticationserver.models.entities.UserCredentials;
 
 public class CustomUserDetails implements UserDetails{
     
-    private User user;
-    private String password;
+    private UserCredentials credentials;
     Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserDetails(UserCredentials credentials){
-        this.user = credentials.getUser();
-        this.password = credentials.getPassword();
-        this.authorities = user.getRoles().stream()
+        this.credentials = credentials;
+        this.authorities = credentials.getUser().getRoles().stream()
                                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                                 .collect(Collectors.toList());
     }
@@ -31,12 +29,12 @@ public class CustomUserDetails implements UserDetails{
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return credentials.getUser().getEmail();
     }
 
     @Override
     public String getPassword(){
-        return password;
+        return credentials.getPassword();
     }
 
     @Override
@@ -59,12 +57,14 @@ public class CustomUserDetails implements UserDetails{
         return true;
     }
 
-    public User getUser(){
-        return user;
+    public UserCredentials getCredentials(){
+        return credentials;
     }
 
     @Override
     public String toString() {
-        return "CustomUserDetails [user=" + user + ", password=" + password + ", authorities=" + authorities + "]";
+        return "CustomUserDetails [credentials=" + credentials + ", authorities=" + authorities + "]";
     }
+
+    
 }

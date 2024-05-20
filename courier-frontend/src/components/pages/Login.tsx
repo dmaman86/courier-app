@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import { useForm, useAuth, useFetchAndLoad } from "../../hooks";
@@ -82,6 +83,10 @@ export const Login = () => {
         }
     }
 
+    const handleFirstConnection = () => {
+        navigate('/signup', { replace: true });
+    }
+
     const handleOnFocus = (name: string) => {
         setErrorResponse('');
         onFocus(name);
@@ -92,50 +97,48 @@ export const Login = () => {
     return(
         <>
             <div className="container pt-5">
-                <div className="row">
-                    <div className="col-lg-10 offset-lg-1">
-                        <div className="bg-white shadow rounded">
-                            <div className="row justify-content-center">
-                                <div className="col-md-7 pe-0">
-                                    <div className="form-left h-100 py-5 px-5">
-                                        <form onSubmit={ onSubmit } className="row g-4">
-                                            <div className="col-12">
-                                                <ReusableInput 
-                                                    inputProps={{
-                                                        label: 'Email or Phone Number',
-                                                        name: 'username',
-                                                        type: 'text',
-                                                        value: usernameValue,
-                                                        placeholder: 'Enter your email or phone number',
-                                                    }}
-                                                    onChange={handleChange}
-                                                    onFocus={handleOnFocus}
-                                                    errorMessage={usernameError}/>
-                                            </div>
-
-                                            <div className="col-12">
-                                                <ReusableInput 
-                                                    inputProps={{
-                                                        label: 'Password',
-                                                        name: 'password',
-                                                        type: 'password',
-                                                        value: passwordValue,
-                                                        placeholder: 'Enter your password'
-                                                    }}
-                                                    onChange={handleChange}
-                                                    onFocus={handleOnFocus}
-                                                    errorMessage={passwordError}/>
-                                            </div>
-                                            {errorResponse !== '' && (
-                                                    <div className="text-danger errormessage">{errorResponse}</div>
-                                                )}
-
-                                            <div className="col pt-3 text-center">
-                                                <button type="submit" className="btn btn-primary" disabled={isButtonDisabled}>Login</button>
-                                            </div>
-                                        </form>
+                <div className="row justify-content-center">
+                    <div className="col-lg-8">
+                        <div className="card shadow">
+                            <div className="card-body p-5">
+                                <form onSubmit={ onSubmit } className="row g-4">
+                                    <div className="col-12">
+                                        <ReusableInput 
+                                            inputProps={{
+                                                label: 'Email or Phone Number',
+                                                name: 'username',
+                                                type: 'text',
+                                                value: usernameValue,
+                                                placeholder: 'Enter your email or phone number',
+                                            }}
+                                        onChange={handleChange}
+                                        onFocus={handleOnFocus}
+                                        errorMessage={usernameError}/>
                                     </div>
-                                </div>
+
+                                    <div className="col-12">
+                                        <ReusableInput 
+                                            inputProps={{
+                                                label: 'Password',
+                                                name: 'password',
+                                                type: 'password',
+                                                value: passwordValue,
+                                                placeholder: 'Enter your password'
+                                            }}
+                                        onChange={handleChange}
+                                        onFocus={handleOnFocus}
+                                        errorMessage={passwordError}/>
+                                    </div>
+                                    <div className={`text-danger errormessage ${errorResponse ? '' : 'd-none'}`}>{errorResponse}</div>
+
+                                    <div className="col pt-3 text-center">
+                                        <Stack spacing={2} direction='row' justifyContent='center'>
+                                            <button type="submit" className="btn btn-primary" disabled={isButtonDisabled}>Login</button>
+                                            <button type="button" className="btn btn-primary" onClick={handleFirstConnection}>First connection?</button>
+                                        </Stack>
+                                                
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>

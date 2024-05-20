@@ -1,3 +1,5 @@
+import { Stack, Alert, styled } from "@mui/material";
+
 import { ValidationRule } from "../../types";
 
 interface Props{
@@ -5,19 +7,30 @@ interface Props{
     value: string;
 }
 
+const CustomAlert = styled(Alert)({
+    backgroundColor: 'transparent',
+    padding: '0px',
+    '& .MuiAlert-message': {
+        color: 'inherit',
+    }
+});
+
 export const PasswordRulesList = ({ rules, value }: Props) => {
 
     return(
         <>
-            <ul>
+            <Stack sx={{ width: '100%' }}>
                 {
                     rules.map((rule, index) => (
-                        <li key={index} style={{ color: rule.validate(value) ? 'green' : 'red' }}>
+                        <CustomAlert
+                            key={index}
+                            severity={rule.validate(value) ? 'success' : 'error'}
+                        >
                             { rule.message }
-                        </li>
+                        </CustomAlert>
                     ))
                 }
-            </ul>
+            </Stack>
         </>
     );
 }

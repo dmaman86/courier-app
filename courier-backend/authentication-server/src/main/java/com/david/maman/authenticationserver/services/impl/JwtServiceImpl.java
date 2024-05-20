@@ -56,7 +56,7 @@ public class JwtServiceImpl implements JwtService{
 
     @Override
     public Boolean validateToken(String token, CustomUserDetails credentials) {
-        var tokenDb = tokenRepository.findByUserIdAndTokenAndIsExpiredAndIsRevoked(credentials.getUser().getId(), token, false, false);
+        var tokenDb = tokenRepository.findByUserIdAndTokenAndIsExpiredAndIsRevoked(credentials.getCredentials().getUser().getId(), token, false, false);
 
         if(tokenDb.isPresent()){
             Boolean isExpired = isTokenExpired(tokenDb.get().getToken());
@@ -83,8 +83,8 @@ public class JwtServiceImpl implements JwtService{
     }
 
     public String buildToken(Map<String, Object> extraClaims, CustomUserDetails credentials, long expirationTime) {
-
-        List<Map<String, Object>> roles = credentials.getUser().getRoles().stream()
+        var user = credentials.getCredentials().getUser();
+        List<Map<String, Object>> roles = user.getRoles().stream()
                 .map(role -> {
                     Map<String, Object> roleMap = new HashMap<>();
                     roleMap.put("id", role.getId());
@@ -96,11 +96,11 @@ public class JwtServiceImpl implements JwtService{
         return Jwts.builder()
                     .setClaims(extraClaims)
                     .setSubject(credentials.getUsername())
-                    .claim("id", credentials.getUser().getId())
-                    .claim("name", credentials.getUser().getName())
-                    .claim("lastname", credentials.getUser().getLastName())
-                    .claim("email", credentials.getUser().getEmail())
-                    .claim("phone", credentials.getUser().getPhone())
+                    .claim("id", user.getId())
+                    .claim("name", user.getName())
+                    .claim("lastname", user.getLastName())
+                    .claim("email", user.getEmail())
+                    .claim("phone", user.getPhone())
                     .claim("roles", roles)
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis() + expirationTime))

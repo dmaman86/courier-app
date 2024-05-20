@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ReusableInput } from "./ReusableInput";
 import { FormState } from "../../types";
-import { useForm } from "../../hooks";
+import { useAuth, useForm } from "../../hooks";
 import _ from 'lodash';
 
 
@@ -12,6 +12,7 @@ interface PageHeaderProps {
     onSearch?: (query: string) => void;
     onCreate: () => void;
     delay?: number;
+    showSearch?: boolean;
 }
 
 const initialState: FormState = {
@@ -22,9 +23,20 @@ const initialState: FormState = {
     }
 }
 
-export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate, delay = 250 }: PageHeaderProps) => {
+export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate, delay = 250, showSearch = true }: PageHeaderProps) => {
 
+    const { userDetails } = useAuth();
+
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+    
     const { values, handleChange } = useForm(initialState);
+
+    useEffect(() => {
+        if(userDetails){
+            const userRoles = userDetails.roles;
+            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        }
+    }, [userDetails]);
 
     const sendBack = useCallback(() => {
         onSearch && onSearch(values.search.value);
@@ -49,7 +61,7 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
                     <div className="col-12 col-md-6 mt-3 mt-md-0">
                         <div className="row d-flex justify-content-end">
                             {
-                                onSearch && (
+                                showSearch && onSearch && (
                                     <div className="col-8">
                                         <ReusableInput
                                             inputProps={{
@@ -64,9 +76,13 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
                                     </div>
                                 )
                             }
-                            <div className={`col-${onSearch ? '4' : '12'} d-flex justify-content-end`}>
-                                <button onClick={onCreate} className="btn btn-primary ms-3">{buttonName}</button>
-                            </div>
+                            {
+                                isAdmin && (
+                                    <div className={`col-${onSearch ? '4' : '12'} d-flex justify-content-end`}>
+                                        <button onClick={onCreate} className="btn btn-primary ms-3">{buttonName}</button>
+                                    </div>
+                                )
+                            }
                         </div>
                     </div>
                 </div>

@@ -12,7 +12,7 @@ export const SettingsAdmin = () => {
             {
                 userDetails && (
                     <div className="container">
-                        <RolePartial userDetails={userDetails} />
+                        <RolePartial />
                     </div>
                 )
             }

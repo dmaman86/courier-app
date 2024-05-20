@@ -53,7 +53,7 @@ public class GlobalExceptionsHandler {
     @ExceptionHandler(value = BadCredentialsException.class)
     public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException e, WebRequest request) {
 
-        ErrorLogDto error = createErrorLog(e, "Invalid username or password", request);
+        ErrorLogDto error = createErrorLog(e, e.getMessage(), request);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getDetails());
     }
 

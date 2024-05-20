@@ -1,25 +1,23 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { Login } from "../components";
+import { Login, SignUp } from "../components";
 import { Token } from "../types";
 import { useAuth } from "../hooks";
 
 export const PublicRoutes = () => {
-
     const { tokens } = useAuth();
 
-    return(
+    return (
         <Routes>
-            <Route path='/' element={<PublicRoute tokens={tokens} children={<Outlet />}/>}>
+            <Route path="/" element={<PublicRoute tokens={tokens} />}>
                 <Route index element={<Navigate to="/login" replace />} />
                 <Route path="login" element={<Login />} />
-
+                <Route path="signup" element={<SignUp />} />
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Route>
         </Routes>
     );
-}
+};
 
-const PublicRoute = ({children, tokens}: {children: JSX.Element; tokens: Token | null}) => {
-
-    return !tokens ? children : <Navigate to="/home" replace/>;
-}
+const PublicRoute = ({ tokens }: { tokens: Token | null }) => {
+    return !tokens ? <Outlet /> : <Navigate to="/home" replace />;
+};

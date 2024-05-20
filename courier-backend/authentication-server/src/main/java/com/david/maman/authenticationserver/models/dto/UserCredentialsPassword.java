@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserCredentialsPassword {
     private String email;
-    private String password;
-
-    // TODO: add a new field confirmationPassword to validate the password
+    private String phone;
+    private String passwordOne;
+    private String passwordTwo;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TableBody, TableCell, TableRow } from "@mui/material";
+import { TableBody, TableCell, TableRow, Stack } from "@mui/material";
 
 
 import { useAuth } from "../../hooks";
@@ -41,14 +41,16 @@ export const UserList = ({ data, actions }: { data: User[], actions?: Action<Use
                                         <span>{item.phone}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell>{extractRoleNames(item)}</TableCell>
+                                { isAdmin && <TableCell>{extractRoleNames(item)}</TableCell> }
                                 {actions && (
                                     <TableCell>
-                                        {isAdmin && userDetails.id !== item.id && actions.map(action => (
-                                            <button key={action.label} className={action.classNameButton} onClick={() => action.method(item)}>
-                                                <i className={action.classNameIcon}></i>
-                                            </button>
-                                        ))}
+                                        <Stack spacing={2} direction='row'>
+                                            {isAdmin && userDetails.id !== item.id && actions.map(action => (
+                                                <button key={action.label} className={action.classNameButton} onClick={() => action.method(item)}>
+                                                    <i className={action.classNameIcon}></i>
+                                                </button>
+                                            ))}
+                                        </Stack>
                                     </TableCell>
                                 )}
                             </TableRow>

@@ -1,4 +1,3 @@
-import React from "react";
 import { User } from "../../types";
 import { HomeAdmin } from "./admin/HomeAdmin";
 import { HomeClient } from "./client/HomeClient";
@@ -10,19 +9,24 @@ export const Home = () => {
     const { userDetails } = useAuth();
 
     const getComponent = (localUser: User) => {
-        for(const role of localUser.roles)
-            return page(role.name);
-    }
+        const roles = localUser.roles.map(role => role.name);
 
-    const page = (role: string) => ({
-        "ROLE_ADMIN": <HomeAdmin />,
-        "ROLE_COURIER": <HomeCourier />,
-        "ROLE_CLIENT": <HomeClient  />
-    })[role];
+        if(roles.includes('ROLE_ADMIN')) return [<HomeAdmin key='admin'/>];
+
+        const components = [];
+        if(roles.includes('ROLE_COURIER')) components.push(<HomeCourier key='courier'/>);
+        if(roles.includes('ROLE_CLIENT')) components.push(<HomeClient key='client'/>);
+
+        return components;
+    }
 
     return(
         <>
-            { userDetails ? getComponent(userDetails) : <div>Loading user data...</div>}
+            { userDetails ? (
+                <>
+                    { getComponent(userDetails).map(component => component)}
+                </>
+            ) : <div>Loading user data...</div>}
         </>
     )
 }

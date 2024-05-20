@@ -18,10 +18,15 @@ export interface User {
     roles: Role[];
 }
 
-
-
 export interface LoginCredentials {
     email: string | null;
     phone: string | null;
     password: string;
+}
+
+export interface SignUpCredentials {
+    email: string | null;
+    phone: string | null;
+    passwordOne: string;
+    passwordTwo: string;
 }

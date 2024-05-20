@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.UserDetailsServiceImpl;
+import com.david.maman.authenticationserver.models.dto.AuthResponse;
 import com.david.maman.authenticationserver.models.dto.LoginDto;
 import com.david.maman.authenticationserver.models.dto.UserCredentialsPassword;
 import com.david.maman.authenticationserver.models.entities.UserCredentials;
@@ -41,27 +43,49 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {
-        UserCredentials credentials = getCredentials(loginDto);
+        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByEmailOrPhone(loginDto.getEmail(), loginDto.getPhone());
 
-        validateCredentials(credentials, loginDto.getPassword());
+        if(user.getCredentials().getFirstConnection()){
+            // throw new RuntimeException("Error: User must set a password");
+            throw new BadCredentialsException("User must set a password");
+        }
 
-        Authentication authentication = performAuthentication(loginDto, credentials);
-
-        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(authentication.getName());
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(user.getUsername(), loginDto.getPassword())
+        );
+        if(!isAuthenticated(authentication))
+            throw new BadCredentialsException("Error: Invalid username or password");
 
         return ResponseEntity.ok(authService.login(user));
     }
 
-    @PutMapping("/update")
+    @PostMapping("/signup")
     public ResponseEntity<?> updateUserCredentials(@RequestBody UserCredentialsPassword userCredentialsPassword){
-        UserCredentials credentials = userCredentialsRepository.findByUserEmail(userCredentialsPassword.getEmail())
-                                                .orElseThrow(() -> new RuntimeException("Error: User not found"));
+        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByEmailOrPhone(userCredentialsPassword.getEmail(), userCredentialsPassword.getPhone());
 
-        if(!credentials.getFirstConnection() || userCredentialsPassword.getPassword() == null || userCredentialsPassword.getPassword().isBlank()){
+        if(!user.getCredentials().getFirstConnection() || isEmpty(userCredentialsPassword.getPasswordOne()) || isEmpty(userCredentialsPassword.getPasswordTwo())){
             throw new RuntimeException("Error: User can't update password");
         }
-        authService.updateUserCredentials(userCredentialsPassword);
-        return ResponseEntity.ok("Password was set successfully");
+        if(!isSameValue(userCredentialsPassword.getPasswordOne(), userCredentialsPassword.getPasswordTwo())){
+            throw new RuntimeException("Error: Passwords don't match");
+        }
+        authService.updateUserCredentials(user.getCredentials(), userCredentialsPassword);
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(user.getUsername(), userCredentialsPassword.getPasswordOne())
+        );
+
+        if(!isAuthenticated(authentication))
+            throw new RuntimeException("Error: User not authenticated");
+
+        return ResponseEntity.ok(authService.login(user));
+    }
+
+    private Boolean isEmpty(String value){
+        return Strings.isNullOrEmpty(value) || value.isBlank();
+    }
+
+    private Boolean isSameValue(String valueOne, String valueTwo){
+        return valueOne.equals(valueTwo);
     }
 
     @PostMapping("/refresh")
@@ -90,33 +114,6 @@ public class AuthController {
             throw new RuntimeException("Error: Refresh token is missing");
         }
         return header.replace("Bearer ", "");
-    }
-
-    private UserCredentials getCredentials(LoginDto loginDto) throws RuntimeException{
-        if(loginDto.getEmail() != null && !loginDto.getEmail().isBlank()){
-            return userCredentialsRepository.findByUserEmail(loginDto.getEmail())
-                    .orElseThrow(() -> new RuntimeException("Error: User not found"));
-        }else if(loginDto.getPhone() != null && !loginDto.getPhone().isBlank()){
-            return userCredentialsRepository.findByUserPhone(loginDto.getPhone())
-                    .orElseThrow(() -> new RuntimeException("Error: User not found"));
-        }
-        throw new RuntimeException("Error: User not found");
-    }
-
-    private void validateCredentials(UserCredentials credentials, String password){
-        if(credentials.getFirstConnection() && credentials.getPassword().isBlank()){
-            throw new RuntimeException("Error: User must set a password");
-        }
-    }
-
-    private Authentication performAuthentication(LoginDto loginDto, UserCredentials credentials){
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginDto.getEmail() != null ? loginDto.getEmail() : loginDto.getPhone(), loginDto.getPassword())
-        );
-
-        if(!isAuthenticated(authentication))
-            throw new RuntimeException("Error: User not authenticated");
-        return authentication;
     }
 
     private boolean isAuthenticated(Authentication authentication) {

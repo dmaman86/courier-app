@@ -17,9 +17,7 @@ export const ReusableInput = ({ inputProps, onChange, onFocus, errorMessage }: G
                 onChange={onChange}
                 onFocus={() => onFocus(inputProps.name)}
             />
-            {errorMessage && (
-                <div className="text-danger errormessage">{errorMessage}</div>
-            )}
+            <div className={`text-danger errormessage ${errorMessage ? '' : 'd-none'}`}>{errorMessage}</div>
         </>
     );
 }

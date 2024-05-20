@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { Home, Login, Profile, SettingsAdmin, UsersPageAdmin } from "../components";
+import { Home, Login, Profile, SettingsAdmin, UsersPage, SignUp } from "../components";
 import { RouteConfig } from "../types";
 
 
@@ -13,8 +13,8 @@ export const routes: RouteConfig[] = [
     {
         path: '/users',
         label: 'Users',
-        element: <UsersPageAdmin />,
-        allowedRoles: ['ROLE_ADMIN']
+        element: <UsersPage />,
+        allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER']
     },
     {
         path: '/profile',
@@ -32,6 +32,12 @@ export const routes: RouteConfig[] = [
         path: '/login',
         label: 'Login',
         element: <Login />,
+        allowedRoles: []
+    },
+    {
+        path: '/signup',
+        label: 'Sign Up',
+        element: <SignUp />,
         allowedRoles: []
     },
     {

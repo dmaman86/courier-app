@@ -2,7 +2,8 @@
 export const paths = {
     auth: {
         login: '/auth/signin',
-        logout: '/auth/logout'
+        logout: '/auth/logout',
+        signUp: '/auth/signup',
     },
     courier: {
         refreshToken: '/auth/refresh',
