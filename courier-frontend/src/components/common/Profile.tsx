@@ -76,7 +76,7 @@ export const Profile = () => {
                 showModalPassword && <GenericModal title="Generic modal" body={<UpdatePassword user={userDetails} onClose={toogleModalPassword} />} show={showModalPassword} onClose={toogleModalPassword} />
             }
             {
-                showModalDetails && <GenericModal title="Update details" body={<UserForm user={userDetails} onSubmit={handleFormSubmit}/>} show={showModalDetails} onClose={toogleModalDetails}/>
+                showModalDetails && <GenericModal title="Update details" body={<UserForm userId={userDetails!.id} onSubmit={handleFormSubmit}/>} show={showModalDetails} onClose={toogleModalDetails}/>
             }
         </>
     );

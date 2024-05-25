@@ -21,13 +21,12 @@ export const RolePartial = () => {
     return (
         <>
             <ItemsPage<Role>
-                title="Roles"
                 placeholder="Search role..."
                 buttonName="Create Role"
                 fetchItems={fetchRoles}
                 createOrUpdateItem={createOrUpdateRole}
                 deleteItem={deleteRole}
-                renderItemForm={(role, onSubmit) => <RoleForm role={role} onSubmit={onSubmit} />}
+                renderItemForm={(roleId, onSubmit) => <RoleForm roleId={roleId} onSubmit={onSubmit} />}
                 columns={rolesColumns}
                 renderItemList={({ data, actions }) => <RoleList data={data} actions={actions} />}
                 showSearch={false}

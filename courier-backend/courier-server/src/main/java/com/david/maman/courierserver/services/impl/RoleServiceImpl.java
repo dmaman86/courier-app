@@ -2,10 +2,13 @@ package com.david.maman.courierserver.services.impl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.david.maman.courierserver.mappers.RoleMapper;
 import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
@@ -14,7 +17,6 @@ import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.KafkaProducerService;
 import com.david.maman.courierserver.services.RoleService;
 
-import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
@@ -29,9 +31,16 @@ public class RoleServiceImpl implements RoleService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
+    @Autowired
+    private RoleMapper roleMapper;
+
     @Override
-    public Optional<Role> findRole(Long id) {
-        return roleRepository.findById(id);
+    @Transactional(readOnly = true)
+    public RoleDto findRole(Long id) {
+        Role role = roleRepository.findById(id).orElseThrow(
+            () -> new RuntimeException("Role with id " + id + " not found")
+        );
+        return roleMapper.toDto(role);
     }
 
     @Override
@@ -50,7 +59,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public Role saveRole(RoleDto roleDto){
-        Role role = Role.builder().name(roleDto.getName()).build();
+        Role role = roleMapper.toEntity(roleDto);
         return this.saveRole(role);
     }
 
@@ -75,8 +84,9 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<Role> findAllRoles() {
-        return roleRepository.findAll();
+    public List<RoleDto> findAllRoles() {
+        List<Role> roles = roleRepository.findAll();
+        return roles.stream().map(roleMapper::toDto).collect(Collectors.toList());
     }
     
 }

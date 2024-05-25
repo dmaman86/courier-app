@@ -1,6 +1,6 @@
 import { GenericInputProps } from "../../types";
 
-export const ReusableInput = ({ inputProps, onChange, onFocus, errorMessage }: GenericInputProps) => {
+export const ReusableInput = ({ inputProps, onChange, onFocus, errorsMessage }: GenericInputProps) => {
 
 
     return (
@@ -17,7 +17,11 @@ export const ReusableInput = ({ inputProps, onChange, onFocus, errorMessage }: G
                 onChange={onChange}
                 onFocus={() => onFocus(inputProps.name)}
             />
-            <div className={`text-danger errormessage ${errorMessage ? '' : 'd-none'}`}>{errorMessage}</div>
+            {
+                errorsMessage?.map((error, index) => (
+                    <div key={index} className={`text-danger ${error === '' ? 'd-none' : ''}`}>{error}</div>
+                ))
+            }
         </>
     );
 }

@@ -19,7 +19,7 @@ const initialState: FormState = {
         ],
         validateRealTime: false
     },
-    passwordOne: {
+    newPassword: {
         value: '',
         validation: [
             validatorForm.validateNotEmpty,
@@ -27,20 +27,17 @@ const initialState: FormState = {
         ],
         validateRealTime: true
     },
-    passwordTwo: {
+    confirmPassword: {
         value: '',
         validation: [
             validatorForm.validateNotEmpty,
-            validatorForm.validateMinLength
+            validatorForm.validateMinLength,
+            {
+                isValid: (value: string, formData?: FormState): boolean => value === formData?.newPassword.value,
+                message: 'Passwords must be equal'
+            }
         ],
         validateRealTime: true
-    }
-}
-
-const validateEquals = (valueOne: string, valueTwo: string) => {
-    return {
-        isValid: valueOne === valueTwo,
-        error: 'Passwords must be equal'
     }
 }
 
@@ -56,8 +53,6 @@ export const SignUp = () => {
     const { loading, callEndPoint } = useFetchAndLoad();
 
     const [ errorResponse, setErrorResponse ] = useState('');
-
-    const [ error, setError ] = useState<string>('');
 
     const [ response, setResponse ] = useState<FetchResponse<Token>>({
         data: null,
@@ -78,22 +73,15 @@ export const SignUp = () => {
         }
     }, [loading, response, navigate, saveTokens]);
 
-    useEffect(() => {
-        if(values.passwordOne.value !== '' && values.passwordTwo.value !== ''){
-            const res = validateEquals(values.passwordOne.value, values.passwordTwo.value);
-            !res.isValid ? setError(res.error) : setError('');
-        }
-    }, [values]);
-
     const removeNonNumeric = (value: string) => value.replace(/\D/g, '');
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if(validateForm() && error === ''){
+        if(validateForm()){
             const credentials: SignUpCredentials = {
-                email: isCellularNumber.validate(values.username.value) ? null : values.username.value,
-                phone: isCellularNumber.validate(values.username.value) ? removeNonNumeric(values.username.value) : null,
+                email: isCellularNumber.isValid(values.username.value) ? null : values.username.value,
+                phone: isCellularNumber.isValid(values.username.value) ? removeNonNumeric(values.username.value) : null,
                 passwordOne: values.passwordOne.value,
                 passwordTwo: values.passwordTwo.value
             }
@@ -108,7 +96,7 @@ export const SignUp = () => {
         onFocus(name);
     }
 
-    const isButtonDisabled = (values.username.value.trim() === '' || values.passwordOne.value.trim() === '' || values.passwordTwo.value.trim() === '');
+    const isButtonDisabled = (values.username.value.trim() === '' || values.newPassword.value.trim() === '' || values.confirmPassword.value.trim() === '');
 
 
     return(
@@ -129,35 +117,34 @@ export const SignUp = () => {
                                             }}
                                             onChange={ handleChange }
                                             onFocus={ handleOnFocus }
-                                            errorMessage={ values.username.error }
+                                            errorsMessage={ values.username.error }
                                             />
                                     </div>
                                     <div className="col-12">
                                         <ReusableInput 
                                             inputProps={{
                                                 label: 'Password',
-                                                name: 'passwordOne',
+                                                name: 'newPassword',
                                                 type: 'password',
-                                                value: values.passwordOne.value,
+                                                value: values.newPassword.value,
                                                 placeholder: 'Enter your password'
                                             }}
                                             onChange={handleChange}
                                             onFocus={onFocus}/>
-                                            <PasswordRulesList rules={values.passwordOne.validation} value={values.passwordOne.value}/>
+                                            <PasswordRulesList rules={values.newPassword.validation} errors={values.newPassword.error}/>
                                     </div>
                                     <div className="col-12">
                                         <ReusableInput 
                                             inputProps={{
                                                 label: 'Confirm password',
-                                                name: 'passwordTwo',
+                                                name: 'confirmPassword',
                                                 type: 'password',
-                                                value: values.passwordTwo.value,
+                                                value: values.confirmPassword.value,
                                                 placeholder: 'Enter your password again'
                                             }}
                                             onChange={handleChange}
                                             onFocus={onFocus}/>
-                                            <PasswordRulesList rules={values.passwordTwo.validation} value={values.passwordTwo.value}/>
-                                            <div className={`text-danger errormessage ${error ? '' : 'd-none'}`}>{ error }</div>
+                                            <PasswordRulesList rules={values.confirmPassword.validation} errors={values.confirmPassword.error}/>
                                     </div>
                                     <div className={`text-danger errormessage ${errorResponse ? '' : 'd-none'}`}>{errorResponse}</div>
                                     <div className="col-12 text-center pt-3">

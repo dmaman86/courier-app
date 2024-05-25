@@ -41,35 +41,15 @@ public class Contact {
 
     private String phone;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "office_id")
+    @ManyToOne
+    @JoinColumn(name = "office_id", nullable = false)
     private Office office;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(
         name = "contacts_branches",
         joinColumns = @JoinColumn(name = "contact_id"),
         inverseJoinColumns = @JoinColumn(name = "branches_id")
     )
-    @Builder.Default
-    private Set<Branch> branches = new HashSet<>();
-
-    public static Contact toEntity(ContactDto contactDto){
-        return Contact.builder()
-            .id(contactDto.getId())
-            .name(contactDto.getName())
-            .lastName(contactDto.getLastName())
-            .phone(contactDto.getPhone())
-            .office(Office.toEntity(contactDto.getOffice()))
-            .branches(new HashSet<>(Branch.toEntity(contactDto.getBranches())))
-            .build();
-    }
-
-    public static List<Contact> toEntity(List<ContactDto> contactDtos){
-        List<Contact> contacts = new ArrayList<>();
-        for (ContactDto contactDto : contactDtos) {
-            contacts.add(Contact.toEntity(contactDto));
-        }
-        return contacts;
-    }
+    private List<Branch> branches;
 }

@@ -1,10 +1,6 @@
 package com.david.maman.courierserver.models.entities;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import com.david.maman.courierserver.models.dto.OfficeDto;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -32,24 +28,9 @@ public class Office {
 
     private String name;
 
-    @JsonManagedReference
+    @OneToMany(mappedBy = "office", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Branch> branches;
+
     @OneToMany(mappedBy = "office", cascade = CascadeType.ALL)
-    @Builder.Default
-    private List<Branch> branches = new ArrayList<>();
-
-    public static Office toEntity(OfficeDto officeDto) {
-        return Office.builder()
-            .id(officeDto.getId())
-            .name(officeDto.getName())
-            .branches(Branch.toEntity(officeDto.getBranches()))
-            .build();
-    }
-
-    public static List<Office> toEntity(List<OfficeDto> officeDtos){
-        List<Office> offices = new ArrayList<>();
-        for (OfficeDto officeDto : officeDtos) {
-            offices.add(Office.toEntity(officeDto));
-        }
-        return offices;
-    }
+    private List<Contact> contacts;
 }

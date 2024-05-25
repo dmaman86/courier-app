@@ -22,7 +22,8 @@ const initialState: FormState = {
     password: {
         value: '',
         validation: [
-            validatorForm.validateNotEmpty
+            validatorForm.validateNotEmpty,
+            validatorForm.validateMinLength
         ],
         validateRealTime: false
     }
@@ -39,8 +40,8 @@ export const Login = () => {
 
     const { username, password } = values;
 
-    const { value: usernameValue, error: usernameError } = username;
-    const { value: passwordValue, error: passwordError } = password;
+    const { value: usernameValue, error: usernameErrors } = username;
+    const { value: passwordValue, error: passwordErrors } = password;
 
     const { loading, callEndPoint } = useFetchAndLoad();
 
@@ -74,8 +75,8 @@ export const Login = () => {
         
         if(validateForm() && errorResponse === ''){
             const credentials: LoginCredentials = {
-                email: !isCellularNumber.validate(usernameValue) ? usernameValue : null,
-                phone: isCellularNumber.validate(usernameValue) ? removeNonNumeric(usernameValue) : null,
+                email: !isCellularNumber.isValid(usernameValue) ? usernameValue : null,
+                phone: isCellularNumber.isValid(usernameValue) ? removeNonNumeric(usernameValue) : null,
                 password: passwordValue
             }
             const result = await callEndPoint(serviceRequest.postItem<Token, LoginCredentials>(paths.auth.login, credentials));
@@ -113,7 +114,7 @@ export const Login = () => {
                                             }}
                                         onChange={handleChange}
                                         onFocus={handleOnFocus}
-                                        errorMessage={usernameError}/>
+                                        errorsMessage={usernameErrors}/>
                                     </div>
 
                                     <div className="col-12">
@@ -127,7 +128,7 @@ export const Login = () => {
                                             }}
                                         onChange={handleChange}
                                         onFocus={handleOnFocus}
-                                        errorMessage={passwordError}/>
+                                        errorsMessage={passwordErrors}/>
                                     </div>
                                     <div className={`text-danger errormessage ${errorResponse ? '' : 'd-none'}`}>{errorResponse}</div>
 

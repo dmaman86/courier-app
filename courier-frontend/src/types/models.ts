@@ -18,6 +18,22 @@ export interface User {
     roles: Role[];
 }
 
+export interface Office {
+    id: number;
+    name: string;
+}
+
+export interface Branch {
+    id: number;
+    city: string;
+    address: string;
+}
+
+export interface Client extends User{
+    office: Office;
+    branches: Branch[];
+}
+
 export interface LoginCredentials {
     email: string | null;
     phone: string | null;

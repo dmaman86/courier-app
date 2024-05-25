@@ -19,18 +19,4 @@ public class RoleDto {
     private Long id;
     private String name;
 
-    public static RoleDto toDto(Role role){
-        return RoleDto.builder()
-                .id(role.getId())
-                .name(role.getName())
-                .build();
-    }
-
-    public static Set<RoleDto> toDto(Set<Role> roles){
-        Set<RoleDto> rolesDtosSet = new HashSet<>();
-        roles.forEach(role -> rolesDtosSet.add(RoleDto.toDto(role)));
-
-        return rolesDtosSet;
-    }
-
 }

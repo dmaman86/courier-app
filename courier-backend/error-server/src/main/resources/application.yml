@@ -25,9 +25,13 @@ server:
     port: 8082
 
 eureka:
+    instance:
+        hostname: localhost
+        prefer-ip-address: true
     client:
         register-with-eureka: true
         fetch-registry: true
         shouldUnregisterOnShutdown: true
         service-url:
-            defaultZone: http://localhost:8761/eureka/
+            defaultZone: http://${eureka.instance.hostname}:8761/eureka/
+    

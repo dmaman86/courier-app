@@ -29,18 +29,4 @@ public class Role {
     private Long id;
 
     private String name;
-
-    public static Role toEntity(RoleDto roleDto){
-        return Role.builder()
-                .id(roleDto.getId())
-                .name(roleDto.getName())
-                .build();
-    }
-
-    public static Set<Role> toEntity(Set<RoleDto> rolesDto){
-        Set<Role> rolesSet = new HashSet<>();
-        rolesDto.forEach(roleDto -> rolesSet.add(Role.toEntity(roleDto)));
-
-        return rolesSet;
-    }
 }

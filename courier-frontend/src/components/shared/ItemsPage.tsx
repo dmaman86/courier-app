@@ -10,8 +10,8 @@ import { AlertDialog } from "./AlertDialog";
 type ActionType<T> =
     | { type: 'TOGGLE_MODAL' }
     | { type: 'TOGGLE_ALERT_DIALOG' }
-    | { type: 'SET_SELECTED_ITEM'; payload: T | null }
-    | { type: 'SET_ITEM_TO_DELETE'; payload: T | null }
+    | { type: 'SET_SELECTED_ITEM'; payload: number | null }
+    | { type: 'SET_ITEM_TO_DELETE'; payload: number | null }
     | { type: 'SET_RESPONSE_LIST'; payload: FetchResponse<T[]> }
     | { type: 'SET_RESPONSE_ITEM'; payload: FetchResponse<T> }
     | { type: 'SET_DELETE_RESPONSE'; payload: FetchResponse<string> }
@@ -96,13 +96,14 @@ export const ItemsPage = <T extends Item>({ title,
 
     useEffect(() => {
         if(!loading && state.responseList.data && !state.responseList.error){
+            console.log(state.responseList.data);
             setAllItems(state.responseList.data as T[]);
         }
     }, [loading, setAllItems, state.responseList]);
 
     useEffect(() => {
         if(!loading && state.responseDelete.data && !state.responseDelete.error){
-            removeItem(state.itemToDelete!.id);
+            removeItem(state.itemToDelete!);
             dispatch({ type: 'SET_ITEM_TO_DELETE', payload: null });
             dispatch({ type: 'TOGGLE_ALERT_DIALOG' });
             dispatch({ type: 'SET_DELETE_RESPONSE', payload: { data: null, error: null } });
@@ -121,23 +122,24 @@ export const ItemsPage = <T extends Item>({ title,
     }, [addItem, existItem, loading, state.responseItem, updateItem]);
 
     const handleEditItem = (item: T) => {
-        dispatch({ type: 'SET_SELECTED_ITEM', payload: item });
+        dispatch({ type: 'SET_SELECTED_ITEM', payload: item.id });
         dispatch({ type: 'TOGGLE_MODAL' });
     };
 
     const handleDeleteItem = (item: T) => {
-        dispatch({ type: 'SET_ITEM_TO_DELETE', payload: item });
+        dispatch({ type: 'SET_ITEM_TO_DELETE', payload: item.id });
         dispatch({ type: 'TOGGLE_ALERT_DIALOG' });
     };
 
     const confirmDeleteItem = async () => {
         if (state.itemToDelete) {
-            await deleteHandler(state.itemToDelete.id);
+            await deleteHandler(state.itemToDelete);
         }
     };
 
     const handleFormSubmit = async (item: T) => {
-        await createOrUpdate(item);
+        console.log(item);
+        // await createOrUpdate(item);
     };
 
     const handleSearch = useCallback(async (query: string) => {
@@ -174,7 +176,7 @@ export const ItemsPage = <T extends Item>({ title,
                 state.showModal && (
                     <GenericModal
                         title={state.selectedItem ? `Edit ${title}` : `Create ${title}`}
-                        body={renderItemForm(state.selectedItem as T, handleFormSubmit)}
+                        body={renderItemForm(state.selectedItem, handleFormSubmit)}
                         show={state.showModal}
                         onClose={() => dispatch({ type: 'TOGGLE_MODAL' })}
                     />
@@ -186,7 +188,7 @@ export const ItemsPage = <T extends Item>({ title,
                         open={state.showAlertDialog}
                         onClose={() => dispatch({ type: 'TOGGLE_ALERT_DIALOG' })}
                         onConfirm={confirmDeleteItem}
-                        title={`Are you sure you want to delete this ${title.toLowerCase()}?`}
+                        title={`Are you sure you want to delete this ${title?.toLowerCase()}?`}
                     />
                 )
             }

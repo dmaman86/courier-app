@@ -40,4 +40,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long>{
 
     @Query("SELECT c FROM Contact c LEFT JOIN FETCH c.branches WHERE c.id = :id")
     Contact findByIdWithBranches(@Param("id") Long id); // get contact by id with branches
+
+    boolean existsByOffice(Office office);
 }

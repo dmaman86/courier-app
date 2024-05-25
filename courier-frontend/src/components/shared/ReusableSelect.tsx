@@ -1,12 +1,13 @@
 import Select from 'react-select';
 
-import { SelectProps } from '../../types';
+import { OptionType, SelectProps } from '../../types';
 
-export const ReusableSelect = ({ value, options, onChange, isMulti = false }: SelectProps) => {
+export const ReusableSelect = <T extends OptionType>({ label, value, options, onChange, isMulti = false }: SelectProps<T>) => {
 
     
     return (
         <>
+            <label>{label}</label>
             <Select
                 value={value}
                 options={options}

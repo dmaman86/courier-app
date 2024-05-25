@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.david.maman.courierserver.models.entities.Branch;
+import com.david.maman.courierserver.models.entities.Office;
 
 public interface BranchRepository extends JpaRepository<Branch, Long>{
 
@@ -26,4 +27,7 @@ public interface BranchRepository extends JpaRepository<Branch, Long>{
     List<Branch> findByAddressContaining(String address);
 
     List<Branch> findAll();
+
+    long countByOffice(Office office);
+
 }

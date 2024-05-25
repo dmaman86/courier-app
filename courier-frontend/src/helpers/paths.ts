@@ -12,6 +12,7 @@ export const paths = {
         offices: '/courier/office/',
         roles: '/courier/role/',
         createOrUpdateUser: '/courier/users/user',
+        createOrUpdateClient: '/courier/users/client',
         deleteUser: '/courier/users/id',
     }
 }

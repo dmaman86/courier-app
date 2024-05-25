@@ -40,6 +40,10 @@ public class JwtKeyService {
     @Autowired
     private JwtService jwtService;
 
+    private String publicKeyString;
+
+    private boolean publicKeyRequestPending = false;
+
     @EventListener(ApplicationReadyEvent.class)
     public void startRequestingOnStartup(){
         requestData();
@@ -84,10 +88,39 @@ public class JwtKeyService {
         RSAKeyManager rsaKeyManager = new RSAKeyManager(n, phi);
         logger.info("Generated RSA keys: {}", rsaKeyManager);
 
-        String publicKeyString = rsaKeyManager.getPublicKeyAsBase64();
-        kafkaTemplate.send("public-key-topic", publicKeyString);
+        publicKeyString = rsaKeyManager.getPublicKeyAsBase64();
+        // kafkaTemplate.send("public-key-topic", publicKeyString);
+
+        if(publicKeyRequestPending){
+            sendPublicKey();
+            publicKeyRequestPending = false;
+        }
 
         jwtService.setKeyPair(rsaKeyManager.getKeyPair());
+        resumekafkaListener();
+
+        /*if(registry.getListenerContainer("publicKeyRequestConsumerId").isContainerPaused())
+            registry.getListenerContainer("publicKeyRequestConsumerId").resume();*/
+    }
+
+    @KafkaListener(id = "publicKeyRequestConsumerId", topics = "request-public-key", groupId = "auth-primes-consumer")
+    public void handlePublicKeyRequest(String message){
+        logger.info("Received public key request: {}", message);
+        if(publicKeyString != null){
+            sendPublicKey();
+        }else{
+            logger.info("Public key not yet avaible, marking request as pending");
+            publicKeyRequestPending = true;
+        }
+    }
+
+    private void sendPublicKey(){
+        kafkaTemplate.send("public-key-topic", publicKeyString);
+        logger.info("Sent public key to Kafka topic: public-key-topic");
+    }
+
+    public void resumekafkaListener(){
+        registry.getListenerContainer("consumerId").resume();
     }
 
 }

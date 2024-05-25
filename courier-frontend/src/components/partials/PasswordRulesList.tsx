@@ -4,7 +4,7 @@ import { ValidationRule } from "../../types";
 
 interface Props{
     rules: ValidationRule[];
-    value: string;
+    errors?: string[];
 }
 
 const CustomAlert = styled(Alert)({
@@ -15,7 +15,7 @@ const CustomAlert = styled(Alert)({
     }
 });
 
-export const PasswordRulesList = ({ rules, value }: Props) => {
+export const PasswordRulesList = ({ rules, errors }: Props) => {
 
     return(
         <>
@@ -24,7 +24,7 @@ export const PasswordRulesList = ({ rules, value }: Props) => {
                     rules.map((rule, index) => (
                         <CustomAlert
                             key={index}
-                            severity={rule.validate(value) ? 'success' : 'error'}
+                            severity={!errors ? 'error' : errors[index] === '' ? 'success' : 'error'}
                         >
                             { rule.message }
                         </CustomAlert>

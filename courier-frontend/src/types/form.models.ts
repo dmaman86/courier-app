@@ -1,5 +1,5 @@
 export interface ValidationRule{
-    validate: (value: string) => boolean;
+    isValid: (value: string, formData?: FormState) => boolean;
     message: string;
 }
 
@@ -7,7 +7,7 @@ export interface FormField<T>{
     value: T;
     validation: ValidationRule[];
     isValid?: boolean;
-    error?: string;
+    error?: string[];
     validateRealTime?: boolean;
 }
 

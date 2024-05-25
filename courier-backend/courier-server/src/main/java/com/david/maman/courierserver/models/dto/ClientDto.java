@@ -1,32 +1,28 @@
 package com.david.maman.courierserver.models.dto;
 
 import java.util.List;
+import java.util.Set;
 
+import com.david.maman.courierserver.models.dto.base.BranchInfoDto;
+import com.david.maman.courierserver.models.dto.base.OfficeInfoDto;
 
-public class ClientDto extends UserDto{
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    private OfficeDto office;
-    private List<BranchDto> branches;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ClientDto{
 
-    
-    public OfficeDto getOffice() {
-        return office;
-    }
-
-    public void setOffice(OfficeDto office) {
-        this.office = office;
-    }
-
-    public List<BranchDto> getBranches() {
-        return branches;
-    }
-
-    public void setBranches(List<BranchDto> branches) {
-        this.branches = branches;
-    }
-
-    @Override
-    public String toString() {
-        return "ClientDto [office=" + office + ", branches=" + branches + "]";
-    }
+    private Long id;
+    private String name;
+    private String lastName;
+    private String phone;
+    private String email;
+    private Set<RoleDto> roles;
+    private OfficeInfoDto office;
+    private List<BranchInfoDto> branches;
 }

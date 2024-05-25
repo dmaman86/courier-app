@@ -1,21 +1,26 @@
-import { useEffect, useState } from "react";
-import { FormState, Role } from "../../types";
-import { validatorForm } from "../../helpers";
-import { useForm } from "../../hooks";
+import { useCallback, useEffect, useState } from "react";
+import { FetchResponse, FormState, Role } from "../../types";
+import { paths, validatorForm } from "../../helpers";
+import { useFetchAndLoad, useForm } from "../../hooks";
 import { ReusableInput } from "../shared";
+import { serviceRequest } from "../../services";
 
 
 interface RoleFormProps {
-    role?: Role | null;
+    roleId: number | null;
     onSubmit: (role: Role) => void;
 }
 
-export const RoleForm = ({ role, onSubmit }: RoleFormProps) => {
+export const RoleForm = ({ roleId, onSubmit }: RoleFormProps) => {
 
     const [ formData, setFormData ] = useState<Role>({
-        id: role?.id || 0,
-        name: role?.name || ''
+        id: 0,
+        name: ''
     });
+
+    const { loading, callEndPoint } = useFetchAndLoad();
+
+    const [ responseFetch, setResponseFetch ] = useState<FetchResponse<Role>>({ data: null, error: null });
 
     const initialState: FormState = {
         name: {
@@ -27,7 +32,7 @@ export const RoleForm = ({ role, onSubmit }: RoleFormProps) => {
         }
     };
 
-    const { values, handleChange, onFocus, validateForm } = useForm(initialState);
+    const { values, handleChange, onFocus, validateForm, setValues } = useForm(initialState);
 
     useEffect(() => {
         setFormData({
@@ -51,11 +56,42 @@ export const RoleForm = ({ role, onSubmit }: RoleFormProps) => {
         }
     }
 
+    const fetchRoleDetails = useCallback(async(roleId: number) => {
+        const response = await callEndPoint(serviceRequest.getItem<Role>(`${paths.courier.roles}id/${roleId}`));
+        setResponseFetch(response);
+    }, [callEndPoint]);
+
+    useEffect(() => {
+        if(roleId !== null && !responseFetch.data && !responseFetch.error)
+            fetchRoleDetails(roleId);
+    }, [roleId, responseFetch, fetchRoleDetails]);
+
+    useEffect(() => {
+        if(!loading && responseFetch.data && !responseFetch.error){
+            console.log(responseFetch.data);
+            setFormData({
+                id: Number(responseFetch.data.id),
+                name: responseFetch.data.name
+            });
+
+            setValues({
+                name: {
+                    value: responseFetch.data.name,
+                    validation: [
+                        validatorForm.validateNotEmpty
+                    ],
+                    validateRealTime: false
+                }
+            })
+        }
+            
+    }, [loading, responseFetch]);
+
     return (
         <>
             <form onSubmit={handleSubmit} className="row g-4">
                 <div className="col-6">
-                    <ReusableInput 
+                    <ReusableInput
                         inputProps={{
                             label: 'Role Name',
                             name: 'name',
@@ -65,7 +101,7 @@ export const RoleForm = ({ role, onSubmit }: RoleFormProps) => {
                         }}
                         onChange={handleChange}
                         onFocus={onFocus}
-                        errorMessage={values.name.error}
+                        errorsMessage={values.name.error}
                     />
                 </div>
                 <div className='col pt-3 text-center'>

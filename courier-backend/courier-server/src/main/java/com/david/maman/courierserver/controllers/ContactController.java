@@ -1,9 +1,12 @@
 package com.david.maman.courierserver.controllers;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.david.maman.courierserver.mappers.ContactMapper;
 import com.david.maman.courierserver.models.dto.ContactDto;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.services.ContactService;
@@ -22,12 +26,15 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/courier/contact")
-@RequiredArgsConstructor
 public class ContactController {
 
     protected static Logger logger = LoggerFactory.getLogger(ContactController.class);
 
-    private final ContactService contactService;
+    @Autowired
+    private ContactService contactService;
+
+    @Autowired
+    private ContactMapper contactMapper;
 
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getContactById(@PathVariable Long id){
@@ -35,7 +42,7 @@ public class ContactController {
             Contact contact = contactService.findContactById(id).orElseThrow(
                 () -> new Exception("Contact not found")
             );
-            return ResponseEntity.ok(contact);
+            return ResponseEntity.ok(contactMapper.toDto(contact));
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -43,7 +50,9 @@ public class ContactController {
 
     @GetMapping("/")
     public ResponseEntity<?> getAllContacts(){
-        return ResponseEntity.ok(contactService.findAllContacts());
+        List<Contact> contacts = contactService.findAllContacts();
+        List<ContactDto> contactDtos = contacts.stream().map(contactMapper::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(contactDtos);
     }
 
     @GetMapping("/search/{toSearch}")
@@ -58,9 +67,9 @@ public class ContactController {
             if(contactDb.isPresent()){
                 throw new Exception("Contact already exists");
             }
-            Contact contact = Contact.toEntity(contactDto);
-            contactService.saveContact(contact);
-            return ResponseEntity.ok(contact);
+            // Contact contact = contactMapper.toEntity(contactDto);
+            // contactService.saveContact(contact);
+            return ResponseEntity.ok(contactDb);
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }

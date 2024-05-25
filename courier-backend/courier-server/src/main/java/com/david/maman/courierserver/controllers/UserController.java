@@ -2,6 +2,7 @@ package com.david.maman.courierserver.controllers;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.courierserver.helpers.CustomUserDetails;
+import com.david.maman.courierserver.mappers.BranchMapper;
+import com.david.maman.courierserver.mappers.ContactMapper;
+import com.david.maman.courierserver.mappers.OfficeMapper;
+import com.david.maman.courierserver.mappers.RoleMapper;
+import com.david.maman.courierserver.mappers.UserMapper;
+import com.david.maman.courierserver.models.dto.BranchDto;
 import com.david.maman.courierserver.models.dto.ClientDto;
+import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.dto.UserDto;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.User;
@@ -37,6 +45,11 @@ public class UserController {
 
     private final UserService userService;
     private final ContactService contactService;
+    private final UserMapper userMapper;
+    private final OfficeMapper officeMapper;
+    private final BranchMapper branchMapper;
+    private final RoleMapper roleMapper;
+    private final ContactMapper contactMapper;
 
 
     @PostMapping("/user")
@@ -46,7 +59,7 @@ public class UserController {
         }
         logger.info(userDto.toString());
         User createdUser = userService.createUser(userDto);
-        UserDto createdUserDto = UserDto.toDto(createdUser);
+        UserDto createdUserDto = userMapper.toDto(createdUser);
         return ResponseEntity.ok(createdUserDto);
     }
 
@@ -56,14 +69,14 @@ public class UserController {
             throw new RuntimeException("User already exists");
         }
         logger.info(clientDto.toString());
-        userService.saveClientDto(clientDto);
+        userService.createClient(clientDto);
         return ResponseEntity.ok("Client registered successfully");
     }
 
     @GetMapping("/me")
     public ResponseEntity<?> getUser(Authentication authentication){
         var customUser = (CustomUserDetails) authentication.getPrincipal();
-        var user = UserDto.toDto(customUser.getUser());
+        var user = userMapper.toDto(customUser.getUser());
         return ResponseEntity.ok(user);
     }
 
@@ -72,9 +85,19 @@ public class UserController {
         User user = userService.loadUserById(id).orElseThrow(
             () -> new RuntimeException("User not found")
         );
-        UserDto userDto = UserDto.toDto(user);
+
+        Contact contact = contactService.findContactByPhone(user.getPhone()).orElse(null);
+        if(contact != null){
+            logger.info("Found contact: {}", contact);
+            ClientDto clientDto = userMapper.toClientDto(user, contact);
+            logger.info("Build client dto: {}", clientDto);
+            return ResponseEntity.ok(clientDto);
+        }
+        
+        UserDto userDto = userMapper.toDto(user);
         return ResponseEntity.ok(userDto);
     }
+
 
     @GetMapping("/")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COURIER')")
@@ -101,7 +124,7 @@ public class UserController {
         }
             
         User updateUser = userService.updateUser(userDb.get(), userDto);
-        UserDto updatedUserDto = UserDto.toDto(updateUser);
+        UserDto updatedUserDto = userMapper.toDto(updateUser);
         return ResponseEntity.ok(updatedUserDto);
     }
 

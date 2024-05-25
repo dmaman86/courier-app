@@ -15,7 +15,7 @@ export interface GenericInputProps{
     inputProps: InputProps;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onFocus: (fieldName: string) => void;
-    errorMessage?: string;
+    errorsMessage?: string[];
 }
 
 export interface RoutesProps {
@@ -42,11 +42,16 @@ export interface OptionType {
     label: string;
 }
 
-export interface SelectProps{
-    options: OptionType[];
+export interface BranchOptionType extends OptionType{
+    address: string;
+}
+
+export interface SelectProps<T>{
+    label: string;
+    value: MultiValue<T> | SingleValue<T>;
+    options: T[];
+    onChange: (selected: MultiValue<T> | SingleValue<T>) => void;
     isMulti?: boolean;
-    onChange: (selected: MultiValue<OptionType> | SingleValue<OptionType>, actionMeta: ActionMeta<OptionType>) => void;
-    value: MultiValue<OptionType> | SingleValue<OptionType>;
 }
 
 export interface AuthContextType {
@@ -78,8 +83,8 @@ export interface GenericTableProps<T extends { id: number }>{
 export interface State<T> {
     showModal: boolean;
     showAlertDialog: boolean;
-    selectedItem: T | null;
-    itemToDelete: T | null;
+    selectedItem: number | null;
+    itemToDelete: number | null;
     responseList: FetchResponse<T[]>;
     responseItem: FetchResponse<T>;
     responseDelete: FetchResponse<string>;
@@ -90,14 +95,14 @@ export interface Item {
 }
 
 export interface ItemsPageProps<T extends Item> {
-    title: string;
+    title?: string;
     placeholder: string;
     buttonName: string;
     fetchItems: () => AxiosCall<T[]>;
     createOrUpdateItem: (item: T) => AxiosCall<T>;
     deleteItem: (itemId: number) => AxiosCall<string>;
     searchItem?: (search: string) => AxiosCall<T[]>;
-    renderItemForm: (item: T | null, onSubmit: (item: T) => void) => JSX.Element;
+    renderItemForm: (item: number | null, onSubmit: (item: T) => void) => JSX.Element;
     columns: ValueColumn[];
     renderItemList: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;
     showSearch?: boolean;

@@ -6,7 +6,7 @@ import _ from 'lodash';
 
 
 interface PageHeaderProps {
-    title: string;
+    title?: string;
     placeholder: string;
     buttonName: string;
     onSearch?: (query: string) => void;
@@ -55,9 +55,11 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
         <>
             <div className="container">
                 <div className="row align-items-center mb-4">
-                    <div className="col-12 col-md-6">
-                        <h1>{title}</h1>
-                    </div>
+                    {
+                        title && (<div className="col-12 col-md-6">
+                                        <h1>{title}</h1>
+                                    </div>)
+                    }
                     <div className="col-12 col-md-6 mt-3 mt-md-0">
                         <div className="row d-flex justify-content-end">
                             {

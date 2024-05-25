@@ -1,5 +1,6 @@
 package com.david.maman.courierserver.controllers;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.david.maman.courierserver.mappers.BranchMapper;
 import com.david.maman.courierserver.models.dto.BranchDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.services.BranchService;
@@ -29,13 +31,17 @@ public class BranchController {
 
     private final BranchService branchService;
 
+    private final BranchMapper branchMapper;
+
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getBranchById(@PathVariable Long id){
         try{
             Branch branch = branchService.findBranchById(id).orElseThrow(
                 () -> new Exception("Branch not found")
             );
-            return ResponseEntity.ok(branch);
+            logger.info("find branch: {}", branch);
+            BranchDto branchDto = branchMapper.toDto(branch);
+            return ResponseEntity.ok(branchDto);
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -43,52 +49,27 @@ public class BranchController {
 
     @GetMapping("/")
     public ResponseEntity<?> getAllBranches(){
-        return ResponseEntity.ok(branchService.findAllBranches());
+        List<BranchDto> branchesDto = branchService.getAllBranches();
+        logger.info("list branchesDto: {}", branchesDto);
+        return ResponseEntity.ok(branchesDto);
     }
 
     @PostMapping("/")
     public ResponseEntity<?> saveBranch(@RequestBody BranchDto branchDto){
-        try{
-            Optional<Branch> branchDb = branchService.findBranchByCityAndAddress(
-                branchDto.getCity(),
-                branchDto.getAddress());
-            if(branchDb.isPresent()){
-                throw new Exception("Branch already exists");
-            }
-            Branch branch = Branch.toEntity(branchDto);
-            branchService.saveBranch(branch);
-            return ResponseEntity.ok(branch);
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        BranchDto createdBranch = branchService.createBranch(branchDto);
+        return ResponseEntity.ok(createdBranch);
     }
 
-    @PutMapping("/")
-    public ResponseEntity<?> updateBranch(@RequestBody Branch branch){
-        try{
-            Optional<Branch> branchDb = branchService.findBranchById(branch.getId());
-            if(branchDb.isEmpty()){
-                throw new Exception("Branch not found");
-            }
-            branchService.saveBranch(branch);
-            return ResponseEntity.ok(branch);
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateBranch(@PathVariable Long id, @RequestBody BranchDto branchDto){
+        BranchDto updatedBranch = branchService.updateBranch(id, branchDto);
+        return ResponseEntity.ok(updatedBranch);
     }
 
     @DeleteMapping("/id/{id}")
     public ResponseEntity<?> deleteBranch(@PathVariable Long id){
-        try{
-            Optional<Branch> branchDb = branchService.findBranchById(id);
-            if(branchDb.isEmpty()){
-                throw new Exception("Branch not found");
-            }
-            branchService.deleteBranch(id);
-            return ResponseEntity.ok("Branch deleted");
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        branchService.deleteBranch(id);
+        return ResponseEntity.ok("Branch deleted");
     }
 
 }

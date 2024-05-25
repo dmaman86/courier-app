@@ -15,21 +15,19 @@ public interface UserService {
 
     Optional<User> loadUserById(Long id);
 
-    User save(User user);
-
     User createUser(UserDto userDto);
 
-    void saveClientDto(ClientDto clientDto);
+    User createClient(ClientDto clientDto);
 
     User updateUser(User user, UserDto userDto);
 
-    void updateClient(User user, ClientDto clientDto);
+    User updateClient(User user, ClientDto clientDto);
 
     void delete(User user);
 
     List<UserDto> getAll();
 
-    List<User> searchUsers(String toSearch);
+    List<UserDto> searchUsers(String toSearch);
 
     Optional<UserDto> findUserByUserDto(UserDto userDto);
 }

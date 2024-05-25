@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.david.maman.courierserver.mappers.RoleMapper;
 import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.services.RoleService;
@@ -29,14 +30,12 @@ public class RoleController {
 
     private final RoleService roleService;
 
+    private final RoleMapper roleMapper;
+
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getRoleById(@PathVariable Long id) {
         try{
-            Optional<Role> role = roleService.findRole(id);
-            if(role.isEmpty()){
-                throw new Exception("Role not found");
-            }
-            return ResponseEntity.ok(role);
+            return ResponseEntity.ok(roleService.findRole(id));
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -63,11 +62,8 @@ public class RoleController {
     @PutMapping("/")
     public ResponseEntity<?> updateRole(@RequestBody Role role) {
         try{
-            if(roleService.findRole(role.getId()).isEmpty()){
-                throw new Exception("Role not found: " + role.getId());
-            }
             Role updateRole = roleService.saveRole(role);
-            return ResponseEntity.ok(updateRole);
+            return ResponseEntity.ok(roleMapper.toDto(updateRole));
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -76,8 +72,8 @@ public class RoleController {
     @DeleteMapping("/id/{id}")
     public ResponseEntity<?> deleteRole(@PathVariable Long id) {
         try{
-            Role role = roleService.findRole(id).orElseThrow(() -> new Exception("Role not found: " + id));
-            roleService.deleteRole(role);
+            // Role role = roleService.findRole(id).orElseThrow(() -> new Exception("Role not found: " + id));
+            roleService.deleteRole(roleMapper.toEntity(roleService.findRole(id)));
             return ResponseEntity.ok("Role deleted");
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -8,7 +8,7 @@ import com.david.maman.courierserver.models.entities.Role;
 
 public interface RoleService {
 
-    Optional<Role> findRole(Long id);
+    RoleDto findRole(Long id);
 
     Role findRoleByName(String name);
 
@@ -18,5 +18,5 @@ public interface RoleService {
 
     void deleteRole(Role role);
 
-    List<Role> findAllRoles();
+    List<RoleDto> findAllRoles();
 }

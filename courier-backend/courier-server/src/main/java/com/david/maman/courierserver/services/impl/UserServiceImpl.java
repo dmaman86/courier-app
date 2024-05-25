@@ -5,12 +5,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.david.maman.courierserver.mappers.BranchMapper;
+import com.david.maman.courierserver.mappers.ContactMapper;
+import com.david.maman.courierserver.mappers.OfficeMapper;
+import com.david.maman.courierserver.mappers.RoleMapper;
+import com.david.maman.courierserver.mappers.UserMapper;
 import com.david.maman.courierserver.models.dto.ClientDto;
 import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.dto.UserDto;
@@ -19,6 +26,8 @@ import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
+import com.david.maman.courierserver.repositories.BranchRepository;
+import com.david.maman.courierserver.repositories.OfficeRepository;
 import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.ContactService;
 import com.david.maman.courierserver.services.KafkaProducerService;
@@ -44,6 +53,27 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private KafkaProducerService kafkaProducerUser;
 
+    @Autowired
+    private OfficeMapper officeMapper;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
+
+    @Autowired
+    private BranchMapper branchMapper;
+
+    @Autowired
+    private ContactMapper contactMapper;
+
+    @Autowired
+    private OfficeRepository officeRepository;
+
+    @Autowired
+    private BranchRepository branchRepository;
+
     @Override
     public Optional<User> loadUserByEmail(String email) {
         return userRepository.findByEmailAndIsActive(email, true);
@@ -52,7 +82,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public UserDto loadUserDtoByEmail(String email) {
         User user = userRepository.findByEmailAndIsActive(email, true).get();
-        return UserDto.toDto(user);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -60,8 +90,7 @@ public class UserServiceImpl implements UserService{
         return userRepository.findByIdAndIsActive(id, true);
     }
 
-    @Override
-    public User save(User user) {
+    private User save(User user) {
         User savedUser = userRepository.save(user);
         kafkaProducerUser.sendUser(savedUser);
         return savedUser;
@@ -70,76 +99,69 @@ public class UserServiceImpl implements UserService{
     @Override
     @Transactional
     public User createUser(UserDto userDto) {
-
-        Set<Role> roles = new HashSet<>();
-        for(RoleDto roleDto : userDto.getRoles()){
-            Optional<Role> role = roleService.findRole(roleDto.getId());
-            if(!role.isPresent()) throw new RuntimeException("Role not found: " + roleDto.getName());
-
-            roles.add(role.get());
-        }
-
-        User user = User.builder()
-            .name(userDto.getName())
-            .lastName(userDto.getLastName())
-            .email(userDto.getEmail())
-            .phone(userDto.getPhone())
-            .isActive(true)
-            .roles(roles)
-            .build();
+        User user = userMapper.toEntity(userDto);
 
         return this.save(user);
     }
 
     @Override
-    public User updateUser(User user, UserDto userDto) {
-        user.setName(userDto.getName());
-        user.setLastName(userDto.getLastName());
-        user.setEmail(userDto.getEmail());
-        user.setPhone(userDto.getPhone());
+    @Transactional
+    public User createClient(ClientDto clientDto){
+        User user = userMapper.clientDtoToUser(clientDto);
+        user.setIsActive(true);
 
-        boolean hadClientRole = user.getRoles().stream().anyMatch(role -> "ROLE_CLIENT".equals(role.getName()));
-        boolean hasClientRoleNow = userDto.getRoles().stream().anyMatch(role -> "ROLE_CLIENT".equals(role.getName()));
+        Office office = officeRepository.findById(clientDto.getOffice().getId()).orElseThrow(
+            () -> new IllegalArgumentException("Office not found")
+        );
 
-        if(hadClientRole && !hasClientRoleNow){
-            Optional<Contact> contact = contactService.findContactByPhone(userDto.getPhone());
-            if(contact.isPresent()){
-                contactService.deleteContact(contact.get().getId());
-            }
-        }
-        
-        Set<Role> roles = Role.toEntity(userDto.getRoles());
+        List<Branch> branches = clientDto.getBranches().stream()
+                            .map(branchDto -> branchRepository.findById(branchDto.getId()).orElseThrow(
+                                () -> new IllegalArgumentException("Branch not found")
+                            )).collect(Collectors.toList());
 
-        user.setRoles(roles);
-        return this.save(user);
-    }
 
-    @Override
-    public void saveClientDto(ClientDto clientDto){
-        this.createUser(clientDto);
-
-        Contact contact = Contact.builder()
-            .name(clientDto.getName())
-            .lastName(clientDto.getLastName())
-            .phone(clientDto.getPhone())
-            .office(Office.toEntity(clientDto.getOffice()))
-            .branches(new HashSet<>(Branch.toEntity(clientDto.getBranches())))
-            .build();
+        Contact contact = contactMapper.toEntity(clientDto, office, branches);
         contactService.saveContact(contact);
+        return this.save(user);
     }
 
     @Override
-    public void updateClient(User user, ClientDto clientDto) {
-        this.updateUser(user, clientDto);
-        Contact contact = contactService.findContactByPhone(clientDto.getPhone()).orElse(null);
+    @Transactional
+    public User updateUser(User user, UserDto userDto) {
+        Contact contact = contactService.findContactByPhone(userDto.getPhone()).orElse(null);
+
         if(contact != null){
-            contact.setName(clientDto.getName());
-            contact.setLastName(clientDto.getLastName());
-            contact.setOffice(Office.toEntity(clientDto.getOffice()));
-            contact.setBranches(new HashSet<>(Branch.toEntity(clientDto.getBranches())));
-            contactService.saveContact(contact);
+            contactService.deleteContact(contact.getId());
         }
-        
+        User updateUser = userMapper.toEntity(userDto);
+        updateUser.setRoles(user.getRoles());
+
+        return this.save(updateUser);
+    }
+
+    @Override
+    @Transactional
+    public User updateClient(User user, ClientDto clientDto) {
+        Contact existingContact = contactService.findContactByPhone(user.getPhone()).orElse(null);
+
+        Office office = officeRepository.findById(clientDto.getOffice().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Office not found"));
+        List<Branch> branches = clientDto.getBranches().stream()
+                    .map(branchDTO -> branchRepository.findById(branchDTO.getId())
+                            .orElseThrow(() -> new IllegalArgumentException("Branch not found")))
+                    .collect(Collectors.toList());
+
+        if(existingContact == null){ // user update to client
+            Contact contact = contactMapper.toEntity(clientDto, office, branches);
+            contactService.saveContact(contact);
+        }else{
+            // update contact
+            existingContact.setOffice(office);
+            existingContact.setBranches(branches);
+            contactService.saveContact(existingContact);
+        }
+        User updateUser = userMapper.clientDtoToUser(clientDto);
+        return this.save(updateUser);
     }
 
     @Override
@@ -152,12 +174,13 @@ public class UserServiceImpl implements UserService{
     public List<UserDto> getAll() {
         List<User> users = new ArrayList<>();
         userRepository.findByIsActive(true).forEach(users::add);
-
-        return UserDto.toDto(users);
+        logger.info("Users: {}", users);
+        // return userMapper.toDto(users);
+        return users.stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
-    public List<User> searchUsers(String toSearch) {
+    public List<UserDto> searchUsers(String toSearch) {
         List<User> users = new ArrayList<>();
 
         users.addAll(userRepository.findByNameContainingAndIsActive(toSearch, true));
@@ -166,7 +189,8 @@ public class UserServiceImpl implements UserService{
         users.addAll(userRepository.findByEmailContainingAndIsActive(toSearch, true));
 
         Set<User> uniqueUsers = new HashSet<>(users);
-        return new ArrayList<>(uniqueUsers);
+        // return new ArrayList<>(uniqueUsers);
+        return uniqueUsers.stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
@@ -178,7 +202,7 @@ public class UserServiceImpl implements UserService{
             userDto.getEmail(),
             true).orElse(null);
 
-        return Optional.ofNullable(UserDto.toDto(user));
+        return Optional.ofNullable(userMapper.toDto(user));
     }
 
 }
