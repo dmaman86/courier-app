@@ -57,6 +57,7 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                       ├── AuthService.java
 │       │   │                       ├── ConsumerListenerService.java
 │       │   │                       ├── ErrorLogService.java
+│       │   │                       ├── HealthCheckService.java
 │       │   │                       ├── JwtKeyService.java
 │       │   │                       ├── JwtService.java
 │       │   │                       ├── RoleService.java
@@ -110,6 +111,12 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                   │   ├── SearchByDateRange.java
 │       │   │                   │   ├── SearchFunction.java
 │       │   │                   │   └── StateEnum.java
+│       │   │                   ├── mappers
+│       │   │                   │   ├── BranchMapper.java
+│       │   │                   │   ├── ContactMapper.java
+│       │   │                   │   ├── OfficeMapper.java
+│       │   │                   │   ├── RoleMapper.java
+│       │   │                   │   └── UserMapper.java
 │       │   │                   ├── models
 │       │   │                   │   ├── criteria
 │       │   │                   │   ├── dto
@@ -120,7 +127,10 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                   │   │   ├── OfficeDto.java
 │       │   │                   │   │   ├── RoleDto.java
 │       │   │                   │   │   ├── StatusDto.java
-│       │   │                   │   │   └── UserDto.java
+│       │   │                   │   │   ├── UserDto.java
+│       │   │                   │   │   └── base
+│       │   │                   │   │       ├── BranchInfoDto.java
+│       │   │                   │   │       └── OfficeInfoDto.java
 │       │   │                   │   └── entities
 │       │   │                   │       ├── Branch.java
 │       │   │                   │       ├── Contact.java
@@ -279,6 +289,7 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
                         └── maman
                             └── springcloudgateway
                                 └── SpringCloudGatewayApplicationTests.java
+
 ```
 
 ## Frontend Structure:
@@ -298,10 +309,14 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │   │   └── react.svg
 │   ├── components
 │   │   ├── common
-│   │   │   └── Navbar.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── Profile.tsx
+│   │   │   └── UsersPage.tsx
 │   │   ├── index.ts
 │   │   ├── modal
+│   │   │   ├── BranchForm.tsx
 │   │   │   ├── GenericModal.tsx
+│   │   │   ├── OfficeForm.tsx
 │   │   │   ├── RoleForm.tsx
 │   │   │   ├── UpdatePassword.tsx
 │   │   │   ├── UserForm.tsx
@@ -311,16 +326,19 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │   │   │   ├── ErrorPage.tsx
 │   │   │   ├── Home.tsx
 │   │   │   ├── Login.tsx
-│   │   │   ├── Profile.tsx
+│   │   │   ├── SignUp.tsx
 │   │   │   ├── admin
 │   │   │   │   ├── HomeAdmin.tsx
-│   │   │   │   ├── SettingsAdmin.tsx
-│   │   │   │   └── UsersPageAdmin.tsx
+│   │   │   │   └── SettingsAdmin.tsx
 │   │   │   ├── client
 │   │   │   │   └── HomeClient.tsx
 │   │   │   └── courier
 │   │   │       └── HomeCourier.tsx
 │   │   ├── partials
+│   │   │   ├── BranchList.tsx
+│   │   │   ├── BranchesPartial.tsx
+│   │   │   ├── OfficeList.tsx
+│   │   │   ├── OfficesPartial.tsx
 │   │   │   ├── PasswordRulesList.tsx
 │   │   │   ├── RoleList.tsx
 │   │   │   ├── RolePartial.tsx
@@ -328,6 +346,7 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │   │   │   └── index.ts
 │   │   └── shared
 │   │       ├── AlertDialog.tsx
+│   │       ├── ItemsPage.tsx
 │   │       ├── PageHeader.tsx
 │   │       ├── ReusableInput.tsx
 │   │       ├── ReusableSelect.tsx
