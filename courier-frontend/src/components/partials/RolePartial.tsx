@@ -21,6 +21,7 @@ export const RolePartial = () => {
     return (
         <>
             <ItemsPage<Role>
+                title="Roles"
                 placeholder="Search role..."
                 buttonName="Create Role"
                 fetchItems={fetchRoles}

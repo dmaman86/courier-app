@@ -46,3 +46,9 @@ export interface SignUpCredentials {
     passwordOne: string;
     passwordTwo: string;
 }
+
+export interface OfficeResponse{
+    id: number;
+    name: string;
+    branches: Branch[]
+}

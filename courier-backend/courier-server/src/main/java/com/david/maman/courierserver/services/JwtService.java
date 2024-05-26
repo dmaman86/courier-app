@@ -11,6 +11,8 @@ public interface JwtService {
 
     public Boolean isPublicKeyAvailable();
 
+    public void setPublicKeyFlag(Boolean flag);
+
     public Claims extractAllClaims(String token);
 
     public Boolean isTokenExpired(String token);

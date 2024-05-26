@@ -23,8 +23,8 @@ public interface BranchRepository extends JpaRepository<Branch, Long>{
 
     Optional<Branch> findByCityAndAddress(String city, String address);
 
-    List<Branch> findByCityContaining(String city);
-    List<Branch> findByAddressContaining(String address);
+    List<Branch> findByCityContainingIgnoreCase(String city);
+    List<Branch> findByAddressContainingIgnoreCase(String address);
 
     List<Branch> findAll();
 

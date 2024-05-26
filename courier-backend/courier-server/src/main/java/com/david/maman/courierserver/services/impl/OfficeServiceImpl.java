@@ -1,7 +1,9 @@
 package com.david.maman.courierserver.services.impl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.kafka.common.errors.ResourceNotFoundException;
@@ -151,7 +153,21 @@ public class OfficeServiceImpl implements OfficeService{
     }
 
     @Override
-    public List<Office> searchOffices(String toSearch) {
-        return officeRepository.findByNameContaining(toSearch);
+    public List<OfficeDto> searchOffices(String toSearch) {
+        // return officeRepository.findByNameContaining(toSearch);
+
+        List<Office> officesByName = officeRepository.findByNameContainingIgnoreCase(toSearch);
+
+        List<Branch> branchesByCity = branchRepository.findByCityContainingIgnoreCase(toSearch);
+        List<Branch> branchesByAddress = branchRepository.findByAddressContainingIgnoreCase(toSearch);
+
+        Set<Office> officesByBranches = new HashSet<>();
+        branchesByCity.forEach(branch -> officesByBranches.add(branch.getOffice()));
+        branchesByAddress.forEach(branch -> officesByBranches.add(branch.getOffice()));
+
+        Set<Office> combinatedOffices = new HashSet<>(officesByName);
+        combinatedOffices.addAll(officesByBranches);
+
+        return combinatedOffices.stream().map(office -> officeMapper.toDto(office)).collect(Collectors.toList());
     }
 }

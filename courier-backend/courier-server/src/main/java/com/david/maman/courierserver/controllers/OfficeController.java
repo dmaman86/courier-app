@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.courierserver.mappers.OfficeMapper;
@@ -71,6 +72,12 @@ public class OfficeController {
     public ResponseEntity<?> deleteOffice(@PathVariable Long id){
         officeService.deleteOffice(id);
         return ResponseEntity.ok("Office deleted");
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchOffice(@RequestParam("query") String query){
+        List<OfficeDto> officesDto = officeService.searchOffices(query);
+        return ResponseEntity.ok(officesDto);
     }
 
 }

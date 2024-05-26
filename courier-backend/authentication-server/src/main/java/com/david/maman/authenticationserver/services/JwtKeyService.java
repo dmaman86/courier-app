@@ -89,7 +89,6 @@ public class JwtKeyService {
         logger.info("Generated RSA keys: {}", rsaKeyManager);
 
         publicKeyString = rsaKeyManager.getPublicKeyAsBase64();
-        // kafkaTemplate.send("public-key-topic", publicKeyString);
 
         if(publicKeyRequestPending){
             sendPublicKey();
@@ -98,9 +97,6 @@ public class JwtKeyService {
 
         jwtService.setKeyPair(rsaKeyManager.getKeyPair());
         resumekafkaListener();
-
-        /*if(registry.getListenerContainer("publicKeyRequestConsumerId").isContainerPaused())
-            registry.getListenerContainer("publicKeyRequestConsumerId").resume();*/
     }
 
     @KafkaListener(id = "publicKeyRequestConsumerId", topics = "request-public-key", groupId = "auth-primes-consumer")

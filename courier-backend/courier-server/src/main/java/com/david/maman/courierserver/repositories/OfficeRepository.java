@@ -23,6 +23,6 @@ public interface OfficeRepository extends JpaRepository<Office, Long>{
     @Query("SELECT o FROM Office o LEFT JOIN FETCH o.branches WHERE o.id = :id")
     Office findByIdWithBranches(@Param("id") Long id);
 
-    List<Office> findByNameContaining(String name);
+    List<Office> findByNameContainingIgnoreCase(String name);
     
 }

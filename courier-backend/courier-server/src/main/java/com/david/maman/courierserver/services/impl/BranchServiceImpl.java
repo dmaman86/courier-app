@@ -121,8 +121,8 @@ public class BranchServiceImpl implements BranchService{
     public List<BranchDto> searchBranches(String toSearch) {
         List<Branch> branches = new ArrayList<>();
 
-        branches.addAll(branchRepository.findByCityContaining(toSearch));
-        branches.addAll(branchRepository.findByAddressContaining(toSearch));
+        branches.addAll(branchRepository.findByCityContainingIgnoreCase(toSearch));
+        branches.addAll(branchRepository.findByAddressContainingIgnoreCase(toSearch));
 
         Set<Branch> uniBranches = new HashSet<>(branches);
         // return new ArrayList<>(uniBranches);

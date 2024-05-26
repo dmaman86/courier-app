@@ -15,6 +15,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 
@@ -78,6 +79,16 @@ public class JwtValidationService {
 
     public void resumeKafkaListener(){
         registry.getListenerContainer("publicKeyConsumerId").resume();
+    }
+
+    @KafkaListener(id = "authServerHealthCheckConsumerId", topics = "auth-server-health-check", groupId = "public-key-group")
+    public void handleAuthServerHealthCheck(String message){
+        if("auth-server-restarted".equals(message)){
+            logger.info("Detected authentication-server restart, requesting public key again");
+            jwtService.setPublicKeyFlag(false);
+            resumeKafkaListener();
+            requestPublicKey();
+        }
     }
 
 }

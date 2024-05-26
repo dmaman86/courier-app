@@ -30,6 +30,11 @@ public class JwtServiceImpl implements JwtService{
     }
 
     @Override
+    public void setPublicKeyFlag(Boolean flag){
+        this.isPublicKeyAvailable = flag;
+    }
+
+    @Override
     public Claims extractAllClaims(String token){
         return Jwts.parserBuilder()
                 .setSigningKey(this.jwtPublicKey)

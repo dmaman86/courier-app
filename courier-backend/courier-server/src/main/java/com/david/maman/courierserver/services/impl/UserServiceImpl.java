@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -19,12 +18,10 @@ import com.david.maman.courierserver.mappers.OfficeMapper;
 import com.david.maman.courierserver.mappers.RoleMapper;
 import com.david.maman.courierserver.mappers.UserMapper;
 import com.david.maman.courierserver.models.dto.ClientDto;
-import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.dto.UserDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
-import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
 import com.david.maman.courierserver.repositories.BranchRepository;
 import com.david.maman.courierserver.repositories.OfficeRepository;
@@ -48,22 +45,10 @@ public class UserServiceImpl implements UserService{
     private ContactService contactService;
 
     @Autowired
-    private RoleService roleService;
-
-    @Autowired
     private KafkaProducerService kafkaProducerUser;
 
     @Autowired
-    private OfficeMapper officeMapper;
-
-    @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private RoleMapper roleMapper;
-
-    @Autowired
-    private BranchMapper branchMapper;
 
     @Autowired
     private ContactMapper contactMapper;
