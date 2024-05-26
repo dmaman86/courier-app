@@ -1,11 +1,8 @@
 package com.david.maman.courierserver.mappers;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
 
 import com.david.maman.courierserver.models.dto.ClientDto;
@@ -67,22 +64,3 @@ public class ContactMapper {
 
 
 }
-
-/*@Mapper(componentModel = "spring", uses = {OfficeMapper.class, BranchMapper.class})
-public interface ContactMapper {
-
-    ContactDto toDto(Contact contact);
-
-    Contact toEntity(ClientDto clientDto);
-
-    Contact toEntity(ContactDto contactDto);
-
-    List<ContactDto> toDto(List<Contact> contacts);
-    List<Contact> toEntity(List<ClientDto> clientDtos);
-
-    Set<ContactDto> toDtoSet(Set<Contact> contacts);
-
-    void updateContactFromDto(ClientDto clientDto, @MappingTarget Contact contact);
-
-}*/
-

@@ -1,9 +1,5 @@
 package com.david.maman.courierserver.mappers;
 
-import java.util.List;
-import java.util.Set;
-
-import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 
 import com.david.maman.courierserver.models.dto.RoleDto;
@@ -27,16 +23,4 @@ public class RoleMapper{
                         .build();
     }
 }
-
-/*@Mapper(componentModel = "spring")
-public interface RoleMapper {
-    RoleDto toDto(Role role);
-    Role toEntity(RoleDto roleDto);
-
-    List<RoleDto> toDto(List<Role> roles);
-    List<Role> toEntity(List<RoleDto> roleDtos);
-
-    Set<RoleDto> toDtoSet(Set<Role> roles);
-    Set<Role> toEntitySet(Set<RoleDto> roleDtos);
-}*/
 

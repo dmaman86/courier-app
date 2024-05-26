@@ -52,3 +52,10 @@ export interface OfficeResponse{
     name: string;
     branches: Branch[]
 }
+
+export interface BranchResponse{
+    id: number;
+    city: string;
+    address: string;
+    office: Office;
+}

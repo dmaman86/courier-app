@@ -10,6 +10,7 @@ export const paths = {
         userDetails: '/courier/users/me',
         users: '/courier/users/',
         offices: '/courier/office/',
+        branches: '/courier/branch/',
         roles: '/courier/role/',
         createOrUpdateUser: '/courier/users/user',
         createOrUpdateClient: '/courier/users/client',

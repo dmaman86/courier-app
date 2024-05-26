@@ -15,7 +15,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
 

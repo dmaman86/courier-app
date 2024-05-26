@@ -22,7 +22,6 @@ import com.david.maman.courierserver.models.dto.ContactDto;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.services.ContactService;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/courier/contact")

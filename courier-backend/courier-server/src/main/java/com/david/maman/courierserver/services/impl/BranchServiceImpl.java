@@ -124,8 +124,12 @@ public class BranchServiceImpl implements BranchService{
         branches.addAll(branchRepository.findByCityContainingIgnoreCase(toSearch));
         branches.addAll(branchRepository.findByAddressContainingIgnoreCase(toSearch));
 
+        List<Office> offices = officeRepository.findByNameContainingIgnoreCase(toSearch);
+        for(Office office : offices){
+            branches.addAll(office.getBranches());
+        }
+
         Set<Branch> uniBranches = new HashSet<>(branches);
-        // return new ArrayList<>(uniBranches);
         return uniBranches.stream().map(branchMapper::toDto).collect(Collectors.toList());
     }
 

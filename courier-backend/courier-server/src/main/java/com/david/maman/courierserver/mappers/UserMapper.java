@@ -1,11 +1,8 @@
 package com.david.maman.courierserver.mappers;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
 
 import com.david.maman.courierserver.models.dto.ClientDto;
@@ -89,19 +86,4 @@ public class UserMapper{
         }).collect(Collectors.toSet());
     }
 }
-
-/*@Mapper(componentModel = "spring")
-public interface UserMapper {
-    UserDto toDto(User user);
-    User toEntity(UserDto userDto);
-
-    List<UserDto> toDto(List<User> users);
-    List<User> toEntity(List<UserDto> userDtos);
-
-    Set<UserDto> toDtoSet(Set<User> users);
-    Set<User> toEntitySet(Set<UserDto> userDtos);
-
-    void updateUserFromDto(UserDto userDto, @MappingTarget User user);
-
-}*/
 

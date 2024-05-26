@@ -1,11 +1,5 @@
 package com.david.maman.courierserver.models.entities;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import com.david.maman.courierserver.models.dto.RoleDto;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

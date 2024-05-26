@@ -12,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.david.maman.courierserver.mappers.BranchMapper;
 import com.david.maman.courierserver.mappers.ContactMapper;
-import com.david.maman.courierserver.mappers.OfficeMapper;
-import com.david.maman.courierserver.mappers.RoleMapper;
 import com.david.maman.courierserver.mappers.UserMapper;
 import com.david.maman.courierserver.models.dto.ClientDto;
 import com.david.maman.courierserver.models.dto.UserDto;
@@ -28,7 +25,6 @@ import com.david.maman.courierserver.repositories.OfficeRepository;
 import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.ContactService;
 import com.david.maman.courierserver.services.KafkaProducerService;
-import com.david.maman.courierserver.services.RoleService;
 import com.david.maman.courierserver.services.UserService;
 
 import jakarta.transaction.Transactional;
@@ -174,7 +170,6 @@ public class UserServiceImpl implements UserService{
         users.addAll(userRepository.findByEmailContainingAndIsActive(toSearch, true));
 
         Set<User> uniqueUsers = new HashSet<>(users);
-        // return new ArrayList<>(uniqueUsers);
         return uniqueUsers.stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 
