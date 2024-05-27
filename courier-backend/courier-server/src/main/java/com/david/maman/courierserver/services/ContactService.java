@@ -22,7 +22,7 @@ public interface ContactService {
 
     List<Contact> findAllContacts();
 
-    List<Contact> searchContacts(String toSearch);
+    List<ContactDto> searchContacts(String toSearch);
 
     List<Contact> findContactsByOfficeAndBranches(Office office, List<Branch> branches);
 }

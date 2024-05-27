@@ -7,4 +7,5 @@ export { ErrorBoundary } from './pages/ErrorBoundary';
 export { SettingsAdmin } from './pages/admin/SettingsAdmin';
 export { UsersPage } from './common/UsersPage';
 export { SignUp } from './pages/SignUp';
+export { ContactsPage } from './common/ContactsPage';
 

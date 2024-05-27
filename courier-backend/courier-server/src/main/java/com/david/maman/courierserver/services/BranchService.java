@@ -28,6 +28,9 @@ public interface BranchService {
 
     List<BranchDto> getAllBranches();
 
+    List<Branch> searchBranchesByCity(String city);
+    List<Branch> searchBranchesByAddress(String address);
+
     List<BranchDto> searchBranches(String toSearch);
 
 }

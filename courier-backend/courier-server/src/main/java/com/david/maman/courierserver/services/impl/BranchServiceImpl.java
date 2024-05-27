@@ -118,11 +118,21 @@ public class BranchServiceImpl implements BranchService{
     }
 
     @Override
+    public List<Branch> searchBranchesByCity(String city){
+        return branchRepository.findByCityContainingIgnoreCase(city);
+    }
+
+    @Override
+    public List<Branch> searchBranchesByAddress(String address){
+        return branchRepository.findByAddressContainingIgnoreCase(address);
+    }
+
+    @Override
     public List<BranchDto> searchBranches(String toSearch) {
         List<Branch> branches = new ArrayList<>();
 
-        branches.addAll(branchRepository.findByCityContainingIgnoreCase(toSearch));
-        branches.addAll(branchRepository.findByAddressContainingIgnoreCase(toSearch));
+        branches.addAll(searchBranchesByCity(toSearch));
+        branches.addAll(searchBranchesByAddress(toSearch));
 
         List<Office> offices = officeRepository.findByNameContainingIgnoreCase(toSearch);
         for(Office office : offices){

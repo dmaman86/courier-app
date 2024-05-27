@@ -6,3 +6,4 @@ export { OfficesPartial } from './OfficesPartial';
 export { OfficeList } from './OfficeList';
 export { BranchesPartial } from './BranchesPartial';
 export { BranchList } from './BranchList';
+export { ContactList } from './ContactList';

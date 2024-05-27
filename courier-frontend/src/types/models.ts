@@ -59,3 +59,12 @@ export interface BranchResponse{
     address: string;
     office: Office;
 }
+
+export interface Contact{
+    id: number;
+    name: string;
+    lastName: string;
+    phone: string;
+    office: Office;
+    branches: Branch[]
+}

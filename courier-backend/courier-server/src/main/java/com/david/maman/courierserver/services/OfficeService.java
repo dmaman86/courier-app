@@ -25,5 +25,7 @@ public interface OfficeService {
     List<OfficeDto> getAllOffices();
 
     List<OfficeDto> searchOffices(String toSearch);
+
+    List<Office> searchOfficesByName(String name);
     
 }

@@ -153,10 +153,15 @@ public class OfficeServiceImpl implements OfficeService{
     }
 
     @Override
+    public List<Office> searchOfficesByName(String name){
+        return officeRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Override
     public List<OfficeDto> searchOffices(String toSearch) {
         // return officeRepository.findByNameContaining(toSearch);
 
-        List<Office> officesByName = officeRepository.findByNameContainingIgnoreCase(toSearch);
+        List<Office> officesByName = searchOfficesByName(toSearch);
 
         List<Branch> branchesByCity = branchRepository.findByCityContainingIgnoreCase(toSearch);
         List<Branch> branchesByAddress = branchRepository.findByAddressContainingIgnoreCase(toSearch);

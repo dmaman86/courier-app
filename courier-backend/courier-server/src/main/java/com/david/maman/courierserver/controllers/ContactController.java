@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.courierserver.mappers.ContactMapper;
@@ -54,9 +55,10 @@ public class ContactController {
         return ResponseEntity.ok(contactDtos);
     }
 
-    @GetMapping("/search/{toSearch}")
-    public ResponseEntity<?> searchContacts(@PathVariable String toSearch){
-        return ResponseEntity.ok(contactService.searchContacts(toSearch));
+    @GetMapping("/search")
+    public ResponseEntity<List<ContactDto>> searchContacts(@RequestParam("query") String query) {
+        List<ContactDto> result = contactService.searchContacts(query);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/")

@@ -5,22 +5,35 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.david.maman.courierserver.mappers.ContactMapper;
 import com.david.maman.courierserver.models.dto.ContactDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.repositories.ContactRepository;
+import com.david.maman.courierserver.services.BranchService;
 import com.david.maman.courierserver.services.ContactService;
+import com.david.maman.courierserver.services.OfficeService;
 
 @Service
 public class ContactServiceImpl implements ContactService{
 
     @Autowired
     private ContactRepository contactRepository;
+
+    @Autowired
+    private OfficeService officeService;
+
+    @Autowired
+    private BranchService branchService;
+
+    @Autowired
+    private ContactMapper contactMapper;
 
     @Override
     public Optional<Contact> findContactById(Long id) {
@@ -49,15 +62,32 @@ public class ContactServiceImpl implements ContactService{
 
 
     @Override
-    public List<Contact> searchContacts(String toSearch) {
+    public List<ContactDto> searchContacts(String toSearch) {
         List<Contact> contacts = new ArrayList<>();
 
-        contacts.addAll(contactRepository.findByNameContaining(toSearch));
-        contacts.addAll(contactRepository.findByLastNameContaining(toSearch));
-        contacts.addAll(contactRepository.findByPhoneContaining(toSearch));
+        contacts.addAll(contactRepository.findByNameContainingIgnoreCase(toSearch));
+        contacts.addAll(contactRepository.findByLastNameContainingIgnoreCase(toSearch));
+        contacts.addAll(contactRepository.findByPhoneContainingIgnoreCase(toSearch));
+
+        List<Office> offices = officeService.searchOfficesByName(toSearch);
+        for(Office office : offices){
+            contacts.addAll(office.getContacts());
+        }
+
+        List<Branch> branchesByCity = branchService.searchBranchesByCity(toSearch);
+        List<Branch> branchesByAddress = branchService.searchBranchesByAddress(toSearch);
+
+        for(Branch branch : branchesByCity){
+            contacts.addAll(branch.getContacts());
+        }
+
+        for(Branch branch : branchesByAddress){
+            contacts.addAll(branch.getContacts());
+        }
 
         Set<Contact> uniContacts = new HashSet<>(contacts);
-        return new ArrayList<>(uniContacts);
+        // return new ArrayList<>(uniContacts);
+        return uniContacts.stream().map(contactMapper::toDto).collect(Collectors.toList());
     }
 
     @Override

@@ -21,9 +21,9 @@ public interface ContactRepository extends JpaRepository<Contact, Long>{
 
     Optional<Contact> findByNameAndLastNameAndPhone(String firstName, String lastName, String phone);
 
-    List<Contact> findByNameContaining(String firstName);
-    List<Contact> findByLastNameContaining(String lastName);
-    List<Contact> findByPhoneContaining(String phone);
+    List<Contact> findByNameContainingIgnoreCase(String firstName);
+    List<Contact> findByLastNameContainingIgnoreCase(String lastName);
+    List<Contact> findByPhoneContainingIgnoreCase(String phone);
 
     List<Contact> findAll();
 

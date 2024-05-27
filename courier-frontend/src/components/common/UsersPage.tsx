@@ -5,6 +5,7 @@ import { paths } from "../../helpers";
 import { ItemsPage } from "../shared";
 import { UserList } from "../partials";
 import { UserForm } from "../modal";
+import { useEffect, useState } from "react";
 
 
 export const UsersPage = () => {
@@ -25,6 +26,15 @@ export const UsersPage = () => {
     const deleteUser = (userId: number) => serviceRequest.deleteItem<string>(`${paths.courier.deleteUser}/${userId}`);
     const searchUser = (query: string) => serviceRequest.getItem<User[]>(`${paths.courier.users}/search?query=${query}`);
 
+    const isAdmin = userDetails?.roles?.some(role => role.name === 'ROLE_ADMIN') || false;
+
+    const userColumns: ValueColumn[] = [
+        { key: 'fullname', label: 'Fullname' },
+        { key: 'contactInfo', label: 'Contact Information' },
+        ...(isAdmin ? [{ key: 'roles', label: 'Roles' }] : [])
+    ];
+
+
     const createOrUpdateItem = (item: User | Client) => {
         if(isClient(item)){
             return item.id ? updateClient(item) : createClient(item);
@@ -36,13 +46,6 @@ export const UsersPage = () => {
     const isClient = (item: User | Client): item is Client => {
         return (item as Client).office !== undefined && (item as Client).branches !== undefined;
     };
-
-
-    const userColumns: ValueColumn[] = [
-        { key: 'fullname', label: 'Fullname' },
-        { key: 'contactInfo', label: 'Contact Information' },
-        ...(userDetails?.roles.some(role => role.name === 'ROLE_ADMIN') ? [{ key: 'roles', label: 'Roles' }] : [])
-    ];
 
     return(
         <>
