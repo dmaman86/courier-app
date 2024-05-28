@@ -9,6 +9,11 @@ export interface Role {
     name: string;
 }
 
+export interface StatusOrder {
+    id: number;
+    name: string;
+}
+
 export interface User {
     id: number;
     email: string;
@@ -23,10 +28,13 @@ export interface Office {
     name: string;
 }
 
-export interface Branch {
-    id: number;
+export interface BranchInfo {
     city: string;
     address: string;
+}
+
+export interface Branch extends BranchInfo{
+    id: number;
 }
 
 export interface Client extends User{
@@ -50,7 +58,7 @@ export interface SignUpCredentials {
 export interface OfficeResponse{
     id: number;
     name: string;
-    branches: Branch[]
+    branches: Branch[] | BranchInfo[]
 }
 
 export interface BranchResponse{

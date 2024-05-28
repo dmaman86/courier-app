@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import { BranchesPartial, OfficesPartial, RolePartial } from "../../partials";
+import { BranchesPartial, OfficesPartial, RolePartial, StatusOrdersPartial } from "../../partials";
 
 
 export const SettingsAdmin = () => {
@@ -50,6 +50,18 @@ export const SettingsAdmin = () => {
                     </AccordionSummary>
                     <AccordionDetails>
                         {expanded === 'panel3' && <BranchesPartial />}
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
+                    <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel4-content"
+                        id="panel4-header"
+                    >
+                        {expanded !== 'panel4' && <Typography>Status Orders</Typography>}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        {expanded === 'panel4' && <StatusOrdersPartial />}
                     </AccordionDetails>
                 </Accordion>
             </div>

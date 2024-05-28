@@ -2,7 +2,6 @@ package com.david.maman.courierserver.controllers;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.courierserver.helpers.CustomUserDetails;
-import com.david.maman.courierserver.mappers.BranchMapper;
-import com.david.maman.courierserver.mappers.ContactMapper;
-import com.david.maman.courierserver.mappers.OfficeMapper;
-import com.david.maman.courierserver.mappers.RoleMapper;
 import com.david.maman.courierserver.mappers.UserMapper;
-import com.david.maman.courierserver.models.dto.BranchDto;
 import com.david.maman.courierserver.models.dto.ClientDto;
-import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.dto.UserDto;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.User;
@@ -46,10 +39,6 @@ public class UserController {
     private final UserService userService;
     private final ContactService contactService;
     private final UserMapper userMapper;
-    private final OfficeMapper officeMapper;
-    private final BranchMapper branchMapper;
-    private final RoleMapper roleMapper;
-    private final ContactMapper contactMapper;
 
 
     @PostMapping("/user")

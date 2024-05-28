@@ -3,7 +3,7 @@ import { serviceRequest } from "../../services";
 import { OfficeResponse, ValueColumn } from "../../types";
 import { OfficeForm } from "../modal";
 import { ItemsPage } from "../shared";
-import { OfficeList } from "./OfficeList";
+import { OfficeList } from "../listTables/OfficeList";
 
 const officeColumns: ValueColumn[] = [
     { key: 'name', label: 'Office Name' },
@@ -14,12 +14,12 @@ export const OfficesPartial = () => {
 
     const fetchOffices = () => serviceRequest.getItem<OfficeResponse[]>(paths.courier.offices);
 
-    const createOrUpdateOffice = (office: OfficeResponse) => office.id ? serviceRequest.putItem<OfficeResponse>(`${paths.courier.offices}/${office.id}`, office) :
+    const createOrUpdateOffice = (office: OfficeResponse) => office.id ? serviceRequest.putItem<OfficeResponse>(`${paths.courier.offices}${office.id}`, office) :
                                                             serviceRequest.postItem<OfficeResponse>(paths.courier.offices, office);
 
-    const deleteOffice = (officeId: number) => serviceRequest.deleteItem<string>(`${paths.courier.offices}/id/${officeId}`);
+    const deleteOffice = (officeId: number) => serviceRequest.deleteItem<string>(`${paths.courier.offices}id/${officeId}`);
 
-    const searchOffice = (query: string) => serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}/search?query=${query}`);
+    const searchOffice = (query: string) => serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}search?query=${query}`);
 
     return(
         <>

@@ -361,9 +361,7 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │   │   ├── authContext.tsx
 │   │   ├── index.ts
 │   │   ├── useAuth.ts
-│   │   ├── useFetch.ts
 │   │   ├── useFetchAndLoad.ts
-│   │   ├── useFetchQuery.ts
 │   │   ├── useForm.ts
 │   │   ├── useList.ts
 │   │   ├── useLocalStorage.ts

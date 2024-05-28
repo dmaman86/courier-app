@@ -3,7 +3,7 @@ import { serviceRequest } from "../../services";
 import { paths } from "../../helpers";
 import {  ItemsPage } from "../shared";
 import {  RoleForm } from "../modal";
-import { RoleList } from "./RoleList";
+import { RoleList } from "../listTables/RoleList";
 
 const rolesColumns: ValueColumn[] = [
     { key: 'role', label: 'Role Name' }

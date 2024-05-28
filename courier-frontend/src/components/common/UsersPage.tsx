@@ -3,9 +3,8 @@ import { Client, User, ValueColumn } from "../../types";
 import { serviceRequest } from "../../services";
 import { paths } from "../../helpers";
 import { ItemsPage } from "../shared";
-import { UserList } from "../partials";
+import { UserList } from "../listTables";
 import { UserForm } from "../modal";
-import { useEffect, useState } from "react";
 
 
 export const UsersPage = () => {

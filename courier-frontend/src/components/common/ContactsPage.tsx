@@ -2,7 +2,7 @@ import { paths } from "../../helpers"
 import { serviceRequest } from "../../services"
 import { Contact, ValueColumn } from "../../types"
 import { ContactForm } from "../modal";
-import { ContactList } from "../partials";
+import { ContactList } from "../listTables";
 import { ItemsPage } from "../shared";
 
 

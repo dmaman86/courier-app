@@ -1,7 +1,5 @@
 package com.david.maman.courierserver.controllers;
 
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.david.maman.courierserver.mappers.StatusMapper;
 import com.david.maman.courierserver.models.dto.StatusDto;
 import com.david.maman.courierserver.models.entities.Status;
 import com.david.maman.courierserver.services.StatusService;
@@ -29,16 +28,12 @@ public class StatusController {
 
     private final StatusService statusService;
 
+    private final StatusMapper statusMapper;
+
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getStatusById(@PathVariable Long id){
-        try {
-            Status status = statusService.findStatusById(id).orElseThrow(
-                () -> new Exception("Status not found")
-            );
-            return ResponseEntity.ok(status);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        StatusDto statusDto = statusService.findStatusById(id);
+        return ResponseEntity.ok(statusDto);
     }
 
     @GetMapping("/")
@@ -48,44 +43,20 @@ public class StatusController {
 
     @PostMapping("/")
     public ResponseEntity<?> saveStatus(@RequestBody StatusDto statusDto){
-        try{
-            Optional<Status> statusDb = statusService.findStatusByName(statusDto.getName());
-            if(statusDb.isPresent()){
-                throw new Exception("Status already exists");
-            }
-            Status status = Status.toEntity(statusDto);
-            statusService.saveStatus(status);
-            return ResponseEntity.ok(status);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Status status = statusService.saveStatus(statusDto);
+            
+        return ResponseEntity.ok(statusMapper.toDto(status));
     }
 
     @PutMapping("/")
-    public ResponseEntity<?> updateStatus(@RequestBody Status status){
-        try{
-            Optional<Status> statusDb = statusService.findStatusById(status.getId());
-            if(statusDb.isEmpty()){
-                throw new Exception("Status not found");
-            }
-            statusService.saveStatus(status);
-            return ResponseEntity.ok(status);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> updateStatus(@RequestBody StatusDto statusDto){
+        Status status = statusService.updateStatus(statusDto);
+        return ResponseEntity.ok(statusMapper.toDto(status));
     }
 
     @DeleteMapping("/id/{id}")
     public ResponseEntity<?> deleteStatus(@PathVariable Long id){
-        try{
-            Optional<Status> statusDb = statusService.findStatusById(id);
-            if(statusDb.isEmpty()){
-                throw new Exception("Status not found");
-            }
-            statusService.deleteStatus(id);
-            return ResponseEntity.ok("Status deleted");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        statusService.deleteStatus(id);
+        return ResponseEntity.ok("Status deleted");
     }
 }

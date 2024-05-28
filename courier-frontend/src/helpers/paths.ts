@@ -13,6 +13,7 @@ export const paths = {
         branches: '/courier/branch/',
         contacts: '/courier/contact/',
         roles: '/courier/role/',
+        statusOrder: '/courier/status/',
         createOrUpdateUser: '/courier/users/user',
         createOrUpdateClient: '/courier/users/client',
         deleteUser: '/courier/users/id',

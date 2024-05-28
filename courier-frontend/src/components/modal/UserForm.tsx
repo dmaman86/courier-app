@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { User, Role, FormState, OptionType, FetchResponse, Client, Branch, Office, BranchOptionType } from '../../types';
+import { User, Role, FormState, OptionType, FetchResponse, Client, Branch, OfficeResponse, BranchOptionType } from '../../types';
 import { paths, validatorForm } from '../../helpers';
 import { useAuth, useFetchAndLoad, useForm } from '../../hooks';
 import { ReusableInput, ReusableSelect } from '../shared';
@@ -10,12 +10,6 @@ import { MultiValue, SingleValue } from 'react-select';
 interface UserFormProps {
     userId: number| null;
     onSubmit: (user: User | Client) => void;
-}
-
-interface OfficeResponse {
-    id: number;
-    name: string;
-    branches: Branch[]
 }
 
 const tranformRoles = (roles: Role[]): OptionType[] => {
@@ -62,6 +56,8 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
     const [ responseFetchDetails, setResponseFetchDetails ] = useState<FetchResponse<User | Client>>({ data: null, error: null });
 
     const [ isClient, setIsClient ] = useState<boolean>(false);
+
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 
     const [ formData, setFormData ] = useState<Client>({
         id: user?.id || 0,
@@ -131,6 +127,13 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
             fetchUserDetails();
         }
     }, [userId, callEndPoint, responseFetchDetails]);
+
+    useEffect(() => {
+        if(userDetails){
+            const userRoles = userDetails.roles;
+            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        }
+    }, [userDetails]);
 
     useEffect(() => {
         if(!loading && responseFetchDetails.data && !responseFetchDetails.error && user === null){
@@ -401,7 +404,7 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                     </div>
                 </div>
                 {
-                    (!isCurrentUser) && (
+                    (isAdmin && !isCurrentUser) && (
                         <div className='row'>
                             <div className='col-12'>
                                 <ReusableSelect<OptionType>
@@ -416,7 +419,7 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                     )
                 }
                 {
-                    (isClient) && (
+                    (isAdmin && isClient) && (
                         <>
                             <div className='row'>
                                 <div className='col-12'>
