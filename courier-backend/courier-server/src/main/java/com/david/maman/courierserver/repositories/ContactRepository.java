@@ -3,7 +3,10 @@ package com.david.maman.courierserver.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -11,7 +14,7 @@ import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
 
-public interface ContactRepository extends JpaRepository<Contact, Long>{
+public interface ContactRepository extends JpaRepository<Contact, Long>, JpaSpecificationExecutor<Contact>{
 
     Optional<Contact> findById(Long id);
 
@@ -25,7 +28,13 @@ public interface ContactRepository extends JpaRepository<Contact, Long>{
     List<Contact> findByLastNameContainingIgnoreCase(String lastName);
     List<Contact> findByPhoneContainingIgnoreCase(String phone);
 
+    Page<Contact> findByNameContainingIgnoreCase(String firstName, Pageable pageable);
+    Page<Contact> findByLastNameContainingIgnoreCase(String lastName, Pageable pageable);
+    Page<Contact> findByPhoneContainingIgnoreCase(String phone, Pageable pageable);
+
     List<Contact> findAll();
+
+    Page<Contact> findAll(Pageable pageable);
 
     List<Contact> findByOfficeAndBranches(Office office, List<Branch> branches);
     

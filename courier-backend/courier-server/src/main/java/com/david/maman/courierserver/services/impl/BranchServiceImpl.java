@@ -11,10 +11,16 @@ import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.david.maman.courierserver.mappers.BranchMapper;
+import com.david.maman.courierserver.models.criteria.BranchSpecification;
 import com.david.maman.courierserver.models.dto.BranchDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Office;
@@ -105,6 +111,12 @@ public class BranchServiceImpl implements BranchService{
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<Branch> findAllBranches(Pageable pageable){
+        return branchRepository.findAll(pageable);
+    }
+
+    @Override
     public List<BranchDto> getAllBranches(){
         List<Branch> branches = branchRepository.findAll();
         logger.info("find list branches: {}", branches);
@@ -128,19 +140,22 @@ public class BranchServiceImpl implements BranchService{
     }
 
     @Override
-    public List<BranchDto> searchBranches(String toSearch) {
-        List<Branch> branches = new ArrayList<>();
+    @Transactional(readOnly = true)
+    public Page<Branch> searchBranches(String toSearch, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        String[] searchTerms = toSearch.split("\\s+");
+        Set<Branch> uniBranches = new HashSet<>();
 
-        branches.addAll(searchBranchesByCity(toSearch));
-        branches.addAll(searchBranchesByAddress(toSearch));
-
-        List<Office> offices = officeRepository.findByNameContainingIgnoreCase(toSearch);
-        for(Office office : offices){
-            branches.addAll(office.getBranches());
+        for(String term : searchTerms){
+            Specification<Branch> spec = Specification.where(BranchSpecification.containsTextInAttributes(term));
+            uniBranches.addAll(branchRepository.findAll(spec, pageable).getContent());
         }
+        List<Branch> uniBranchesList = new ArrayList<>(uniBranches);
 
-        Set<Branch> uniBranches = new HashSet<>(branches);
-        return uniBranches.stream().map(branchMapper::toDto).collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), uniBranchesList.size());
+        Page<Branch> pageOfBranches = new PageImpl<>(uniBranchesList.subList(start, end), pageable, uniBranchesList.size());
+        return pageOfBranches;
     }
 
 }

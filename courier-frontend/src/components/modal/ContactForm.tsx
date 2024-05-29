@@ -220,7 +220,7 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
     }, [formData]);
 
     const fetchOffices = useCallback(async () => {
-        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(paths.courier.offices));
+        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
         setOfficesResponse(response);
     }, [callEndPoint]);
 

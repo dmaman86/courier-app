@@ -1,9 +1,14 @@
 package com.david.maman.courierserver.controllers;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,11 +52,23 @@ public class BranchController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<?> getAllBranches(){
         List<BranchDto> branchesDto = branchService.getAllBranches();
-        logger.info("list branchesDto: {}", branchesDto);
         return ResponseEntity.ok(branchesDto);
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<?> getAllBranches(@RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "10") int size){
+        // List<BranchDto> branchesDto = branchService.getAllBranches();
+        // logger.info("list branchesDto: {}", branchesDto);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Branch> branchesPage = branchService.findAllBranches(pageable);
+        List<BranchDto> branchesDto = branchesPage.getContent().stream().map(branchMapper::toDto).collect(Collectors.toList());
+        Page<BranchDto> branchesDtoPage = new PageImpl<>(branchesDto, pageable, branchesPage.getTotalElements());
+
+        return ResponseEntity.ok(branchesDtoPage);
     }
 
     @PostMapping("/")
@@ -73,9 +90,14 @@ public class BranchController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchBranches(@RequestParam("query") String query){
-        List<BranchDto> branchesDto = branchService.searchBranches(query);
-        return ResponseEntity.ok(branchesDto);
+    public ResponseEntity<?> searchBranches(@RequestParam("query") String query,
+                                            @RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "10") int size){
+        Page<Branch> branchesPage = branchService.searchBranches(query, page, size);
+        List<BranchDto> branchesDto = branchesPage.getContent().stream().map(branchMapper::toDto).collect(Collectors.toList());
+        Page<BranchDto> branchesDtoPage = new PageImpl<>(branchesDto, PageRequest.of(page, size), branchesPage.getTotalElements());
+        
+        return ResponseEntity.ok(branchesDtoPage);
     }
 
 }

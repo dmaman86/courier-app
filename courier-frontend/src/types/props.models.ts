@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode } from "react";
 import { Token, User } from "./models";
 import { ActionMeta, MultiValue, SingleValue } from "react-select";
-import { AxiosCall, FetchResponse } from "./axios.models";
+import { AxiosCall, FetchResponse, PageRespost } from "./axios.models";
 
 export interface InputProps{
     label?: string;
@@ -78,6 +78,9 @@ export interface GenericTableProps<T extends { id: number }>{
     columns: ValueColumn[];
     actions?: Action<T>[];
     BodyComponent: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;
+    pagination: { page: number, size: number, totalItems: number };
+    onPageChange: (event: unknown, page: number) => void;
+    onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export interface State<T> {
@@ -85,9 +88,11 @@ export interface State<T> {
     showAlertDialog: boolean;
     selectedItem: number | null;
     itemToDelete: number | null;
-    responseList: FetchResponse<T[]>;
+    responseList: FetchResponse<PageRespost<T[]>>;
     responseItem: FetchResponse<T>;
     responseDelete: FetchResponse<string>;
+    searchQuery: string;
+    pagination: { page: number, size: number, totalItems: number }
 }
 
 export interface Item {
@@ -98,10 +103,10 @@ export interface ItemsPageProps<T extends Item> {
     title?: string;
     placeholder: string;
     buttonName: string;
-    fetchItems: () => AxiosCall<T[]>;
+    fetchItems: (page: number, size: number) => AxiosCall<PageRespost<T[]>>;
     createOrUpdateItem: (item: T) => AxiosCall<T>;
     deleteItem: (itemId: number) => AxiosCall<string>;
-    searchItem?: (search: string) => AxiosCall<T[]>;
+    searchItem?: (search: string, page: number, size: number) => AxiosCall<PageRespost<T[]>>;
     renderItemForm: (item: number | null, onSubmit: (item: T) => void) => JSX.Element;
     columns: ValueColumn[];
     renderItemList: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;

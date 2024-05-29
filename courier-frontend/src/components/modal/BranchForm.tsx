@@ -158,7 +158,7 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
     }, [offices, formData]);
 
     const fetchOffices = useCallback(async () => {
-        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(paths.courier.offices));
+        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
         setResponseOffices(response);
     }, [callEndPoint]);
 

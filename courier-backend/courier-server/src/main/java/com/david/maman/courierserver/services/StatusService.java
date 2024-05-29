@@ -3,6 +3,9 @@ package com.david.maman.courierserver.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.david.maman.courierserver.models.dto.StatusDto;
 import com.david.maman.courierserver.models.entities.Status;
 
@@ -23,6 +26,8 @@ public interface StatusService {
     void deleteStatus(Long id);
 
     List<StatusDto> getAll();
+
+    Page<Status> getAll(Pageable pageable);
 
     List<Status> getFinishProccess();
 

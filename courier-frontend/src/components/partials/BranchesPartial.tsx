@@ -1,6 +1,6 @@
 import { paths } from "../../helpers";
 import { serviceRequest } from "../../services";
-import { BranchResponse, ValueColumn } from "../../types"
+import { BranchResponse, PageRespost, ValueColumn } from "../../types"
 import { BranchForm } from "../modal";
 import { ItemsPage } from "../shared";
 import { BranchList } from "../listTables/BranchList";
@@ -13,14 +13,14 @@ const branchColumns: ValueColumn[] = [
 
 export const BranchesPartial = () => {
 
-    const fetchBranches = () => serviceRequest.getItem<BranchResponse[]>(paths.courier.branches);
+    const fetchBranches = (page: number, size: number) => serviceRequest.getItem<PageRespost<BranchResponse[]>>(`${paths.courier.branches}?page=${page}&size=${size}`);
 
     const createOrUpdateBranch = (branch: BranchResponse) => branch.id ? serviceRequest.putItem<BranchResponse>(`${paths.courier.branches}${branch.id}`, branch) :
                                                             serviceRequest.postItem<BranchResponse>(paths.courier.branches, branch);
 
     const deleteBranch = (branchId: number) => serviceRequest.deleteItem<string>(`${paths.courier.branches}id/${branchId}`);
 
-    const searchBranch = (query: string) => serviceRequest.getItem<BranchResponse[]>(`${paths.courier.branches}search?query=${query}`);
+    const searchBranch = (query: string, page: number, size: number) => serviceRequest.getItem<PageRespost<BranchResponse[]>>(`${paths.courier.branches}search?query=${query}&page=${page}&size=${size}`);
 
 
     return(

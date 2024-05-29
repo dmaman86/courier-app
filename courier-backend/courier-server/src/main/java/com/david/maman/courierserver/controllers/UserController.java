@@ -2,9 +2,14 @@ package com.david.maman.courierserver.controllers;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -62,13 +67,6 @@ public class UserController {
         return ResponseEntity.ok("Client registered successfully");
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> getUser(Authentication authentication){
-        var customUser = (CustomUserDetails) authentication.getPrincipal();
-        var user = userMapper.toDto(customUser.getUser());
-        return ResponseEntity.ok(user);
-    }
-
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id){
         User user = userService.loadUserById(id).orElseThrow(
@@ -87,11 +85,24 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-
-    @GetMapping("/")
+    @GetMapping("/all")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COURIER')")
     public ResponseEntity<List<UserDto>> getAllUsers(){
         return ResponseEntity.ok(userService.getAll());
+    }
+
+
+    @GetMapping("/")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COURIER')")
+    public ResponseEntity<?> getAllUsers(@RequestParam(value = "page", defaultValue = "0") int page,
+                                        @RequestParam(value = "size", defaultValue = "10") int size){
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> usersPage = userService.getAllUsers(pageable);
+        List<UserDto> userDtos = usersPage.stream().map(userMapper::toDto).collect(Collectors.toList());
+        Page<UserDto> userDtoPage = new PageImpl<>(userDtos, pageable, usersPage.getTotalElements());
+
+        return ResponseEntity.ok(userDtoPage);
     }
 
     @DeleteMapping("/id/{id}")
@@ -129,8 +140,15 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchUsers(@RequestParam String query){
-        return ResponseEntity.ok(userService.searchUsers(query));
+    public ResponseEntity<?> searchUsers(@RequestParam("query") String query,
+                                        @RequestParam(value = "page", defaultValue = "0") int page,
+                                        @RequestParam(value = "size", defaultValue = "10") int size){
+        
+        Page<User> usersPage = userService.searchUsers(query, page, size);
+        List<UserDto> userDtos = usersPage.stream().map(userMapper::toDto).collect(Collectors.toList());
+        Page<UserDto> userDtoPage = new PageImpl<>(userDtos, PageRequest.of(page, size), usersPage.getTotalElements());
+        
+        return ResponseEntity.ok(userDtoPage);
     }
 
 }

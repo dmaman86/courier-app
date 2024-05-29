@@ -7,6 +7,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,17 +52,38 @@ public class ContactController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<?> getAllContacts(){
         List<Contact> contacts = contactService.findAllContacts();
         List<ContactDto> contactDtos = contacts.stream().map(contactMapper::toDto).collect(Collectors.toList());
         return ResponseEntity.ok(contactDtos);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/")
+    public ResponseEntity<?> getAllContacts(@RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "10") int size){
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Contact> contactsPage = contactService.findAllContacts(pageable);
+        List<ContactDto> contactDtos = contactsPage.stream().map(contactMapper::toDto).collect(Collectors.toList());
+        Page<ContactDto> contactDtoPage = new PageImpl<>(contactDtos, pageable, contactsPage.getTotalElements());
+        return ResponseEntity.ok(contactDtoPage);
+    }
+
+    /*@GetMapping("/search")
     public ResponseEntity<List<ContactDto>> searchContacts(@RequestParam("query") String query) {
         List<ContactDto> result = contactService.searchContacts(query);
         return ResponseEntity.ok(result);
+    }*/
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<ContactDto>> searchContacts(@RequestParam("query") String query,
+                                                            @RequestParam(value = "page", defaultValue = "0") int page,
+                                                            @RequestParam(value = "size", defaultValue = "10") int size){
+        Page<Contact> contactsPage = contactService.searchContacts(query, page, size);
+        List<ContactDto> contactsDto = contactsPage.stream().map(contactMapper::toDto).collect(Collectors.toList());
+        Page<ContactDto> contactDtoPage = new PageImpl<>(contactsDto, PageRequest.of(page, size), contactsPage.getTotalElements());
+        return ResponseEntity.ok(contactDtoPage);                                                        
     }
 
     @PostMapping("/")

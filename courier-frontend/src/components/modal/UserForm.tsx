@@ -307,12 +307,12 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
     const isCurrentUser = userDetails?.id === formData.id;
 
     const fetchRoles = useCallback(async() => {
-        const response = await callEndPoint(serviceRequest.getItem<Role[]>(paths.courier.roles));
+        const response = await callEndPoint(serviceRequest.getItem<Role[]>(`${paths.courier.roles}all`));
         setResponseRoles(response);
     }, [callEndPoint]);
 
     const fetchOffices = useCallback(async () => {
-        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(paths.courier.offices));
+        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
         setOfficesResponse(response);
     }, [callEndPoint]);
 
@@ -437,7 +437,7 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                                     <ReusableSelect<BranchOptionType>
                                         label='Select Branches:'
                                         value={formData.branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
-                                        options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
+                                        options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
                                         onChange={handleBranchChange}
                                         isMulti
                                     />

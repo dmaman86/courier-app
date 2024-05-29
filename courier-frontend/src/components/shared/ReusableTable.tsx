@@ -1,9 +1,9 @@
-import { TableContainer, Table, TableHead, TableRow, TableCell, Paper } from "@mui/material";
+import { TableContainer, Table, TableHead, TableRow, TableCell, Paper, TablePagination } from "@mui/material";
 
 import { GenericTableProps } from "../../types";
 
 
-export const ReusableTable = <T extends { id: number }>({ data, columns, actions, BodyComponent }: GenericTableProps<T>) => {
+export const ReusableTable = <T extends { id: number }>({ data, columns, actions, BodyComponent, pagination, onPageChange, onRowsPerPageChange }: GenericTableProps<T>) => {
 
     if(!data){
         return (
@@ -28,6 +28,15 @@ export const ReusableTable = <T extends { id: number }>({ data, columns, actions
                     <BodyComponent data={data} actions={actions}/>
                 </Table>
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={pagination.totalItems}
+                rowsPerPage={pagination.size}
+                page={pagination.page}
+                onPageChange={onPageChange}
+                onRowsPerPageChange={onRowsPerPageChange}
+            />
         </>
     );
 

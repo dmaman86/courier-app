@@ -10,10 +10,17 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.david.maman.courierserver.mappers.ContactMapper;
 import com.david.maman.courierserver.mappers.UserMapper;
+import com.david.maman.courierserver.models.criteria.UserSepecification;
 import com.david.maman.courierserver.models.dto.ClientDto;
 import com.david.maman.courierserver.models.dto.UserDto;
 import com.david.maman.courierserver.models.entities.Branch;
@@ -26,8 +33,6 @@ import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.ContactService;
 import com.david.maman.courierserver.services.KafkaProducerService;
 import com.david.maman.courierserver.services.UserService;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -161,16 +166,27 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public List<UserDto> searchUsers(String toSearch) {
-        List<User> users = new ArrayList<>();
+    @Transactional(readOnly = true)
+    public Page<User> getAllUsers(Pageable pageable){
+        return userRepository.findByIsActive(true, pageable);
+    }
 
-        users.addAll(userRepository.findByNameContainingAndIsActive(toSearch, true));
-        users.addAll(userRepository.findByLastNameContainingAndIsActive(toSearch, true));
-        users.addAll(userRepository.findByPhoneContainingAndIsActive(toSearch, true));
-        users.addAll(userRepository.findByEmailContainingAndIsActive(toSearch, true));
+    @Override
+    @Transactional(readOnly = true)
+    public Page<User> searchUsers(String toSearch, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        String[] searchTerms = toSearch.split("\\s+");
+        Set<User> uniqueUsers = new HashSet<>();
 
-        Set<User> uniqueUsers = new HashSet<>(users);
-        return uniqueUsers.stream().map(userMapper::toDto).collect(Collectors.toList());
+        for(String term : searchTerms){
+            Specification<User> spec = Specification.where(UserSepecification.containsTextInAttributes(term, true));
+            uniqueUsers.addAll(userRepository.findAll(spec, pageable).getContent());
+        }
+        List<User> uniqueUsersList = new ArrayList<>(uniqueUsers);
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), uniqueUsersList.size());
+        return new PageImpl<>(uniqueUsersList.subList(start, end), pageable, uniqueUsersList.size());
     }
 
     @Override

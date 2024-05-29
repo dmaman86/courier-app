@@ -1,7 +1,14 @@
 package com.david.maman.courierserver.controllers;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.courierserver.mappers.RoleMapper;
@@ -39,9 +47,20 @@ public class RoleController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<?> getAllRoles() {
         return ResponseEntity.ok(roleService.findAllRoles());
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<?> getAllRoles(@RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Role> rolesPage = roleService.findAllRoles(pageable);
+        List<RoleDto> rolesDto = rolesPage.getContent().stream().map(roleMapper::toDto).collect(Collectors.toList());
+        Page<RoleDto> rolesDtoPage = new PageImpl<>(rolesDto, pageable, rolesPage.getTotalElements());
+        return ResponseEntity.ok(rolesDtoPage);
     }
 
     @PostMapping("/")

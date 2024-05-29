@@ -1,9 +1,14 @@
 package com.david.maman.courierserver.controllers;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,11 +52,23 @@ public class OfficeController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<?> getAllOffices(){
         List<OfficeDto> officesDto = officeService.getAllOffices();
-        logger.info("list officesDto: {}", officesDto);
         return ResponseEntity.ok(officesDto);
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<?> getAllOffices(@RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "10") int size){
+        // List<OfficeDto> officesDto = officeService.getAllOffices();
+        // logger.info("list officesDto: {}", officesDto);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Office> officesPage = officeService.findAllOffices(pageable);
+        List<OfficeDto> officesDto = officesPage.getContent().stream().map(officeMapper::toDto).collect(Collectors.toList());
+        Page<OfficeDto> officesDtoPage = new PageImpl<>(officesDto, pageable, officesPage.getTotalElements());
+        
+        return ResponseEntity.ok(officesDtoPage);
     }
 
     @PostMapping("/")
@@ -73,9 +90,15 @@ public class OfficeController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchOffice(@RequestParam("query") String query){
-        List<OfficeDto> officesDto = officeService.searchOffices(query);
-        return ResponseEntity.ok(officesDto);
+    public ResponseEntity<?> searchOffice(@RequestParam("query") String query,
+                                            @RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "10") int size){
+        // List<OfficeDto> officesDto = officeService.searchOffices(query);
+        Page<Office> officesPage = officeService.searchOffices(query, page, size);
+        List<OfficeDto> officesDto = officesPage.getContent().stream().map(officeMapper::toDto).collect(Collectors.toList());
+        Page<OfficeDto> officesDtoPage = new PageImpl<>(officesDto, PageRequest.of(page, size), officesPage.getTotalElements());
+        
+        return ResponseEntity.ok(officesDtoPage);
     }
 
 }

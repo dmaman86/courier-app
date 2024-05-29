@@ -1,6 +1,6 @@
 import { paths } from "../../helpers"
 import { serviceRequest } from "../../services"
-import { Contact, ValueColumn } from "../../types"
+import { Contact, PageRespost, ValueColumn } from "../../types"
 import { ContactForm } from "../modal";
 import { ContactList } from "../listTables";
 import { ItemsPage } from "../shared";
@@ -8,14 +8,14 @@ import { ItemsPage } from "../shared";
 
 export const ContactsPage = () => {
 
-    const fetchContacts = () => serviceRequest.getItem<Contact[]>(paths.courier.contacts);
+    const fetchContacts = (page: number, size: number) => serviceRequest.getItem<PageRespost<Contact[]>>(`${paths.courier.contacts}?page=${page}&size=${size}`);
 
     const createOrUpdateContact = (contact: Contact) => contact.id ? serviceRequest.putItem<Contact, Contact>(paths.courier.contacts, contact) :
                                                         serviceRequest.postItem<Contact, Contact>(paths.courier.contacts, contact);
 
     const deleteContact = (contactId: number) => serviceRequest.deleteItem<string>(`${paths.courier.contacts}id/${contactId}`);
 
-    const searchContact = (query: string) => serviceRequest.getItem<Contact[]>(`${paths.courier.contacts}search?query=${query}`);
+    const searchContact = (query: string, page: number, size: number) => serviceRequest.getItem<PageRespost<Contact[]>>(`${paths.courier.contacts}search?query=${query}&page=${page}&size=${size}`);
 
     const contactColumns: ValueColumn[] = [
         { key: 'fullname', label: 'Fullname' },

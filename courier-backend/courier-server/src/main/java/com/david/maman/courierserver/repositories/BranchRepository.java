@@ -3,14 +3,17 @@ package com.david.maman.courierserver.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Office;
 
-public interface BranchRepository extends JpaRepository<Branch, Long>{
+public interface BranchRepository extends JpaRepository<Branch, Long>, JpaSpecificationExecutor<Branch>{
 
     Optional<Branch> findById(Long id);
 
@@ -26,7 +29,12 @@ public interface BranchRepository extends JpaRepository<Branch, Long>{
     List<Branch> findByCityContainingIgnoreCase(String city);
     List<Branch> findByAddressContainingIgnoreCase(String address);
 
+    Page<Branch> findByCityContainingIgnoreCase(String city, Pageable pageable);
+    Page<Branch> findByAddressContainingIgnoreCase(String address, Pageable pageable);
+
     List<Branch> findAll();
+
+    Page<Branch> findAll(Pageable pageable);
 
     long countByOffice(Office office);
 

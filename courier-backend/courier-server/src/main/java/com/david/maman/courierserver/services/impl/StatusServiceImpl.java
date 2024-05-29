@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,6 +73,11 @@ public class StatusServiceImpl implements StatusService{
         List<Status> status = statusRepository.findAll();
 
         return status.stream().map(statusMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Status> getAll(Pageable pageable){
+        return statusRepository.findAll(pageable);
     }
 
     @Override

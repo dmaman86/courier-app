@@ -1,5 +1,6 @@
 package com.david.maman.courierserver.services.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -10,16 +11,23 @@ import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.david.maman.courierserver.mappers.OfficeMapper;
+import com.david.maman.courierserver.models.criteria.OfficeSpecification;
 import com.david.maman.courierserver.models.dto.OfficeDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.repositories.BranchRepository;
 import com.david.maman.courierserver.repositories.ContactRepository;
 import com.david.maman.courierserver.repositories.OfficeRepository;
+import com.david.maman.courierserver.services.BranchService;
 import com.david.maman.courierserver.services.OfficeService;
 
 @Service
@@ -32,6 +40,9 @@ public class OfficeServiceImpl implements OfficeService{
 
     @Autowired
     private BranchRepository branchRepository;
+
+    @Autowired
+    private BranchService branchService;
 
     @Autowired
     private ContactRepository contactRepository;
@@ -145,6 +156,12 @@ public class OfficeServiceImpl implements OfficeService{
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<Office> findAllOffices(Pageable pageable){
+        return officeRepository.findAll(pageable);
+    }
+
+    @Override
     public List<OfficeDto> getAllOffices(){
         List<Office> offices = officeRepository.findAll();
         logger.info("list office: {}", offices);
@@ -158,21 +175,23 @@ public class OfficeServiceImpl implements OfficeService{
     }
 
     @Override
-    public List<OfficeDto> searchOffices(String toSearch) {
-        // return officeRepository.findByNameContaining(toSearch);
+    @Transactional(readOnly = true)
+    public Page<Office> searchOffices(String toSearch, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        String[] searchTerms = toSearch.split("\\s+");
+        Set<Office> combinatedOffices = new HashSet<>();
 
-        List<Office> officesByName = searchOfficesByName(toSearch);
+        for(String term : searchTerms){
+            Specification<Office> spect = Specification.where(OfficeSpecification.containsTextInAttributes(term));
+            combinatedOffices.addAll(officeRepository.findAll(spect, pageable).getContent());
+        }
 
-        List<Branch> branchesByCity = branchRepository.findByCityContainingIgnoreCase(toSearch);
-        List<Branch> branchesByAddress = branchRepository.findByAddressContainingIgnoreCase(toSearch);
+        List<Office> offices = new ArrayList<>(combinatedOffices);
 
-        Set<Office> officesByBranches = new HashSet<>();
-        branchesByCity.forEach(branch -> officesByBranches.add(branch.getOffice()));
-        branchesByAddress.forEach(branch -> officesByBranches.add(branch.getOffice()));
-
-        Set<Office> combinatedOffices = new HashSet<>(officesByName);
-        combinatedOffices.addAll(officesByBranches);
-
-        return combinatedOffices.stream().map(office -> officeMapper.toDto(office)).collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), offices.size());
+        Page<Office> pageOffices = new PageImpl<Office>(offices.subList(start, end), pageable, offices.size());
+        
+        return pageOffices;
     }
 }

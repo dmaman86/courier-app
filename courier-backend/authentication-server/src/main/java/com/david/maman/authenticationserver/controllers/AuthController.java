@@ -11,7 +11,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,11 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.UserDetailsServiceImpl;
-import com.david.maman.authenticationserver.models.dto.AuthResponse;
 import com.david.maman.authenticationserver.models.dto.LoginDto;
 import com.david.maman.authenticationserver.models.dto.UserCredentialsPassword;
-import com.david.maman.authenticationserver.models.entities.UserCredentials;
-import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
 import com.david.maman.authenticationserver.services.AuthService;
 import com.google.common.base.Strings;
 
@@ -39,7 +35,6 @@ public class AuthController {
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsServiceImpl userDetailsService;
-    private final UserCredentialsRepository userCredentialsRepository;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto) {

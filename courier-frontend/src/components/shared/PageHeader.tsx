@@ -6,7 +6,7 @@ import _ from 'lodash';
 
 
 interface PageHeaderProps {
-    title?: string;
+    title: string;
     placeholder: string;
     buttonName: string;
     onSearch?: (query: string) => void;
@@ -55,16 +55,14 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
         <>
             <div className="container">
                 <div className="row align-items-center mb-4">
-                    {
-                        title && (<div className="col-12 col-md-6">
-                                        <h1>{title}</h1>
-                                    </div>)
-                    }
-                    <div className="col-12 col-md-6 mt-3 mt-md-0">
+                    <div className="col-12 col-md-4">
+                        <h1>{title}</h1>
+                    </div>
+                    <div className="col-12 col-md-8 mt-3 mt-md-0">
                         <div className="row d-flex justify-content-end">
                             {
                                 showSearch && onSearch && (
-                                    <div className="col-8">
+                                    <div className="col-6">
                                         <ReusableInput
                                             inputProps={{
                                                 name: 'search',
@@ -80,8 +78,8 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
                             }
                             {
                                 isAdmin && (
-                                    <div className={`col-${onSearch ? '4' : '12'} d-flex justify-content-end`}>
-                                        <button onClick={onCreate} className="btn btn-primary ms-3">{buttonName}</button>
+                                    <div className={`col-${onSearch ? '6' : '12'} d-flex justify-content-center`}>
+                                        <button onClick={onCreate} className="btn btn-primary">{buttonName}</button>
                                     </div>
                                 )
                             }

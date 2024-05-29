@@ -5,35 +5,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.david.maman.courierserver.mappers.ContactMapper;
+import com.david.maman.courierserver.models.criteria.ContactSpecification;
 import com.david.maman.courierserver.models.dto.ContactDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.repositories.ContactRepository;
-import com.david.maman.courierserver.services.BranchService;
 import com.david.maman.courierserver.services.ContactService;
-import com.david.maman.courierserver.services.OfficeService;
 
 @Service
 public class ContactServiceImpl implements ContactService{
 
     @Autowired
     private ContactRepository contactRepository;
-
-    @Autowired
-    private OfficeService officeService;
-
-    @Autowired
-    private BranchService branchService;
-
-    @Autowired
-    private ContactMapper contactMapper;
 
     @Override
     public Optional<Contact> findContactById(Long id) {
@@ -60,34 +54,28 @@ public class ContactServiceImpl implements ContactService{
         return contactRepository.findAll();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Contact> findAllContacts(Pageable pageable){
+        return contactRepository.findAll(pageable);
+    }
 
     @Override
-    public List<ContactDto> searchContacts(String toSearch) {
-        List<Contact> contacts = new ArrayList<>();
+    @Transactional(readOnly = true)
+    public Page<Contact> searchContacts(String toSearch, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        String[] searchTerms = toSearch.split("\\s+");
+        Set<Contact> uniContacts = new HashSet<>();
 
-        contacts.addAll(contactRepository.findByNameContainingIgnoreCase(toSearch));
-        contacts.addAll(contactRepository.findByLastNameContainingIgnoreCase(toSearch));
-        contacts.addAll(contactRepository.findByPhoneContainingIgnoreCase(toSearch));
-
-        List<Office> offices = officeService.searchOfficesByName(toSearch);
-        for(Office office : offices){
-            contacts.addAll(office.getContacts());
+        for(String term : searchTerms){
+            Specification<Contact> spec = Specification.where(ContactSpecification.containsTextInAttributes(term));
+            uniContacts.addAll(contactRepository.findAll(spec, pageable).getContent());
         }
+        List<Contact> uniContactsList = new ArrayList<>(uniContacts);
 
-        List<Branch> branchesByCity = branchService.searchBranchesByCity(toSearch);
-        List<Branch> branchesByAddress = branchService.searchBranchesByAddress(toSearch);
-
-        for(Branch branch : branchesByCity){
-            contacts.addAll(branch.getContacts());
-        }
-
-        for(Branch branch : branchesByAddress){
-            contacts.addAll(branch.getContacts());
-        }
-
-        Set<Contact> uniContacts = new HashSet<>(contacts);
-        // return new ArrayList<>(uniContacts);
-        return uniContacts.stream().map(contactMapper::toDto).collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), uniContactsList.size());
+        return new PageImpl<>(uniContactsList.subList(start, end), pageable, uniContactsList.size());
     }
 
     @Override

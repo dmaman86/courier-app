@@ -1,13 +1,13 @@
 import { paths } from "../../helpers";
 import { serviceRequest } from "../../services"
-import { StatusOrder, ValueColumn } from "../../types";
+import { PageRespost, StatusOrder, ValueColumn } from "../../types";
 import { StatusOrderForm } from "../modal";
 import { ItemsPage } from "../shared";
 import { StatusOrdersList } from "../listTables/StatusOrdersList";
 
 export const StatusOrdersPartial = () => {
 
-    const fetchStatusOrders = () => serviceRequest.getItem<StatusOrder[]>(paths.courier.statusOrder);
+    const fetchStatusOrders = (page: number, size: number) => serviceRequest.getItem<PageRespost<StatusOrder[]>>(`${paths.courier.statusOrder}?page=${page}&size=${size}`);
 
     const createOrUpdateStatusOrder = (statusOrder: StatusOrder) => statusOrder.id ? serviceRequest.putItem<StatusOrder>(paths.courier.statusOrder, statusOrder) :
                                                     serviceRequest.postItem<StatusOrder>(paths.courier.statusOrder, statusOrder);

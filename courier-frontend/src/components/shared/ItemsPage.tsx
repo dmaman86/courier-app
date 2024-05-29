@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer } from "react";
-import { Action, FetchResponse, Item, ItemsPageProps, State } from "../../types";
+import { Action, FetchResponse, Item, ItemsPageProps, PageRespost, State } from "../../types";
 import { useFetchAndLoad, useList } from "../../hooks";
 import { PageHeader } from "./PageHeader";
 import { CircularProgress } from "@mui/material";
@@ -12,10 +12,12 @@ type ActionType<T> =
     | { type: 'TOGGLE_ALERT_DIALOG' }
     | { type: 'SET_SELECTED_ITEM'; payload: number | null }
     | { type: 'SET_ITEM_TO_DELETE'; payload: number | null }
-    | { type: 'SET_RESPONSE_LIST'; payload: FetchResponse<T[]> }
+    | { type: 'SET_RESPONSE_LIST'; payload: FetchResponse<PageRespost<T[]>> }
     | { type: 'SET_RESPONSE_ITEM'; payload: FetchResponse<T> }
     | { type: 'SET_DELETE_RESPONSE'; payload: FetchResponse<string> }
-    | { type: 'RESET_STATE' };
+    | { type: 'RESET_STATE' }
+    | { type: 'SET_SEARCH_QUERY', payload: string }
+    | { type: 'SET_PAGINATION'; payload: { page: number; size: number; totalItems: number }};
 
 const initialState = <T extends Item>(): State<T> => ({
     showModal: false,
@@ -25,6 +27,8 @@ const initialState = <T extends Item>(): State<T> => ({
     responseList: { data: null, error: null },
     responseItem: { data: null, error: null },
     responseDelete: { data: null, error: null },
+    searchQuery: '',
+    pagination: { page: 0, size: 5, totalItems: 0 },
 })
 
 const reducer = <T extends Item>(state: State<T>, action: ActionType<T>): State<T> => {
@@ -43,6 +47,10 @@ const reducer = <T extends Item>(state: State<T>, action: ActionType<T>): State<
             return { ...state, responseItem: action.payload };
         case 'SET_DELETE_RESPONSE':
             return { ...state, responseDelete: action.payload };
+        case 'SET_SEARCH_QUERY':
+            return { ...state, searchQuery: action.payload };
+        case 'SET_PAGINATION':
+            return { ...state, pagination: action.payload };
         case 'RESET_STATE':
             return initialState();
         default:
@@ -68,8 +76,8 @@ export const ItemsPage = <T extends Item>({ title,
     const { items, setAllItems, addItem, updateItem, removeItem, existItem } = useList<T>([]);
     const { loading, callEndPoint } = useFetchAndLoad();
 
-    const fetch = useCallback(async () => {
-        const result = await callEndPoint(fetchItems());
+    const fetch = useCallback(async (page: number, size: number) => {
+        const result = await callEndPoint(fetchItems(page, size));
         dispatch({ type: 'SET_RESPONSE_LIST', payload: result });
     }, [callEndPoint, fetchItems]);
 
@@ -78,9 +86,9 @@ export const ItemsPage = <T extends Item>({ title,
         dispatch({ type: 'SET_RESPONSE_ITEM', payload: result });
     }, [callEndPoint, createOrUpdateItem]);
 
-    const search = useCallback(async (query: string) => {
+    const search = useCallback(async (query: string, page: number, size: number) => {
         if(showSearch && searchItem){
-            const result = await callEndPoint(searchItem(query));
+            const result = await callEndPoint(searchItem(query, page, size));
             dispatch({ type: 'SET_RESPONSE_LIST', payload: result });
         }
     }, [callEndPoint, searchItem, showSearch]);
@@ -91,13 +99,14 @@ export const ItemsPage = <T extends Item>({ title,
     }, [callEndPoint, deleteItem]);
 
     useEffect(() => {
-        if(!state.responseList.data && !state.responseList.error) fetch();
+        if(!state.responseList.data && !state.responseList.error) fetch(state.pagination.page, state.pagination.size);
     }, [fetch, state.responseList]);
 
     useEffect(() => {
         if(!loading && state.responseList.data && !state.responseList.error){
             console.log(state.responseList.data);
-            setAllItems(state.responseList.data as T[]);
+            setAllItems(state.responseList.data.content as T[]);
+            dispatch({ type: 'SET_PAGINATION', payload: { page: state.responseList.data.pageable.pageNumber, size: state.pagination.size, totalItems: state.responseList.data.totalElements }})
         }
     }, [loading, setAllItems, state.responseList]);
 
@@ -143,12 +152,27 @@ export const ItemsPage = <T extends Item>({ title,
     };
 
     const handleSearch = useCallback(async (query: string) => {
-        if(query) await search(query);
+        if(query){
+            dispatch({ type: 'SET_SEARCH_QUERY', payload: query });
+            await search(query, 0, state.pagination.size);
+        }
     }, [search]);
 
     const handleCreateItem = () => {
         dispatch({ type: 'SET_SELECTED_ITEM', payload: null });
         dispatch({ type: 'TOGGLE_MODAL' });
+    }
+
+    const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newSize = parseInt(event.target.value, 10);
+        dispatch({ type: 'SET_PAGINATION', payload: { page: 0, size: newSize, totalItems: state.pagination.totalItems }});
+        if(state.searchQuery) search(state.searchQuery, 0, state.pagination.size);
+        else fetch(0, newSize);
+    }
+
+    const handlePageChange = (event: unknown, page: number) => {
+        if(state.searchQuery) search(state.searchQuery, page, state.pagination.size);
+        else fetch(page, state.pagination.size);
     }
 
     const itemActions: Action<T>[] = [
@@ -162,12 +186,15 @@ export const ItemsPage = <T extends Item>({ title,
             <PageHeader title={title} placeholder={placeholder} buttonName={buttonName} onSearch={handleSearch} onCreate={handleCreateItem} showSearch={showSearch}/>
             <div className="container">
                 {
-                    loading ? <CircularProgress disableShrink /> : !items.length ? <div>Not found data.</div> : (
+                    loading ? <CircularProgress disableShrink /> : (
                         <ReusableTable<T> 
                             data={items}
                             columns={columns}
                             actions={itemActions}
                             BodyComponent={ItemList}
+                            pagination={state.pagination}
+                            onPageChange={handlePageChange}
+                            onRowsPerPageChange={handleRowsPerPageChange}
                         />
                     )
                 }
