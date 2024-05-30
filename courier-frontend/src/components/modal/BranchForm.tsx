@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { useFetchAndLoad, useForm } from "../../hooks";
-import { BranchResponse, FetchResponse, FormState, OfficeResponse, OptionType } from "../../types";
+import { useAsync, useFetchAndLoad, useForm } from "../../hooks";
+import { BranchResponse, FormState, OfficeResponse, OptionType } from "../../types";
 import { paths, validatorForm } from "../../helpers";
 import { serviceRequest } from "../../services";
 import { MultiValue, SingleValue } from "react-select";
 import { ReusableInput, ReusableSelect } from "../shared";
 
 interface BranchFormProps {
-    branchId: number | null;
+    branchId?: number | null;
     onSubmit: (branch: BranchResponse) => void;
 }
 
@@ -24,14 +24,6 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
     const [ offices, setOffices ] = useState<OfficeResponse[]>([]);
 
     const [ selectedOffice, setSelectedOffice ] = useState<OfficeResponse | null>(null);
-
-    const [ responseBranch, setResponseBranch ] = useState<FetchResponse<BranchResponse>>({
-        data: null, error: null
-    });
-
-    const [ responseOffices, setResponseOffices ] = useState<FetchResponse<OfficeResponse[]>>({
-        data: null, error: null
-    });
 
     const [ errorOfficeSelected, setErrorOfficeSelected ] = useState<string>('');
 
@@ -59,21 +51,17 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
 
     const { values, handleChange, onFocus, validateForm, setValues } = useForm(initialState);
 
-    useEffect(() => {
-        if(branchId !== null && !responseBranch.data && !responseBranch.error){
-            const fetchBranchDetails = async () => {
-                const response = await callEndPoint(serviceRequest.getItem<BranchResponse>(`${paths.courier.branches}id/${branchId}`));
-                setResponseBranch(response);
-            };
-            fetchBranchDetails();
-        }
-    }, [branchId, callEndPoint, responseBranch]);
+    const fetchBranchDetails = async() => {
+        if(!branchId) return Promise.resolve({ data: null, error: null });
 
-    useEffect(() => {
-        if(!loading && responseBranch.data && !responseBranch.error && !branch){
-            setBranch(responseBranch.data);
-        }
-    }, [loading, responseBranch, branch]);
+        return await callEndPoint(serviceRequest.getItem<BranchResponse>(`${paths.courier.branches}id/${branchId}`));
+    }
+
+    const handleBranchDetailsSuccess = (data: BranchResponse) => {
+        setBranch(data);
+    }
+
+    useAsync(fetchBranchDetails, handleBranchDetailsSuccess, () => {}, [branchId]);
 
     useEffect(() => {
         if(branch && !selectedOffice){
@@ -157,82 +145,75 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
         });
     }, [offices, formData]);
 
-    const fetchOffices = useCallback(async () => {
-        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
-        setResponseOffices(response);
-    }, [callEndPoint]);
+    const fetchOffices = async() => await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
 
-    useEffect(() => {
-        if(!offices.length && !responseOffices.data && !responseOffices.error)
-            fetchOffices();
-    }, [offices, responseOffices, fetchOffices]);
+    const handleOfficesSuccess = (data: OfficeResponse[]) => {
+        setOffices(data);
+    }
 
-    useEffect(() => {
-        if(!loading && responseOffices.data && !responseOffices.error){
-            setOffices(responseOffices.data);
-            setResponseOffices({ data: null, error: null });
-        }
-    }, [loading, responseOffices]);
-
-
+    useAsync(fetchOffices, handleOfficesSuccess, () => {}, []);
 
     return(
         <>
-            <form onSubmit={handleSubmit}>
-                <div className="row g-4">
-                    <div className="col-6">
-                        <ReusableInput 
-                            inputProps={{
-                                label: 'City',
-                                name: 'city',
-                                type: 'text',
-                                value: values.city.value,
-                                placeholder: 'Enter city name'
-                            }}
-                            onChange={handleChange}
-                            onFocus={onFocus}
-                            errorsMessage={values.city.error}
-                        />
-                    </div>
-                    <div className="col-6">
-                        <ReusableInput 
-                            inputProps={{
-                                label: 'Address',
-                                name: 'address',
-                                type: 'text',
-                                value: values.address.value,
-                                placeholder: 'Enter address'
-                            }}
-                            onChange={handleChange}
-                            onFocus={onFocus}
-                            errorsMessage={values.address.error}
-                        />
-                    </div>
-                </div>
-                <div className="row pt-3">
-                    <div className="col-12">
-                        <ReusableSelect<OptionType> 
-                            label='Select Office:'
-                            value={formData.office ? { value: formData.office.id, label: formData.office.name } : null}
-                            options={tranformOffices(offices)}
-                            onChange={handleOfficeChange}
-                            isMulti={false}
-                        />
-                    </div>
-                </div>
-                {
-                    errorOfficeSelected !== '' && (
-                        <div className="row">
-                            <div className="col text-danger">{errorOfficeSelected}</div>
+            {
+                !loading && (
+                    <form onSubmit={handleSubmit}>
+                        <div className="row g-4">
+                            <div className="col-6">
+                                <ReusableInput 
+                                    inputProps={{
+                                        label: 'City',
+                                        name: 'city',
+                                        type: 'text',
+                                        value: values.city.value,
+                                        placeholder: 'Enter city name'
+                                    }}
+                                    onChange={handleChange}
+                                    onFocus={onFocus}
+                                    errorsMessage={values.city.error}
+                                />
+                            </div>
+                            <div className="col-6">
+                                <ReusableInput 
+                                    inputProps={{
+                                        label: 'Address',
+                                        name: 'address',
+                                        type: 'text',
+                                        value: values.address.value,
+                                        placeholder: 'Enter address'
+                                    }}
+                                    onChange={handleChange}
+                                    onFocus={onFocus}
+                                    errorsMessage={values.address.error}
+                                />
+                            </div>
                         </div>
-                    )
-                }
-                <div className="row">
-                    <div className="col pt-3 text-center">
-                        <button className="btn btn-primary" type="submit">Save</button>
-                    </div>
-                </div>
-            </form>
+                        <div className="row pt-3">
+                            <div className="col-12">
+                                <ReusableSelect<OptionType> 
+                                    label='Select Office:'
+                                    value={formData.office ? { value: formData.office.id, label: formData.office.name } : null}
+                                    options={tranformOffices(offices)}
+                                    onChange={handleOfficeChange}
+                                    isMulti={false}
+                                />
+                            </div>
+                        </div>
+                        {
+                            errorOfficeSelected !== '' && (
+                                <div className="row">
+                                    <div className="col text-danger">{errorOfficeSelected}</div>
+                                </div>
+                            )
+                        }
+                        <div className="row">
+                            <div className="col pt-3 text-center">
+                                <button className="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                )
+            }
         </>
     )
 }

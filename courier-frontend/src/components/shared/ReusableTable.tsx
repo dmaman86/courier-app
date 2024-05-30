@@ -5,7 +5,7 @@ import { GenericTableProps } from "../../types";
 
 export const ReusableTable = <T extends { id: number }>({ data, columns, actions, BodyComponent, pagination, onPageChange, onRowsPerPageChange }: GenericTableProps<T>) => {
 
-    if(!data){
+    if(!data || !data.length){
         return (
             <>
                 <h1>No data avaible.</h1>

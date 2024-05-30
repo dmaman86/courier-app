@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Container, Grid, Paper, Typography, Stack, Button } from "@mui/material";
 
-import { useAuth, useFetchAndLoad } from "../../hooks";
-import { Branch, Client, FetchResponse, Role, User } from "../../types";
+import { useAsync, useAuth, useFetchAndLoad } from "../../hooks";
+import { Branch, Client, Role, User } from "../../types";
 import { GenericModal, UpdatePassword, UserForm } from "../modal";
 import { serviceRequest } from "../../services";
 import { paths } from "../../helpers";
@@ -15,30 +15,20 @@ export const Profile = () => {
 
     const { loading, callEndPoint } = useFetchAndLoad();
     const [ user, setUser ] = useState<User | Client | null>(null);
-    const [ responseFetchDetails, setResponseFetchDetails ] = useState<FetchResponse<User | Client>>({ data: null, error: null });
     const [ isClient, setIsClient ] = useState<boolean>(false);
 
     const toogleModalPassword = () => setShowModalPassword(!showModalPassword);
 
     const toogleModalDetails = () => setShowModalDetails(!showModalDetails);
 
+    const fetchUserDetails = async () => {
+        if(!userDetails || !userDetails.id) return Promise.resolve({ data: null, error: null });
+        return  await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${userDetails.id}`));
+    }
 
-    useEffect(() => {
-        if(userDetails !== null && !responseFetchDetails.data && !responseFetchDetails.error){
-            const fetchUserDetails = async () => {
-                const response = await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${userDetails.id}`));
-                setResponseFetchDetails(response);
-            };
-            fetchUserDetails();
-        }
-    }, [userDetails, callEndPoint, responseFetchDetails]);
+    const handleUserDetailsSuccess = (data: User | Client) => setUser(data);
 
-    useEffect(() => {
-        if(!loading && responseFetchDetails.data && !responseFetchDetails.error && user === null){
-            const userRes = responseFetchDetails.data as User | Client;
-            setUser(userRes);
-        }
-    }, [loading, responseFetchDetails, user]);
+    useAsync(fetchUserDetails, handleUserDetailsSuccess, () => {}, [userDetails]);
 
     useEffect(() => {
         if(user){

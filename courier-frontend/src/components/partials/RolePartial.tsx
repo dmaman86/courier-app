@@ -1,4 +1,4 @@
-import { PageRespost, Role, ValueColumn } from "../../types";
+import { PageResponse, Role, ValueColumn } from "../../types";
 import { serviceRequest } from "../../services";
 import { paths } from "../../helpers";
 import {  ItemsPage } from "../shared";
@@ -11,7 +11,7 @@ const rolesColumns: ValueColumn[] = [
 
 export const RolePartial = () => {
 
-    const fetchRoles = (page: number, size: number) => serviceRequest.getItem<PageRespost<Role[]>>(`${paths.courier.roles}?page=${page}&size=${size}`);
+    const fetchRoles = (page: number, size: number) => serviceRequest.getItem<PageResponse<Role[]>>(`${paths.courier.roles}?page=${page}&size=${size}`);
 
     const createOrUpdateRole = (role: Role) => role.id ? serviceRequest.putItem<Role>(paths.courier.roles, role) : 
                                     serviceRequest.postItem<Role>(paths.courier.roles, role);

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useFetchAndLoad, useForm } from "../../hooks";
-import { Branch, BranchInfo, BranchOptionType, FetchResponse, FormState, OfficeResponse } from "../../types";
+import { useAsync, useFetchAndLoad, useForm } from "../../hooks";
+import { Branch, BranchInfo, BranchOptionType, FormState, OfficeResponse } from "../../types";
 import { MultiValue, SingleValue } from "react-select";
 import { paths, validatorForm } from "../../helpers";
 import { serviceRequest } from "../../services";
@@ -35,9 +35,6 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
     const { loading, callEndPoint } = useFetchAndLoad();
 
     const [ office, setOffice ] = useState<OfficeResponse | null>(null);
-    const [ responseOfficeDetails, setResponseOfficeDetails ] = useState<FetchResponse<OfficeResponse>>({
-        data: null, error: null
-    });
 
     const [ branches, setBranches ] = useState<BranchInfo[]>([{ city: '', address: ''}]);
     const [ selectedBranches, setSelectedBranches ] = useState<Branch[]>([]);
@@ -70,21 +67,15 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
 
     const { values, handleChange, onFocus, validateForm, setValues } = useForm(initialState);
 
-    useEffect(() => {
-        if(officeId && !responseOfficeDetails.data && !responseOfficeDetails.error){
-            const fetchOfficeDetails = async () => {
-                const response = await callEndPoint(serviceRequest.getItem<OfficeResponse>(`${paths.courier.offices}id/${officeId}`));
-                setResponseOfficeDetails(response);
-            }
-            fetchOfficeDetails();
-        }
-    }, [officeId, responseOfficeDetails, callEndPoint]);
+    const fetchOfficeDetails = async() => {
+        if(!officeId) return Promise.resolve({ data: null, error: null });
 
-    useEffect(() => {
-        if(!loading && responseOfficeDetails.data && !responseOfficeDetails.error && !office){
-            setOffice(responseOfficeDetails.data);
-        }
-    }, [loading, responseOfficeDetails, office]);
+        return await callEndPoint(serviceRequest.getItem<OfficeResponse>(`${paths.courier.offices}id/${officeId}`));
+    }
+
+    const handleOfficeDetailsSuccess = (data: OfficeResponse) => setOffice(data);
+
+    useAsync(fetchOfficeDetails, handleOfficeDetailsSuccess, () => {}, [officeId]);
 
     useEffect(() => {
         if(office){
@@ -157,106 +148,110 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
 
     return(
         <>
-            <form onSubmit={handleSubmit}>
-                <div className="row g-4">
-                    <div className="col">
-                        <ReusableInput 
-                            inputProps={{
-                                label: 'Name',
-                                name: 'name',
-                                type: 'text',
-                                value: values.name.value,
-                                placeholder: 'Enter office name'
-                            }}
-                            onChange={handleChange}
-                            onFocus={onFocus}
-                            errorsMessage={values.name.error}
-                        />
-                    </div>
-                </div>
-                {
-                    (!officeId && branches.length > 0) && (
-                        branches.map((branch, index) => (
-                            <div key={`branch_${index}`}>
-                                <Divider textAlign="right">
-                                    <IconButton size="small" onClick={() => removeBranch(index)}>
-                                        <CloseIcon fontSize="small" />
-                                    </IconButton>
-                                </Divider>
-                                <div className="row">
-                                    <div className="col-6">
-                                            <ReusableInput 
-                                                inputProps={{
-                                                    label: 'City',
-                                                    name: `city_${index}`,
-                                                    type: 'text',
-                                                    value: values[`city_${index}`]?.value || '',
-                                                    placeholder: 'Enter city name'
-                                                }}
-                                                onChange={handleChange}
-                                                onFocus={onFocus}
-                                                errorsMessage={values[`city_${index}`]?.error}
-                                            />
-                                    </div>
-                                    <div className="col-6">
-                                            <ReusableInput 
-                                                inputProps={{
-                                                    label: 'Address',
-                                                    name: `address_${index}`,
-                                                    type: 'text',
-                                                    value: values[`address_${index}`]?.value || '',
-                                                    placeholder: 'Enter address'
-                                                }}
-                                                onChange={handleChange}
-                                                onFocus={onFocus}
-                                                errorsMessage={values[`address_${index}`]?.error}
-                                            />
-                                    </div>
-                                </div>
-                                {
-                                    (index === branches.length - 1) && (
+            {
+                !loading && (
+                    <form onSubmit={handleSubmit}>
+                        <div className="row g-4">
+                            <div className="col">
+                                <ReusableInput 
+                                    inputProps={{
+                                        label: 'Name',
+                                        name: 'name',
+                                        type: 'text',
+                                        value: values.name.value,
+                                        placeholder: 'Enter office name'
+                                    }}
+                                    onChange={handleChange}
+                                    onFocus={onFocus}
+                                    errorsMessage={values.name.error}
+                                />
+                            </div>
+                        </div>
+                        {
+                            (!officeId && branches.length > 0) && (
+                                branches.map((branch, index) => (
+                                    <div key={`branch_${index}`}>
                                         <Divider textAlign="right">
-                                            <IconButton size="small" onClick={addBranch}>
-                                                <AddIcon fontSize="small" />
+                                            <IconButton size="small" onClick={() => removeBranch(index)}>
+                                                <CloseIcon fontSize="small" />
                                             </IconButton>
                                         </Divider>
-                                    )
-                                }
-                            </div>
-                        ))
-                    )
-                }
-                {
-                    (officeId && office) && (
-                        <>
-                            <div className='row'>
-                                <div className='col-12'>
-                                    <ReusableSelect<BranchOptionType>
-                                        label='Select Branches:'
-                                        value={selectedBranches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
-                                        options={office.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
-                                        onChange={handleBranchChange}
-                                        isMulti
-                                    />
-                                </div>
-                            </div>
-                            {
-                                !selectedBranches.length && (
-                                    <div className="row">
-                                        <div className="col text-danger">This field is required.</div>
+                                        <div className="row">
+                                            <div className="col-6">
+                                                    <ReusableInput 
+                                                        inputProps={{
+                                                            label: 'City',
+                                                            name: `city_${index}`,
+                                                            type: 'text',
+                                                            value: values[`city_${index}`]?.value || '',
+                                                            placeholder: 'Enter city name'
+                                                        }}
+                                                        onChange={handleChange}
+                                                        onFocus={onFocus}
+                                                        errorsMessage={values[`city_${index}`]?.error}
+                                                    />
+                                            </div>
+                                            <div className="col-6">
+                                                    <ReusableInput 
+                                                        inputProps={{
+                                                            label: 'Address',
+                                                            name: `address_${index}`,
+                                                            type: 'text',
+                                                            value: values[`address_${index}`]?.value || '',
+                                                            placeholder: 'Enter address'
+                                                        }}
+                                                        onChange={handleChange}
+                                                        onFocus={onFocus}
+                                                        errorsMessage={values[`address_${index}`]?.error}
+                                                    />
+                                            </div>
+                                        </div>
+                                        {
+                                            (index === branches.length - 1) && (
+                                                <Divider textAlign="right">
+                                                    <IconButton size="small" onClick={addBranch}>
+                                                        <AddIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Divider>
+                                            )
+                                        }
                                     </div>
-                                )
-                            }
-                        </>
-                    )
+                                ))
+                            )
+                        }
+                        {
+                            (officeId && office) && (
+                                <>
+                                    <div className='row'>
+                                        <div className='col-12'>
+                                            <ReusableSelect<BranchOptionType>
+                                                label='Select Branches:'
+                                                value={selectedBranches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
+                                                options={office.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
+                                                onChange={handleBranchChange}
+                                                isMulti
+                                            />
+                                        </div>
+                                    </div>
+                                    {
+                                        !selectedBranches.length && (
+                                            <div className="row">
+                                                <div className="col text-danger">This field is required.</div>
+                                            </div>
+                                        )
+                                    }
+                                </>
+                            )
 
-                }
-                <div className="row">
-                    <div className="col pt-3 text-center">
-                        <button className="btn btn-primary" type="submit">Save</button>
-                    </div>
-                </div>
-            </form>
+                        }
+                        <div className="row">
+                            <div className="col pt-3 text-center">
+                                <button className="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                )
+            }
         </>
     )
 }

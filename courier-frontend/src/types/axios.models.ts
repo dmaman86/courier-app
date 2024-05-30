@@ -13,7 +13,7 @@ export interface FetchState<T>{
     error: CustomError | null;
 }
 
-export interface PageRespost<T> {
+export interface PageResponse<T> {
     content: T;
     empty: boolean;
     first: boolean;

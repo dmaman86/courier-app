@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode } from "react";
 import { Token, User } from "./models";
 import { ActionMeta, MultiValue, SingleValue } from "react-select";
-import { AxiosCall, FetchResponse, PageRespost } from "./axios.models";
+import { AxiosCall, FetchResponse, PageResponse } from "./axios.models";
 
 export interface InputProps{
     label?: string;
@@ -88,7 +88,7 @@ export interface State<T> {
     showAlertDialog: boolean;
     selectedItem: number | null;
     itemToDelete: number | null;
-    responseList: FetchResponse<PageRespost<T[]>>;
+    responseList: T[] | null;
     responseItem: FetchResponse<T>;
     responseDelete: FetchResponse<string>;
     searchQuery: string;
@@ -100,13 +100,13 @@ export interface Item {
 }
 
 export interface ItemsPageProps<T extends Item> {
-    title?: string;
+    title: string;
     placeholder: string;
     buttonName: string;
-    fetchItems: (page: number, size: number) => AxiosCall<PageRespost<T[]>>;
+    fetchItems: (page: number, size: number) => AxiosCall<PageResponse<T[]>>;
     createOrUpdateItem: (item: T) => AxiosCall<T>;
     deleteItem: (itemId: number) => AxiosCall<string>;
-    searchItem?: (search: string, page: number, size: number) => AxiosCall<PageRespost<T[]>>;
+    searchItem?: (search: string, page: number, size: number) => AxiosCall<PageResponse<T[]>>;
     renderItemForm: (item: number | null, onSubmit: (item: T) => void) => JSX.Element;
     columns: ValueColumn[];
     renderItemList: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;

@@ -1,6 +1,6 @@
 import { MultiValue, SingleValue } from "react-select";
-import { Branch, BranchOptionType, Contact, FetchResponse, FormState, OfficeResponse, OptionType } from "../../types";
-import { useFetchAndLoad, useForm } from "../../hooks";
+import { Branch, BranchOptionType, Contact, FormState, OfficeResponse, OptionType } from "../../types";
+import { useAsync, useFetchAndLoad, useForm } from "../../hooks";
 import { useCallback, useEffect, useState } from "react";
 import { paths, validatorForm } from "../../helpers";
 import { serviceRequest } from "../../services";
@@ -35,9 +35,6 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
     const { loading, callEndPoint } = useFetchAndLoad();
 
     const [ contact, setContact ] = useState<Contact | null>(null);
-    const [ responseContactDetails, setResponseContactDetails ] = useState<FetchResponse<Contact>>({
-        data: null, error: null
-    });
 
     const [ formData, setFormData ] = useState<Contact>({
         id: contact?.id || 0,
@@ -50,10 +47,6 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
 
     const [ offices, setOffices ] = useState<OfficeResponse[]>([]);
     const [ selectedOffice, setSelectedOffice ] = useState<OfficeResponse | null>(null);
-
-    const [ officesResponse, setOfficesResponse ] = useState<FetchResponse<OfficeResponse[]>>({
-        data: null, error: null
-    });
 
     const [ initialState, setInitialState ] = useState<FormState>({
         name: {
@@ -86,21 +79,15 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
 
     const [ errorBranchSelected, setErrorBranchSelected ] = useState<string>('');
 
-    useEffect(() => {
-        if(contactId && !responseContactDetails.data && !responseContactDetails.error){
-            const fetchContactDetails = async () => {
-                const response = await callEndPoint(serviceRequest.getItem<Contact>(`${paths.courier.contacts}id/${contactId}`));
-                setResponseContactDetails(response);
-            };
-            fetchContactDetails();
-        }
-    }, [contactId, responseContactDetails, callEndPoint]);
+    const fetchContactDetails = async() => {
+        if(!contactId) return Promise.resolve({ data: null, error: null });
 
-    useEffect(() => {
-        if(!loading && responseContactDetails.data && !responseContactDetails.error && !contact){
-            setContact(responseContactDetails.data);
-        }
-    }, [loading, responseContactDetails, contact]);
+        return await callEndPoint(serviceRequest.getItem<Contact>(`${paths.courier.contacts}id/${contactId}`));
+    }
+
+    const handleContactDetailsSuccess = (data: Contact) => setContact(data);
+
+    useAsync(fetchContactDetails, handleContactDetailsSuccess, () => {}, [contactId])
 
     useEffect(() => {
         if(contact){
@@ -219,113 +206,107 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
         }
     }, [formData]);
 
-    const fetchOffices = useCallback(async () => {
-        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
-        setOfficesResponse(response);
-    }, [callEndPoint]);
+    const fetchOffices = async() => await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
 
-    useEffect(() => {
-        if(!offices.length && !officesResponse.data && !officesResponse.error){
-            fetchOffices();
-        }
-    }, [fetchOffices, offices, officesResponse]);
+    const handleOfficesSuccess = (data: OfficeResponse[]) => {
+        setOffices(data);
+    }
 
-    useEffect(() => {
-        if(!loading && officesResponse.data && !officesResponse.error){
-            setOffices(officesResponse.data);
-            setOfficesResponse({ data: null, error: null });
-        }
-    }, [loading, officesResponse]);
+    useAsync(fetchOffices, handleOfficesSuccess, () => {}, []);
 
     return(
         <>
-            <form onSubmit={handleSubmit} className='row g-4'>
-                <div className='col-6'>
-                    <ReusableInput
-                        inputProps={{
-                            label: 'Name',
-                            name: 'name',
-                            type: 'text',
-                            value: values.name.value,
-                            placeholder: 'Enter your name'
-                        }}
-                        onChange={handleChange}
-                        onFocus={onFocus}
-                        errorsMessage={values.name.error}
-                    />    
-                </div>
-                <div className='col-6'>
-                    <ReusableInput
-                        inputProps={{
-                            label: 'Last Name',
-                            name: 'lastName',
-                            type: 'text',
-                            value: values.lastName.value,
-                            placeholder: 'Enter your last name'
-                        }}
-                        onChange={handleChange}
-                        onFocus={onFocus}
-                        errorsMessage={values.lastName.error}
-                    />    
-                </div>
-                <div className='row'>
-                    <div className='col'>
-                        <ReusableInput
-                            inputProps={{
-                                label: 'Phone',
-                                name: 'phone',
-                                type: 'tel',
-                                value: values.phone.value,
-                                placeholder: 'Enter your phone'
-                            }}
-                            onChange={handleChange}
-                            onFocus={onFocus}
-                            errorsMessage={values.phone.error}
-                        />    
-                    </div>
-                </div>
-                <div className='row'>
-                    <div className='col-12'>
-                        <ReusableSelect<OptionType> 
-                            label='Select Office:'
-                            value={formData.office ? { value: formData.office.id, label: formData.office.name }: null }
-                            options={tranformOffices(offices)}
-                            onChange={handleOfficeChange}
-                            isMulti={false}
-                        />
-                    </div>
-                </div>
-                {
-                    errorOfficeSelected !== '' && (
-                        <div className="row">
-                            <div className="col text-danger">{errorOfficeSelected}</div>
+            {
+                !loading && (
+                    <form onSubmit={handleSubmit} className='row g-4'>
+                        <div className='col-6'>
+                            <ReusableInput
+                                inputProps={{
+                                    label: 'Name',
+                                    name: 'name',
+                                    type: 'text',
+                                    value: values.name.value,
+                                    placeholder: 'Enter your name'
+                                }}
+                                onChange={handleChange}
+                                onFocus={onFocus}
+                                errorsMessage={values.name.error}
+                            />    
                         </div>
-                    )
-                }
-                <div className='row'>
-                    <div className='col-12'>
-                        <ReusableSelect<BranchOptionType>
-                            label='Select Branches:'
-                            value={formData.branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
-                            options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
-                            onChange={handleBranchChange}
-                            isMulti
-                        />
-                    </div>
-                </div>
-                {
-                    errorBranchSelected !== '' && (
-                        <div className="row">
-                            <div className="col text-danger">{errorBranchSelected}</div>
+                        <div className='col-6'>
+                            <ReusableInput
+                                inputProps={{
+                                    label: 'Last Name',
+                                    name: 'lastName',
+                                    type: 'text',
+                                    value: values.lastName.value,
+                                    placeholder: 'Enter your last name'
+                                }}
+                                onChange={handleChange}
+                                onFocus={onFocus}
+                                errorsMessage={values.lastName.error}
+                            />    
                         </div>
-                    )
-                }
-                <div className="row">
-                    <div className='col pt-3 text-center'>
-                        <button className='btn btn-primary' type='submit'>Save</button>
-                    </div>
-                </div>
-            </form>
+                        <div className='row'>
+                            <div className='col'>
+                                <ReusableInput
+                                    inputProps={{
+                                        label: 'Phone',
+                                        name: 'phone',
+                                        type: 'tel',
+                                        value: values.phone.value,
+                                        placeholder: 'Enter your phone'
+                                    }}
+                                    onChange={handleChange}
+                                    onFocus={onFocus}
+                                    errorsMessage={values.phone.error}
+                                />    
+                            </div>
+                        </div>
+                        <div className='row'>
+                            <div className='col-12'>
+                                <ReusableSelect<OptionType> 
+                                    label='Select Office:'
+                                    value={formData.office ? { value: formData.office.id, label: formData.office.name }: null }
+                                    options={tranformOffices(offices)}
+                                    onChange={handleOfficeChange}
+                                    isMulti={false}
+                                />
+                            </div>
+                        </div>
+                        {
+                            errorOfficeSelected !== '' && (
+                                <div className="row">
+                                    <div className="col text-danger">{errorOfficeSelected}</div>
+                                </div>
+                            )
+                        }
+                        <div className='row'>
+                            <div className='col-12'>
+                                <ReusableSelect<BranchOptionType>
+                                    label='Select Branches:'
+                                    value={formData.branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
+                                    options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
+                                    onChange={handleBranchChange}
+                                    isMulti
+                                />
+                            </div>
+                        </div>
+                        {
+                            errorBranchSelected !== '' && (
+                                <div className="row">
+                                    <div className="col text-danger">{errorBranchSelected}</div>
+                                </div>
+                            )
+                        }
+                        <div className="row">
+                            <div className='col pt-3 text-center'>
+                                <button className='btn btn-primary' type='submit'>Save</button>
+                            </div>
+                        </div>
+                    </form>
+                )
+            }
         </>
     )
 }

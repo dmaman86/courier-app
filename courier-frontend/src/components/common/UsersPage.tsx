@@ -1,5 +1,5 @@
 import { useAuth } from "../../hooks";
-import { Client, PageRespost, User, ValueColumn } from "../../types";
+import { Client, PageResponse, User, ValueColumn } from "../../types";
 import { serviceRequest } from "../../services";
 import { paths } from "../../helpers";
 import { ItemsPage } from "../shared";
@@ -11,7 +11,7 @@ export const UsersPage = () => {
 
     const { userDetails } = useAuth();
 
-    const fetchUsers = (page: number, size: number) => serviceRequest.getItem<PageRespost<User[]>>(`${paths.courier.users}?page=${page}&size=${size}`);
+    const fetchUsers = (page: number, size: number) => serviceRequest.getItem<PageResponse<User[]>>(`${paths.courier.users}?page=${page}&size=${size}`);
 
     const createUser = (user: User) => serviceRequest.postItem<User, User>(paths.courier.createOrUpdateUser, user);
 
@@ -23,7 +23,7 @@ export const UsersPage = () => {
 
 
     const deleteUser = (userId: number) => serviceRequest.deleteItem<string>(`${paths.courier.deleteUser}/${userId}`);
-    const searchUser = (query: string, page: number, size: number) => serviceRequest.getItem<PageRespost<User[]>>(`${paths.courier.users}search?query=${query}&page=${page}&size=${size}`);
+    const searchUser = (query: string, page: number, size: number) => serviceRequest.getItem<PageResponse<User[]>>(`${paths.courier.users}search?query=${query}&page=${page}&size=${size}`);
 
     const isAdmin = userDetails?.roles?.some(role => role.name === 'ROLE_ADMIN') || false;
 

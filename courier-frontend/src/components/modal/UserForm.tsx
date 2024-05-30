@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { User, Role, FormState, OptionType, FetchResponse, Client, Branch, OfficeResponse, BranchOptionType } from '../../types';
+import { User, Role, FormState, OptionType, Client, Branch, OfficeResponse, BranchOptionType } from '../../types';
 import { paths, validatorForm } from '../../helpers';
-import { useAuth, useFetchAndLoad, useForm } from '../../hooks';
+import { useAsync, useAuth, useFetchAndLoad, useForm } from '../../hooks';
 import { ReusableInput, ReusableSelect } from '../shared';
 import { serviceRequest } from '../../services';
 import { MultiValue, SingleValue } from 'react-select';
@@ -53,8 +53,6 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     const [ user, setUser ] = useState<User | Client | null>(null);
 
-    const [ responseFetchDetails, setResponseFetchDetails ] = useState<FetchResponse<User | Client>>({ data: null, error: null });
-
     const [ isClient, setIsClient ] = useState<boolean>(false);
 
     const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
@@ -73,14 +71,6 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
     const [ roles, setRoles ] = useState<Role[]>([]);
     const [ offices, setOffices ] = useState<OfficeResponse[]>([]);
     const [ selectedOffice, setSelectedOffice ] = useState<OfficeResponse | null>(null);
-
-    const [ responseRoles, setResponseRoles ] = useState<FetchResponse<Role[]>>({
-        data: null, error: null
-    });
-
-    const [ officesResponse, setOfficesResponse ] = useState<FetchResponse<OfficeResponse[]>>({
-        data: null, error: null
-    });
 
     const [ initialState, setInitialState ] = useState<FormState>({
         name: {
@@ -117,16 +107,14 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     const { values, handleChange, onFocus, validateForm, setValues } = useForm(initialState);
 
+    const fetchUserDetails = async() => {
+        if(!userId) return Promise.resolve({ data: null, error: null });
+        return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${userId}`));
+    }
 
-    useEffect(() => {
-        if(userId !== null && !responseFetchDetails.data && !responseFetchDetails.error){
-            const fetchUserDetails = async () => {
-                const response = await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${userId}`));
-                setResponseFetchDetails(response);
-            };
-            fetchUserDetails();
-        }
-    }, [userId, callEndPoint, responseFetchDetails]);
+    const handleUserDetailsSuccess = (data: User | Client) => setUser(data);
+
+    useAsync(fetchUserDetails, handleUserDetailsSuccess, () => {}, [userId]);
 
     useEffect(() => {
         if(userDetails){
@@ -134,14 +122,6 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
             setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
         }
     }, [userDetails]);
-
-    useEffect(() => {
-        if(!loading && responseFetchDetails.data && !responseFetchDetails.error && user === null){
-            const userRes = responseFetchDetails.data as User | Client;
-            setUser(userRes);
-            // setResponseFetchDetails({data: null, error: null});
-        }
-    }, [loading, responseFetchDetails, user]);
 
     useEffect(() => {
         setIsClient(formData.roles.some(role => role.name === 'ROLE_CLIENT'));
@@ -306,41 +286,19 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     const isCurrentUser = userDetails?.id === formData.id;
 
-    const fetchRoles = useCallback(async() => {
-        const response = await callEndPoint(serviceRequest.getItem<Role[]>(`${paths.courier.roles}all`));
-        setResponseRoles(response);
-    }, [callEndPoint]);
+    const fetchRoles = async() => await callEndPoint(serviceRequest.getItem<Role[]>(`${paths.courier.roles}all`));
 
-    const fetchOffices = useCallback(async () => {
-        const response = await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
-        setOfficesResponse(response);
-    }, [callEndPoint]);
+    const handleRoleSuccess = (data: Role[]) => setRoles(data);
 
-    useEffect(() => {
-        if(!isCurrentUser && roles.length === 0 && !responseRoles.data && !responseRoles.error){
-            fetchRoles();
-        }
-    }, [fetchRoles, isCurrentUser, roles, responseRoles]);
+    useAsync(fetchRoles, handleRoleSuccess, () => {}, []);
 
-    useEffect(() => {
-        if(isClient && offices.length === 0 && !officesResponse.data && !officesResponse.error){
-            fetchOffices();
-        }
-    }, [fetchOffices, offices, officesResponse, isClient]);
+    const fetchOffices = async() => await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
 
-    useEffect(() => {
-        if(!loading && responseRoles.data && !responseRoles.error){
-            setRoles(responseRoles.data);
-            setResponseRoles({ data: null, error: null});
-        }
-    }, [loading, responseRoles]);
+    const handleOfficesSuccess = (data: OfficeResponse[]) => {
+        setOffices(data);
+    }
 
-    useEffect(() => {
-        if(!loading && officesResponse.data && !officesResponse.error){
-            setOffices(officesResponse.data);
-            setOfficesResponse({ data: null, error: null });
-        }
-    }, [loading, officesResponse]);
+    useAsync(fetchOffices, handleOfficesSuccess, () => {}, []);
 
     return(
         <>

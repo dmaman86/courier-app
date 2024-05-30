@@ -27,7 +27,6 @@ import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.repositories.BranchRepository;
 import com.david.maman.courierserver.repositories.ContactRepository;
 import com.david.maman.courierserver.repositories.OfficeRepository;
-import com.david.maman.courierserver.services.BranchService;
 import com.david.maman.courierserver.services.OfficeService;
 
 @Service
@@ -40,9 +39,6 @@ public class OfficeServiceImpl implements OfficeService{
 
     @Autowired
     private BranchRepository branchRepository;
-
-    @Autowired
-    private BranchService branchService;
 
     @Autowired
     private ContactRepository contactRepository;
