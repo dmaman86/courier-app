@@ -1,7 +1,8 @@
 import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
-import { Token } from "../types";
+import { Token } from "@/types";
+import { TokenService } from "./token.service";
 
 interface MyJwtPayload extends JwtPayload {
     exp: number;
@@ -55,27 +56,29 @@ export const service = (() => {
 
     const onRequest = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
         config.headers = config.headers || {};
-        const tokens = localStorage.getItem('auth-token');
-        // let token = null;
-        if(tokens){
-            const { accessToken, refreshToken } = JSON.parse(tokens);
+        const accessToken = TokenService.getAccessToken();
 
-            if(accessToken && isTokenExpired(accessToken)){
+        if(accessToken){
+            if(!isTokenExpired(accessToken)){
+                config.headers.Authorization = `Bearer ${accessToken}`;
+            }else{
+                const refreshToken = TokenService.getRefreshToken();
                 if(refreshToken && !isTokenExpired(refreshToken)){
                     try{
                         const newTokens = await refreshTokenFetch(refreshToken);
-                        localStorage.setItem('auth-token', JSON.stringify(newTokens));
+                        TokenService.updateToken(newTokens.accessToken, newTokens.refreshToken);
                         config.headers.Authorization = `Bearer ${newTokens.accessToken}`;
                     }catch(error){
                         console.error('Error refreshing token:', error);
+                        TokenService.removeToken();
                         window.location.href = '/login';
                     }
-                } else {
+                }else{
+                    TokenService.removeToken();
                     window.location.href = '/login';
                 }
             }
-
-            config.headers.Authorization = `Bearer ${accessToken}`;
+            
         }
         return config;
     }

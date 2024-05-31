@@ -1,5 +1,5 @@
 import { TableBody, TableCell, TableRow, Stack } from "@mui/material";
-import { Action, Role } from "../../types";
+import { Action, Role } from "@/types";
 
 
 export const RoleList = ({ data, actions }: { data: Role[], actions?: Action<Role>[] }) => {

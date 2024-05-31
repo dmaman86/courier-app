@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Container, Grid, Paper, Typography, Stack, Button } from "@mui/material";
 
-import { useAsync, useAuth, useFetchAndLoad } from "../../hooks";
-import { Branch, Client, Role, User } from "../../types";
-import { GenericModal, UpdatePassword, UserForm } from "../modal";
-import { serviceRequest } from "../../services";
-import { paths } from "../../helpers";
+import { useAsync, useAuth, useFetchAndLoad } from "@/hooks";
+import { Branch, Client, Role, User } from "@/types";
+
+import { GenericModal, UpdatePassword, UserForm } from "@/components/modal";
+import { serviceRequest } from "@/services";
+import { paths } from "@/helpers";
+
 
 export const Profile = () => {
 
@@ -61,7 +63,7 @@ export const Profile = () => {
     return(
         <>
         {
-            user && (
+            !loading && user && (
                 <Container sx={{ pt: 5}}>
                     <Grid container justifyContent='center'>
                         <Grid item lg={10}>

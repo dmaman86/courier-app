@@ -1,4 +1,4 @@
-import { ModalProps } from "../../types";
+import { ModalProps } from "@/types";
 
 
 export const GenericModal = ({ title, body, show, onClose }: ModalProps) => {

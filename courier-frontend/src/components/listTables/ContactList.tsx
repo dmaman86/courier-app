@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../hooks"
-import { Action, Contact } from "../../types"
 import { Box, Divider, Stack, TableBody, TableCell, TableRow } from "@mui/material";
+import { useSelector } from "react-redux";
+
+import { RootState } from "@/redux/store";
+import { Action, Contact } from "@/types";
+import { useAuth } from "@/hooks";
 
 
 export const ContactList = ({ data, actions }: { data: Contact[], actions?: Action<Contact>[]}) => {

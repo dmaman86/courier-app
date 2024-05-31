@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { useAsync, useFetchAndLoad, useForm } from "../../hooks";
-import { Branch, BranchInfo, BranchOptionType, FormState, OfficeResponse } from "../../types";
-import { MultiValue, SingleValue } from "react-select";
-import { paths, validatorForm } from "../../helpers";
-import { serviceRequest } from "../../services";
-import { ReusableInput, ReusableSelect } from "../shared";
 import { Divider, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from '@mui/icons-material/Add';
+import { MultiValue, SingleValue } from "react-select";
+
+
+import { useAsync, useFetchAndLoad, useForm } from "@/hooks";
+import { Branch, BranchInfo, BranchOptionType, FormState, OfficeResponse } from "@/types";
+import { paths, validatorForm } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { ReusableInput, ReusableSelect } from "@/components/shared";
 
 
 interface OfficeFormProps {

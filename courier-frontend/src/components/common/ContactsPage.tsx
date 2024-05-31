@@ -1,9 +1,9 @@
-import { paths } from "../../helpers"
-import { serviceRequest } from "../../services"
-import { Contact, PageResponse, ValueColumn } from "../../types"
-import { ContactForm } from "../modal";
-import { ContactList } from "../listTables";
-import { ItemsPage } from "../shared";
+import { paths } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { Contact, PageResponse, ValueColumn } from "@/types";
+import { ContactForm } from "@/components/modal";
+import { ContactList } from "@/components/listTables";
+import { ItemsPage } from "@/components/shared";
 
 
 export const ContactsPage = () => {

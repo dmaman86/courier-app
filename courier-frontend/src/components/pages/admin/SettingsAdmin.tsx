@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import { BranchesPartial, OfficesPartial, RolePartial, StatusOrdersPartial } from "../../partials";
+import { BranchesPartial, RolePartial, StatusOrdersPartial } from "@/components/partials";
 
 
 export const SettingsAdmin = () => {
@@ -34,10 +34,10 @@ export const SettingsAdmin = () => {
                         aria-controls="panel2-content"
                         id="panel2-header"
                     >
-                        {expanded !== 'panel2' && <Typography>Offices</Typography>}
+                        {expanded !== 'panel2' && <Typography>Branches</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel2' && <OfficesPartial />}
+                        {expanded === 'panel2' && <BranchesPartial />}
                     </AccordionDetails>
                 </Accordion>
                 <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
@@ -46,22 +46,10 @@ export const SettingsAdmin = () => {
                         aria-controls="panel3-content"
                         id="panel3-header"
                     >
-                        {expanded !== 'panel3' && <Typography>Branches</Typography>}
+                        {expanded !== 'panel3' && <Typography>Status Orders</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel3' && <BranchesPartial />}
-                    </AccordionDetails>
-                </Accordion>
-                <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
-                    <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel4-content"
-                        id="panel4-header"
-                    >
-                        {expanded !== 'panel4' && <Typography>Status Orders</Typography>}
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        {expanded === 'panel4' && <StatusOrdersPartial />}
+                        {expanded === 'panel3' && <StatusOrdersPartial />}
                     </AccordionDetails>
                 </Accordion>
             </div>

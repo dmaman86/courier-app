@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../hooks";
 import { useNavigate } from "react-router-dom";
-import { AxiosError } from "axios";
 
+import { useAuth } from "@/hooks";
 
 export const ErrorPage = () => {
 

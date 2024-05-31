@@ -1,23 +1,21 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { Login, SignUp } from "../components";
-import { Token } from "../types";
-import { useAuth } from "../hooks";
 
-export const PublicRoutes = () => {
-    const { tokens } = useAuth();
+import { Token } from "@/types";
+import { useRouteConfig } from "@/hooks";
+
+export const PublicRoutes = ({ tokens }: { tokens: Token | null}) => {
+    const { getRoutes } = useRouteConfig();
+    const allowedRoutes = getRoutes();
 
     return (
         <Routes>
-            <Route path="/" element={<PublicRoute tokens={tokens} />}>
-                <Route index element={<Navigate to="/login" replace />} />
-                <Route path="login" element={<Login />} />
-                <Route path="signup" element={<SignUp />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={!tokens ? <Outlet /> : <Navigate to='/home' replace />}>
+                {
+                    allowedRoutes.map((route, index) => (
+                        <Route key={index} path={route.path} element={route.element} />
+                    ))
+                }
             </Route>
         </Routes>
     );
-};
-
-const PublicRoute = ({ tokens }: { tokens: Token | null }) => {
-    return !tokens ? <Outlet /> : <Navigate to="/home" replace />;
 };

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { FetchResponse, FormState, StatusOrder } from "../../types";
-import { useFetchAndLoad, useForm } from "../../hooks";
-import { paths, validatorForm } from "../../helpers";
-import { serviceRequest } from "../../services";
-import { ReusableInput } from "../shared";
+
+import { FetchResponse, FormState, StatusOrder } from "@/types";
+import { useFetchAndLoad, useForm } from "@/hooks";
+import { paths, validatorForm } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { ReusableInput } from "@/components/shared";
 
 interface StatusOrderFormProps {
     statusOrderId: number | null;

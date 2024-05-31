@@ -1,8 +1,12 @@
-import { User } from "../../types";
-import { HomeAdmin } from "./admin/HomeAdmin";
+import { useSelector } from "react-redux";
+
+import { RootState } from "@/redux/store";
+import { HomeAdmin } from "@/components";
 import { HomeClient } from "./client/HomeClient";
 import { HomeCourier } from "./courier/HomeCourier";
-import { useAuth } from "../../hooks";
+import { useAuth } from "@/hooks";
+import { User } from "@/types";
+
 
 export const Home = () => {
 

@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
-import { useAuth } from "../../hooks";
 import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "@/hooks";
+
 
 interface ErrorBoundaryProps {
     children: React.ReactNode;

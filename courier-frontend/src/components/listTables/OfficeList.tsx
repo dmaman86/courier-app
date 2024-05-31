@@ -1,8 +1,10 @@
-import { TableBody, TableCell, TableRow, Stack, Box, Divider } from "@mui/material";
-
-import { Action, OfficeResponse } from "../../types"
-import { useAuth } from "../../hooks";
 import { useEffect, useState } from "react";
+import { TableBody, TableCell, TableRow, Stack, Box, Divider } from "@mui/material";
+import { useSelector } from "react-redux";
+
+import { Action, Branch, OfficeResponse } from "@/types"
+import { RootState } from "@/redux/store";
+import { useAuth } from "@/hooks";
 
 
 export const OfficeList = ({ data, actions }: { data: OfficeResponse[], actions?: Action<OfficeResponse>[] }) => {
@@ -29,7 +31,7 @@ export const OfficeList = ({ data, actions }: { data: OfficeResponse[], actions?
                             <TableCell>
                                 {
                                     office.branches.map((branch, index) => (
-                                        <Box key={branch.id}>
+                                        <Box key={(branch as Branch).id}>
                                             <div>{branch.address}</div>
                                             <div>{branch.city}</div>
                                             {index < office.branches.length - 1 && <Divider />}

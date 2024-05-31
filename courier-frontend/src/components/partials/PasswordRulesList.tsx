@@ -1,6 +1,6 @@
 import { Stack, Alert, styled } from "@mui/material";
 
-import { ValidationRule } from "../../types";
+import { ValidationRule } from "@/types";
 
 interface Props{
     rules: ValidationRule[];

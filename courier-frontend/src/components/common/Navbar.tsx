@@ -1,10 +1,12 @@
 import React, { useEffect, useReducer, useCallback } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
-import { useAuth, useFetchAndLoad, useRouteConfig } from "../../hooks";
-import { User } from "../../types";
-import { paths } from "../../helpers/paths";
-import { serviceRequest } from "../../services";
-import { AlertDialog } from "../shared";
+
+import { useFetchAndLoad, useRouteConfig } from "@/hooks";
+import { User } from "@/types";
+import { paths } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { AlertDialog } from "@/components/shared";
+import { useAuth } from "@/hooks";
 
 interface State {
     toggle: boolean;
@@ -40,12 +42,12 @@ const reducer = (state: State, action: Action): State => {
 export const Navbar = () => {
 
     const { userDetails, logout } = useAuth();
+
     const { getLinks } = useRouteConfig();
 
     const { loading, callEndPoint } = useFetchAndLoad();
     const location = useLocation();
     const [ state, dispatch ] = useReducer(reducer, initialState);
-
 
     useEffect(() => {
         if(!loading && state.isLoggingOut){
@@ -87,10 +89,10 @@ export const Navbar = () => {
     }
 
     const renderUserDetails = useCallback(() => (
-        <>
-            Logged user: <span>{capitalizeFirstLetter(userDetails!.name) + ' ' + capitalizeFirstLetter(userDetails!.lastName)}</span>
+        userDetails && <>
+            Logged user: <span>{capitalizeFirstLetter(userDetails.name) + ' ' + capitalizeFirstLetter(userDetails.lastName)}</span>
             &nbsp;
-            Roles: <span>{ extractRoleNames(userDetails!) }</span>
+            Roles: <span>{ extractRoleNames(userDetails) }</span>
             &nbsp;
             <form onSubmit={ handleSubmit }>
                 <input type="submit" className="btn btn-sm btn-outline-danger" value="Logout"/>
@@ -99,7 +101,7 @@ export const Navbar = () => {
     ), [userDetails]);
 
     const renderLinks = useCallback(() => (
-        getLinks().map((link, index) => (
+        getLinks().length > 0 && getLinks().map((link, index) => (
             <li key={index} className="nav-item">
                 <NavLink
                     to={link.path}

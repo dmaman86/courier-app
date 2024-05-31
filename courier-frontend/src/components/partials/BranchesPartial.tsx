@@ -1,9 +1,9 @@
-import { paths } from "../../helpers";
-import { serviceRequest } from "../../services";
-import { BranchResponse, PageResponse, ValueColumn } from "../../types"
-import { BranchForm } from "../modal";
-import { ItemsPage } from "../shared";
-import { BranchList } from "../listTables/BranchList";
+import { paths } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { BranchResponse, PageResponse, ValueColumn } from "@/types"
+import { BranchForm } from "@/components/modal";
+import { ItemsPage } from "@/components/shared";
+import { BranchList } from "@/components/listTables";
 
 
 const branchColumns: ValueColumn[] = [

@@ -1,5 +1,5 @@
 import { Stack, TableBody, TableCell, TableRow } from "@mui/material"
-import { Action, StatusOrder } from "../../types"
+import { Action, StatusOrder } from "@/types"
 
 export const StatusOrdersList = ({ data, actions }: { data: StatusOrder[], actions?: Action<StatusOrder>[]}) => {
 

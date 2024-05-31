@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../hooks";
-import { Action, BranchResponse } from "../../types"
 import { Stack, TableBody, TableCell, TableRow } from "@mui/material";
+import { useSelector } from "react-redux";
+
+import { Action, BranchResponse } from "@/types";
+import { RootState } from "@/redux/store";
+import { useAuth } from "@/hooks";
 
 export const BranchList = ({ data, actions }: { data: BranchResponse[], actions?: Action<BranchResponse>[]}) => {
 

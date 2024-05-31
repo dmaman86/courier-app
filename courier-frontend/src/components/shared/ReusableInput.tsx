@@ -1,4 +1,4 @@
-import { GenericInputProps } from "../../types";
+import { GenericInputProps } from "@/types";
 
 export const ReusableInput = ({ inputProps, onChange, onFocus, errorsMessage }: GenericInputProps) => {
 

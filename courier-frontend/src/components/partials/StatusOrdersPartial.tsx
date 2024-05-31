@@ -1,9 +1,9 @@
-import { paths } from "../../helpers";
-import { serviceRequest } from "../../services"
-import { PageResponse, StatusOrder, ValueColumn } from "../../types";
-import { StatusOrderForm } from "../modal";
-import { ItemsPage } from "../shared";
-import { StatusOrdersList } from "../listTables/StatusOrdersList";
+import { paths } from "@/helpers";
+import { serviceRequest } from "@/services"
+import { PageResponse, StatusOrder, ValueColumn } from "@/types";
+import { StatusOrderForm } from "@/components/modal";
+import { ItemsPage } from "@/components/shared";
+import { StatusOrdersList } from "@/components/listTables";
 
 export const StatusOrdersPartial = () => {
 

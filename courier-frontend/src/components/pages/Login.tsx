@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-import { useForm, useAuth, useFetchAndLoad } from "../../hooks";
-import { ReusableInput } from "../shared";
-import { FetchResponse, FormState, Token } from "../../types";
-import { paths, validatorForm } from "../../helpers";
-import { LoginCredentials } from "../../types";
+
+import { useForm, useFetchAndLoad, useAuth } from "@/hooks";
+import { ReusableInput } from "@/components/shared";
+import { FetchResponse, FormState, Token } from "@/types";
+import { paths, validatorForm } from "@/helpers";
+import { LoginCredentials } from "@/types";
 import { AxiosError } from "axios";
-import { serviceRequest } from "../../services";
+import { serviceRequest } from "@/services";
 
 const initialState: FormState = {
     username: {
@@ -63,7 +64,7 @@ export const Login = () => {
 
     useEffect(() => {
         if(!loading && data){
-            saveTokens(data);
+            saveTokens && saveTokens(data);
             navigate('/home', { replace: true });
         }
     }, [data, loading, navigate, saveTokens]);

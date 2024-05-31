@@ -26,7 +26,7 @@ export interface RoutesProps {
 export interface RouteConfig{
     path: string;
     label: string;
-    element?: ReactElement;
+    element: ReactElement;
     allowedRoles: string[];
 }
 
@@ -57,7 +57,6 @@ export interface SelectProps<T>{
 export interface AuthContextType {
     tokens: Token | null;
     userDetails: User | null;
-    saveTokens: (tokens: Token) => void;
     logout: () => void;
 }
 

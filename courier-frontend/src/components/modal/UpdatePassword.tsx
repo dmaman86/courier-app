@@ -1,8 +1,8 @@
-import { useForm } from "../../hooks";
-import { FormState, User } from "../../types";
-import { validatorForm } from "../../helpers";
-import { PasswordRulesList } from "../partials/PasswordRulesList";
-import { ReusableInput } from "../shared";
+import { useForm } from "@/hooks";
+import { FormState, User } from "@/types";
+import { validatorForm } from "@/helpers";
+import { PasswordRulesList } from "@/components/partials";
+import { ReusableInput } from "@/components/shared";
 
 
 

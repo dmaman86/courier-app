@@ -1,9 +1,9 @@
-import { PageResponse, Role, ValueColumn } from "../../types";
-import { serviceRequest } from "../../services";
-import { paths } from "../../helpers";
-import {  ItemsPage } from "../shared";
-import {  RoleForm } from "../modal";
-import { RoleList } from "../listTables/RoleList";
+import { PageResponse, Role, ValueColumn } from "@/types";
+import { serviceRequest } from "@/services";
+import { paths } from "@/helpers";
+import {  ItemsPage } from "@/components/shared";
+import {  RoleForm } from "@/components/modal";
+import { RoleList } from "@/components/listTables";
 
 const rolesColumns: ValueColumn[] = [
     { key: 'role', label: 'Role Name' }

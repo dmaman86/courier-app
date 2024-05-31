@@ -2,11 +2,11 @@ import { useCallback, useEffect, useReducer } from "react";
 import { CircularProgress } from "@mui/material";
 
 
-import { Action, FetchResponse, Item, ItemsPageProps, PageResponse, State } from "../../types";
-import { useAsync, useFetchAndLoad, useList } from "../../hooks";
+import { Action, FetchResponse, Item, ItemsPageProps, PageResponse, State } from "@/types";
+import { useAsync, useFetchAndLoad, useList } from "@/hooks";
 import { PageHeader } from "./PageHeader";
 import { ReusableTable } from "./ReusableTable";
-import { GenericModal } from "../modal";
+import { GenericModal } from "@/components/modal";
 import { AlertDialog } from "./AlertDialog";
 
 type ActionType<T> =
@@ -155,8 +155,8 @@ export const ItemsPage = <T extends Item>({ title,
     };
 
     const handleFormSubmit = async (item: T) => {
-        console.log(item);
-        // await createOrUpdate(item);
+        // console.log(item);
+        await createOrUpdate(item);
     };
 
     const handleSearch = useCallback(async (query: string) => {

@@ -1,10 +1,11 @@
-import { MultiValue, SingleValue } from "react-select";
-import { Branch, BranchOptionType, Contact, FormState, OfficeResponse, OptionType } from "../../types";
-import { useAsync, useFetchAndLoad, useForm } from "../../hooks";
 import { useCallback, useEffect, useState } from "react";
-import { paths, validatorForm } from "../../helpers";
-import { serviceRequest } from "../../services";
-import { ReusableInput, ReusableSelect } from "../shared";
+import { MultiValue, SingleValue } from "react-select";
+
+import { Branch, BranchOptionType, Contact, FormState, OfficeResponse, OptionType } from "@/types";
+import { useAsync, useFetchAndLoad, useForm } from "@/hooks";
+import { paths, validatorForm } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { ReusableInput, ReusableSelect } from "@/components/shared";
 
 interface ContactFormProps {
     contactId: number | null;

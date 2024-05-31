@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-
-import { User, Role, FormState, OptionType, Client, Branch, OfficeResponse, BranchOptionType } from '../../types';
-import { paths, validatorForm } from '../../helpers';
-import { useAsync, useAuth, useFetchAndLoad, useForm } from '../../hooks';
-import { ReusableInput, ReusableSelect } from '../shared';
-import { serviceRequest } from '../../services';
 import { MultiValue, SingleValue } from 'react-select';
+import { useSelector } from "react-redux";
+
+import { User, Role, FormState, OptionType, Client, Branch, OfficeResponse, BranchOptionType } from '@/types';
+import { paths, validatorForm } from '@/helpers';
+import { useAsync, useAuth, useFetchAndLoad, useForm } from '@/hooks';
+import { ReusableInput, ReusableSelect } from '@/components/shared';
+import { serviceRequest } from '@/services';
+import { RootState } from "@/redux/store";
 
 interface UserFormProps {
     userId: number| null;

@@ -1,6 +1,6 @@
 import { TableContainer, Table, TableHead, TableRow, TableCell, Paper, TablePagination } from "@mui/material";
 
-import { GenericTableProps } from "../../types";
+import { GenericTableProps } from "@/types";
 
 
 export const ReusableTable = <T extends { id: number }>({ data, columns, actions, BodyComponent, pagination, onPageChange, onRowsPerPageChange }: GenericTableProps<T>) => {

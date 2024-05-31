@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { useAsync, useFetchAndLoad, useForm } from "../../hooks";
-import { BranchResponse, FormState, OfficeResponse, OptionType } from "../../types";
-import { paths, validatorForm } from "../../helpers";
-import { serviceRequest } from "../../services";
 import { MultiValue, SingleValue } from "react-select";
-import { ReusableInput, ReusableSelect } from "../shared";
+
+import { useAsync, useFetchAndLoad, useForm } from "@/hooks";
+import { BranchResponse, FormState, OfficeResponse, OptionType } from "@/types";
+import { paths, validatorForm } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { ReusableInput, ReusableSelect } from "@/components/shared";
 
 interface BranchFormProps {
     branchId?: number | null;

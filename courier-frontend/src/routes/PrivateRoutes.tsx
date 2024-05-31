@@ -1,26 +1,20 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
-import { Token } from "../types";
-import { useAuth, useRouteConfig } from "../hooks";
+import { Token } from "@/types";
+import { useRouteConfig } from "@/hooks";
 
-interface PrivateRouteProp{
-    tokens?: Token | null;
-    children: JSX.Element;
+interface PrivateRoutesProps {
+    tokens: Token | null
 }
 
-export const PrivateRoutes = () => {
+export const PrivateRoutes = ({ tokens }: PrivateRoutesProps) => {
 
-    const { tokens, userDetails } = useAuth();
     const { getRoutes } = useRouteConfig();
     const allowedRoutes = getRoutes();
 
     return(
         <Routes>
-            <Route path='/' element={
-                    (tokens && userDetails) ? (
-                        <PrivateRoute tokens={tokens} children={<Outlet />}/>
-                    ): (<div>Loading user data...</div>)
-            }>
+            <Route path='/' element={tokens ? <Outlet /> : <Navigate to='/login' replace />}>
                 {
                     allowedRoutes.map((route, index) => (
                         <Route key={index} path={route.path} element={route.element} />
@@ -29,9 +23,4 @@ export const PrivateRoutes = () => {
             </Route>
         </Routes>
     );
-}
-
-const PrivateRoute = ({tokens, children}: PrivateRouteProp) => {
-
-    return tokens ? children : <Navigate to="/login" replace/>;
 }

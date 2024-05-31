@@ -1,12 +1,21 @@
-import { useContext } from "react";
-import { AuthContext } from "./authContext";
+import { useDispatch, useSelector } from "react-redux";
 
+import { selectAuthTokens, selectUserDetails, logout as logoutAction, setTokens } from "@/redux/states/authSlice";
+import { Token } from "@/types";
+import { AppDispatch } from "@/redux/store";
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if(context === undefined){
-        throw new Error('useAuth must be used within an AuthProvider');
+    const dispatch: AppDispatch = useDispatch();
+    const tokens = useSelector(selectAuthTokens);
+    const userDetails = useSelector(selectUserDetails);
+
+    const saveTokens = (tokens: Token) => {
+        dispatch(setTokens(tokens));
     }
 
-    return context;
+    const logout = () => {
+        dispatch(logoutAction());
+    }
+
+    return { tokens, userDetails, saveTokens, logout };
 }

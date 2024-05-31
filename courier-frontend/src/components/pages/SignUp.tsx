@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { AxiosError } from "axios"
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
 
-import { paths, validatorForm } from "../../helpers"
-import { useAuth, useFetchAndLoad, useForm } from "../../hooks"
-import { FetchResponse, FormState, SignUpCredentials, Token } from "../../types"
-import { ReusableInput } from "../shared"
-import { PasswordRulesList } from "../partials"
-import { serviceRequest } from "../../services"
+import { paths, validatorForm } from "@/helpers";
+import { useAuth, useFetchAndLoad, useForm } from "@/hooks";
+import { FetchResponse, FormState, SignUpCredentials, Token } from "@/types";
+import { ReusableInput } from "@/components/shared";
+import { PasswordRulesList } from "@/components/partials";
+import { serviceRequest } from "@/services";
 
 
 const initialState: FormState = {

@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+
 import { ReusableInput } from "./ReusableInput";
-import { FormState } from "../../types";
-import { useAuth, useForm } from "../../hooks";
+import { FormState } from "@/types";
+import { useForm } from "@/hooks";
+import { RootState } from "@/redux/store";
 import _ from 'lodash';
 
 
@@ -25,7 +28,7 @@ const initialState: FormState = {
 
 export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate, delay = 250, showSearch = true }: PageHeaderProps) => {
 
-    const { userDetails } = useAuth();
+    const userDetails = useSelector((state: RootState) => state.auth.userDetails);
 
     const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
     

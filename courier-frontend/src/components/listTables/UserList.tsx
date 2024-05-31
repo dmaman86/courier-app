@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { TableBody, TableCell, TableRow, Stack } from "@mui/material";
+import { useSelector } from "react-redux";
 
-
-import { useAuth } from "../../hooks";
-import { Action, User } from "../../types";
+import { RootState } from "@/redux/store";
+import { Action, User } from "@/types";
+import { useAuth } from "@/hooks";
 
 
 export const UserList = ({ data, actions }: { data: User[], actions?: Action<User>[]}) => {

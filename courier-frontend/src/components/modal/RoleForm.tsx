@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { FetchResponse, FormState, Role } from "../../types";
-import { paths, validatorForm } from "../../helpers";
-import { useFetchAndLoad, useForm } from "../../hooks";
-import { ReusableInput } from "../shared";
-import { serviceRequest } from "../../services";
+
+import { FetchResponse, FormState, Role } from "@/types";
+import { paths, validatorForm } from "@/helpers";
+import { useFetchAndLoad, useForm } from "@/hooks";
+import { ReusableInput } from "@/components/shared";
+import { serviceRequest } from "@/services";
 
 
 interface RoleFormProps {

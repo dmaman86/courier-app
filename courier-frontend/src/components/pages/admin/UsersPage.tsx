@@ -1,10 +1,12 @@
-import { useAuth } from "../../hooks";
-import { Client, PageResponse, User, ValueColumn } from "../../types";
-import { serviceRequest } from "../../services";
-import { paths } from "../../helpers";
-import { ItemsPage } from "../shared";
-import { UserList } from "../listTables";
-import { UserForm } from "../modal";
+
+import { Client, PageResponse, User, ValueColumn } from "@/types";
+import { serviceRequest } from "@/services";
+import { paths } from "@/helpers";
+import { ItemsPage } from "@/components/shared";
+import { UserList } from "@/components/listTables";
+import { UserForm } from "@/components/modal";
+import { useAuth } from "@/hooks";
+
 
 
 export const UsersPage = () => {
@@ -25,7 +27,7 @@ export const UsersPage = () => {
     const deleteUser = (userId: number) => serviceRequest.deleteItem<string>(`${paths.courier.deleteUser}/${userId}`);
     const searchUser = (query: string, page: number, size: number) => serviceRequest.getItem<PageResponse<User[]>>(`${paths.courier.users}search?query=${query}&page=${page}&size=${size}`);
 
-    const isAdmin = userDetails?.roles?.some(role => role.name === 'ROLE_ADMIN') || false;
+    const isAdmin = userDetails ? userDetails.roles.some(role => role.name === 'ROLE_ADMIN') : false;
 
     const userColumns: ValueColumn[] = [
         { key: 'fullname', label: 'Fullname' },
@@ -38,12 +40,18 @@ export const UsersPage = () => {
         if(isClient(item)){
             return item.id ? updateClient(item) : createClient(item);
         }else{
-            return item.id ? updateUser(item) : createUser(item);
+            const userItem: User = { ...item };
+            delete (userItem as Partial<Client>).office;
+            delete (userItem as Partial<Client>).branches;
+
+            return userItem.id ? updateUser(userItem) : createUser(userItem);
         }
     }
 
     const isClient = (item: User | Client): item is Client => {
-        return (item as Client).office !== undefined && (item as Client).branches !== undefined;
+        
+        return item.roles.some(role => role.name === 'ROLE_CLIENT') && 
+                (item as Client).office !== undefined && (item as Client).branches !== undefined;
     };
 
     return(
