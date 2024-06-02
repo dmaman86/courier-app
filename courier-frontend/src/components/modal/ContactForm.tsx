@@ -90,10 +90,9 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
     }
 
     const handleContactDetailsSuccess = (response: FetchResponse<Contact>) => {
-        if(response.data){
-            setContact(response.data);
-        }else{
-            showBoundary(response.error);
+        if(contactId){
+            if(response.data) setContact(response.data);
+            else showBoundary(response.error);
         }
     }
 

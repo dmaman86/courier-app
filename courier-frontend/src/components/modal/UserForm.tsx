@@ -7,7 +7,6 @@ import { paths, validatorForm } from '@/helpers';
 import { useAsync, useAuth, useFetchAndLoad, useForm } from '@/hooks';
 import { ReusableInput, ReusableSelect } from '@/components/shared';
 import { serviceRequest } from '@/services';
-import { RootState } from "@/redux/store";
 
 interface UserFormProps {
     userId: number| null;
@@ -117,8 +116,10 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
     }
 
     const handleUserDetailsSuccess = (response: FetchResponse<User | Client>) => {
-        if(response.data) setUser(response.data);
-        else showBoundary(response.error);
+        if(userId){
+            if(response.data) setUser(response.data);
+            else showBoundary(response.error);
+        }
     }
 
     useAsync(fetchUserDetails, handleUserDetailsSuccess, () => {}, [userId]);

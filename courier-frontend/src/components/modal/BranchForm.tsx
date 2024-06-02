@@ -62,10 +62,9 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
     }
 
     const handleBranchDetailsSuccess = (response: FetchResponse<BranchResponse>) => {
-        if(response.data){
-            setBranch(response.data);
-        }else{
-            showBoundary(response.error);
+        if(branchId){
+            if(response.data) setBranch(response.data);
+            else showBoundary(response.error);
         }
     }
 

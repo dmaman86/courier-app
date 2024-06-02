@@ -79,8 +79,10 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
     }
 
     const handleOfficeDetailsSuccess = (response: FetchResponse<OfficeResponse>) => {
-        if(response.data) setOffice(response.data);
-        else showBoundary(response.error);
+        if(officeId){
+            if(response.data) setOffice(response.data);
+            else showBoundary(response.error);
+        }
     }
 
     useAsync(fetchOfficeDetails, handleOfficeDetailsSuccess, () => {}, [officeId]);
