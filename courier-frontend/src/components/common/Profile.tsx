@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Container, Grid, Paper, Typography, Stack, Button } from "@mui/material";
+import { useErrorBoundary } from "react-error-boundary";
 
 import { useAsync, useAuth, useFetchAndLoad } from "@/hooks";
-import { Branch, Client, Role, User } from "@/types";
+import { Branch, Client, FetchResponse, Role, User } from "@/types";
 
 import { GenericModal, UpdatePassword, UserForm } from "@/components/modal";
 import { serviceRequest } from "@/services";
@@ -12,6 +13,8 @@ import { paths } from "@/helpers";
 export const Profile = () => {
 
     const { userDetails } = useAuth();
+
+    const { showBoundary } = useErrorBoundary();
     const [ showModalPassword, setShowModalPassword ] = useState(false);
     const [ showModalDetails, setShowModalDetails ] = useState(false);
 
@@ -28,7 +31,11 @@ export const Profile = () => {
         return  await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${userDetails.id}`));
     }
 
-    const handleUserDetailsSuccess = (data: User | Client) => setUser(data);
+    const handleUserDetailsSuccess = (response: FetchResponse<User | Client>) => {
+        const { data, error } = response;
+        if(data && !error) setUser(data);
+        else showBoundary(error);
+    }
 
     useAsync(fetchUserDetails, handleUserDetailsSuccess, () => {}, [userDetails]);
 

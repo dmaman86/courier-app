@@ -71,11 +71,11 @@ export const service = (() => {
                     }catch(error){
                         console.error('Error refreshing token:', error);
                         TokenService.removeToken();
-                        window.location.href = '/login';
+                        window.location.href = '/login?message=Error refreshing token. Please login again.';
                     }
                 }else{
                     TokenService.removeToken();
-                    window.location.href = '/login';
+                    window.location.href = '/login?message=Session expired. Please login again.';
                 }
             }
             

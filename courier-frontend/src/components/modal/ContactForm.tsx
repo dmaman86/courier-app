@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { MultiValue, SingleValue } from "react-select";
+import { useErrorBoundary } from "react-error-boundary";
 
-import { Branch, BranchOptionType, Contact, FormState, OfficeResponse, OptionType } from "@/types";
+import { Branch, BranchOptionType, Contact, FetchResponse, FormState, OfficeResponse, OptionType } from "@/types";
 import { useAsync, useFetchAndLoad, useForm } from "@/hooks";
 import { paths, validatorForm } from "@/helpers";
 import { serviceRequest } from "@/services";
@@ -34,6 +35,8 @@ const transformOptionsToBranches = (options: MultiValue<BranchOptionType> | Sing
 export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
 
     const { loading, callEndPoint } = useFetchAndLoad();
+
+    const { showBoundary } = useErrorBoundary();
 
     const [ contact, setContact ] = useState<Contact | null>(null);
 
@@ -86,7 +89,13 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
         return await callEndPoint(serviceRequest.getItem<Contact>(`${paths.courier.contacts}id/${contactId}`));
     }
 
-    const handleContactDetailsSuccess = (data: Contact) => setContact(data);
+    const handleContactDetailsSuccess = (response: FetchResponse<Contact>) => {
+        if(response.data){
+            setContact(response.data);
+        }else{
+            showBoundary(response.error);
+        }
+    }
 
     useAsync(fetchContactDetails, handleContactDetailsSuccess, () => {}, [contactId])
 
@@ -209,8 +218,9 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
 
     const fetchOffices = async() => await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
 
-    const handleOfficesSuccess = (data: OfficeResponse[]) => {
-        setOffices(data);
+    const handleOfficesSuccess = (response: FetchResponse<OfficeResponse[]>) => {
+        if(response.data) setOffices(response.data);
+        else showBoundary(response.error);
     }
 
     useAsync(fetchOffices, handleOfficesSuccess, () => {}, []);

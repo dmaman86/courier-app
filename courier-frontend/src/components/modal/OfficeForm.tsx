@@ -3,10 +3,11 @@ import { Divider, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from '@mui/icons-material/Add';
 import { MultiValue, SingleValue } from "react-select";
+import { useErrorBoundary } from "react-error-boundary";
 
 
 import { useAsync, useFetchAndLoad, useForm } from "@/hooks";
-import { Branch, BranchInfo, BranchOptionType, FormState, OfficeResponse } from "@/types";
+import { Branch, BranchInfo, BranchOptionType, FetchResponse, FormState, OfficeResponse } from "@/types";
 import { paths, validatorForm } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { ReusableInput, ReusableSelect } from "@/components/shared";
@@ -35,6 +36,8 @@ const transformOptionsToBranches = (options: MultiValue<BranchOptionType> | Sing
 export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
 
     const { loading, callEndPoint } = useFetchAndLoad();
+
+    const { showBoundary } = useErrorBoundary();
 
     const [ office, setOffice ] = useState<OfficeResponse | null>(null);
 
@@ -75,7 +78,10 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
         return await callEndPoint(serviceRequest.getItem<OfficeResponse>(`${paths.courier.offices}id/${officeId}`));
     }
 
-    const handleOfficeDetailsSuccess = (data: OfficeResponse) => setOffice(data);
+    const handleOfficeDetailsSuccess = (response: FetchResponse<OfficeResponse>) => {
+        if(response.data) setOffice(response.data);
+        else showBoundary(response.error);
+    }
 
     useAsync(fetchOfficeDetails, handleOfficeDetailsSuccess, () => {}, [officeId]);
 

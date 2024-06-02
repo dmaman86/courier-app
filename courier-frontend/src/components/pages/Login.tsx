@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Stack } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation} from "react-router-dom";
 
 
 import { useForm, useFetchAndLoad, useAuth } from "@/hooks";
@@ -35,6 +35,10 @@ export const Login = () => {
     const { saveTokens } = useAuth();
     const navigate = useNavigate();
 
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const message = queryParams.get('message');
+
     const { isCellularNumber } = validatorForm;
 
     const { values, handleChange, onFocus, validateForm } = useForm(initialState);
@@ -61,6 +65,10 @@ export const Login = () => {
                 setErrorResponse(error.response.data);
         }
     }, [error, loading]);
+
+    useEffect(() => {
+        if(message) setErrorResponse(message);
+    }, [message]);
 
     useEffect(() => {
         if(!loading && data){
@@ -131,7 +139,9 @@ export const Login = () => {
                                         onFocus={handleOnFocus}
                                         errorsMessage={passwordErrors}/>
                                     </div>
-                                    <div className={`text-danger errormessage ${errorResponse ? '' : 'd-none'}`}>{errorResponse}</div>
+                                    {
+                                        errorResponse && <div className="text-danger text-center">{errorResponse}</div>
+                                    }
 
                                     <div className="col pt-3 text-center">
                                         <Stack spacing={2} direction='row' justifyContent='center'>

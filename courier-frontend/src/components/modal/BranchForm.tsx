@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { MultiValue, SingleValue } from "react-select";
+import { useErrorBoundary } from "react-error-boundary";
 
 import { useAsync, useFetchAndLoad, useForm } from "@/hooks";
-import { BranchResponse, FormState, OfficeResponse, OptionType } from "@/types";
+import { BranchResponse, FetchResponse, FormState, OfficeResponse, OptionType } from "@/types";
 import { paths, validatorForm } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { ReusableInput, ReusableSelect } from "@/components/shared";
@@ -19,6 +20,8 @@ const tranformOffices = (offices: OfficeResponse[]): OptionType[] => {
 export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
 
     const { loading, callEndPoint } = useFetchAndLoad();
+
+    const { showBoundary } = useErrorBoundary();
 
     const [ branch, setBranch ] = useState<BranchResponse | null>(null);
 
@@ -58,8 +61,12 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
         return await callEndPoint(serviceRequest.getItem<BranchResponse>(`${paths.courier.branches}id/${branchId}`));
     }
 
-    const handleBranchDetailsSuccess = (data: BranchResponse) => {
-        setBranch(data);
+    const handleBranchDetailsSuccess = (response: FetchResponse<BranchResponse>) => {
+        if(response.data){
+            setBranch(response.data);
+        }else{
+            showBoundary(response.error);
+        }
     }
 
     useAsync(fetchBranchDetails, handleBranchDetailsSuccess, () => {}, [branchId]);
@@ -148,8 +155,9 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
 
     const fetchOffices = async() => await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
 
-    const handleOfficesSuccess = (data: OfficeResponse[]) => {
-        setOffices(data);
+    const handleOfficesSuccess = (response: FetchResponse<OfficeResponse[]>) => {
+        if(response.data) setOffices(response.data);
+        else showBoundary(response.error);
     }
 
     useAsync(fetchOffices, handleOfficesSuccess, () => {}, []);

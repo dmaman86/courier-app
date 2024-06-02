@@ -1,11 +1,11 @@
-import { useEffect } from "react"
-import { FetchResponse } from "../types";
+import { useEffect } from "react";
 
+import { FetchResponse } from "../types";
 
 
 export const useAsync = <T>(
     asyncFn: () => Promise<FetchResponse<T>>,
-    successFunction: (data: T) => void,
+    successFunction: (data: FetchResponse<T>) => void,
     returnFunction?: Function,
     dependencies: any[] = []
 ) => {
@@ -13,7 +13,9 @@ export const useAsync = <T>(
     useEffect(()=> {
         let isActive = true;
         asyncFn().then((result) =>{
-            if(isActive) successFunction(result.data as T);
+            if(isActive) {
+                successFunction(result);
+            }
         });
         return () => {
             returnFunction && returnFunction();

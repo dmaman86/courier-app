@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer } from "react";
 import { CircularProgress } from "@mui/material";
+import { useErrorBoundary } from "react-error-boundary";
 
 
 import { Action, FetchResponse, Item, ItemsPageProps, PageResponse, State } from "@/types";
@@ -77,14 +78,21 @@ export const ItemsPage = <T extends Item>({ title,
 
     const { items, setAllItems, addItem, updateItem, removeItem, existItem } = useList<T>([]);
     const { loading, callEndPoint } = useFetchAndLoad();
+    const { showBoundary } = useErrorBoundary();
 
     const getApiData = async() => await callEndPoint(fetchItems(state.pagination.page, state.pagination.size));
 
-    const handleSuccess = (data: PageResponse<T[]>) => {
-        setAllItems(data.content);
-        dispatch({ type: 'SET_PAGINATION', payload: { page: data.pageable.pageNumber, 
-                                                    size: state.pagination.size, 
-                                                    totalItems: data.totalElements }})
+    const handleSuccess = (response: FetchResponse<PageResponse<T[]>>) => {
+        if(response.data && !response.error){
+            const { data } = response;
+            setAllItems(data.content);
+            dispatch({ type: 'SET_PAGINATION', payload: { page: data.pageable.pageNumber, 
+                size: state.pagination.size, 
+                totalItems: data.totalElements }})
+        }else{
+            showBoundary(response.error);
+        }
+
     }
 
     useAsync(getApiData, handleSuccess, () => {}, [state.pagination.page, state.pagination.size] )
@@ -96,12 +104,17 @@ export const ItemsPage = <T extends Item>({ title,
         return { data: null, error: null };
     };
 
-    const handleSearchSuccess = (data: PageResponse<T[]>) => {
+    const handleSearchSuccess = (response: FetchResponse<PageResponse<T[]>>) => {
         if(state.searchQuery){
-            setAllItems(data.content);
-            dispatch({ type: 'SET_PAGINATION', payload: { page: data.pageable.pageNumber, 
-                                                        size: state.pagination.size, 
-                                                        totalItems: data.totalElements }})
+            if(response.data && !response.error){
+                const { data } = response;
+                setAllItems(data.content);
+                dispatch({ type: 'SET_PAGINATION', payload: { page: data.pageable.pageNumber, 
+                                                            size: state.pagination.size, 
+                                                            totalItems: data.totalElements }})
+            }else{
+                showBoundary(response.error);
+            }
         }
     }
     

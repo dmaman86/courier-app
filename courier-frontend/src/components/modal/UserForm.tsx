@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { MultiValue, SingleValue } from 'react-select';
-import { useSelector } from "react-redux";
+import { useErrorBoundary } from 'react-error-boundary';
 
-import { User, Role, FormState, OptionType, Client, Branch, OfficeResponse, BranchOptionType } from '@/types';
+import { User, Role, FormState, OptionType, Client, Branch, OfficeResponse, BranchOptionType, FetchResponse } from '@/types';
 import { paths, validatorForm } from '@/helpers';
 import { useAsync, useAuth, useFetchAndLoad, useForm } from '@/hooks';
 import { ReusableInput, ReusableSelect } from '@/components/shared';
@@ -52,6 +52,8 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     const { userDetails } = useAuth();
     const { loading, callEndPoint } = useFetchAndLoad();
+
+    const { showBoundary } = useErrorBoundary();
 
     const [ user, setUser ] = useState<User | Client | null>(null);
 
@@ -114,7 +116,10 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
         return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${userId}`));
     }
 
-    const handleUserDetailsSuccess = (data: User | Client) => setUser(data);
+    const handleUserDetailsSuccess = (response: FetchResponse<User | Client>) => {
+        if(response.data) setUser(response.data);
+        else showBoundary(response.error);
+    }
 
     useAsync(fetchUserDetails, handleUserDetailsSuccess, () => {}, [userId]);
 
@@ -290,14 +295,18 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     const fetchRoles = async() => await callEndPoint(serviceRequest.getItem<Role[]>(`${paths.courier.roles}all`));
 
-    const handleRoleSuccess = (data: Role[]) => setRoles(data);
+    const handleRoleSuccess = (response: FetchResponse<Role[]>) => {
+        if(response.data) setRoles(response.data);
+        else showBoundary(response.error);
+    }
 
     useAsync(fetchRoles, handleRoleSuccess, () => {}, []);
 
     const fetchOffices = async() => await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
 
-    const handleOfficesSuccess = (data: OfficeResponse[]) => {
-        setOffices(data);
+    const handleOfficesSuccess = (response: FetchResponse<OfficeResponse[]>) => {
+        if(response.data) setOffices(response.data);
+        else showBoundary(response.error);
     }
 
     useAsync(fetchOffices, handleOfficesSuccess, () => {}, []);
