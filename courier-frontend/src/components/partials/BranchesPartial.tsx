@@ -4,6 +4,8 @@ import { BranchResponse, PageResponse, ValueColumn } from "@/types"
 import { BranchForm } from "@/components/modal";
 import { ItemsPage } from "@/components/shared";
 import { BranchList } from "@/components/listTables";
+import { useAuth } from "@/hooks";
+import { useEffect, useState } from "react";
 
 
 const branchColumns: ValueColumn[] = [
@@ -12,6 +14,10 @@ const branchColumns: ValueColumn[] = [
 ]
 
 export const BranchesPartial = () => {
+
+    const { userDetails } = useAuth();
+
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 
     const fetchBranches = (page: number, size: number) => serviceRequest.getItem<PageResponse<BranchResponse[]>>(`${paths.courier.branches}?page=${page}&size=${size}`);
 
@@ -22,6 +28,12 @@ export const BranchesPartial = () => {
 
     const searchBranch = (query: string, page: number, size: number) => serviceRequest.getItem<PageResponse<BranchResponse[]>>(`${paths.courier.branches}search?query=${query}&page=${page}&size=${size}`);
 
+    useEffect(() => {
+        if(userDetails){
+            const userRoles = userDetails.roles;
+            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        }
+    }, [userDetails]);
 
     return(
         <>
@@ -37,6 +49,7 @@ export const BranchesPartial = () => {
                 columns={branchColumns}
                 renderItemList={({ data, actions}) => <BranchList data={data} actions={actions}/>}
                 showSearch={true}
+                canCreate={isAdmin}
             />
         </>
     )

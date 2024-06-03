@@ -92,4 +92,9 @@ public class ContactServiceImpl implements ContactService{
     public List<Contact> findContactsByOfficeAndBranches(Office office, List<Branch> branches) {
         return contactRepository.findByOfficeAndBranches(office, branches);
     }
+
+    @Override
+    public List<Contact> getContactsByOfficeIdAndBranchId(Long officeId, Long branchId){
+        return contactRepository.findByOfficeIdAndBranchesId(officeId, branchId);
+    }
 }

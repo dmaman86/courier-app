@@ -51,4 +51,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long>, JpaSpec
     Contact findByIdWithBranches(@Param("id") Long id); // get contact by id with branches
 
     boolean existsByOffice(Office office);
+
+    List<Contact> findByOfficeIdAndBranchesId(Long officeId, Long branchId);
 }

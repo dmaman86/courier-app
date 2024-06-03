@@ -4,9 +4,15 @@ import { Contact, PageResponse, ValueColumn } from "@/types";
 import { ContactForm } from "@/components/modal";
 import { ContactList } from "@/components/listTables";
 import { ItemsPage } from "@/components/shared";
+import { useAuth } from "@/hooks";
+import { useEffect, useState } from "react";
 
 
 export const ContactsPage = () => {
+
+    const { userDetails } = useAuth();
+
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 
     const fetchContacts = (page: number, size: number) => serviceRequest.getItem<PageResponse<Contact[]>>(`${paths.courier.contacts}?page=${page}&size=${size}`);
 
@@ -24,6 +30,13 @@ export const ContactsPage = () => {
         { key: 'branches', label: 'Branches' }
     ]
 
+    useEffect(() => {
+        if(userDetails){
+            const userRoles = userDetails.roles;
+            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        }
+    }, [userDetails]);
+
     return(
         <>
             <ItemsPage<Contact>
@@ -38,6 +51,7 @@ export const ContactsPage = () => {
                 columns={contactColumns}
                 renderItemList={({ data, actions }) => <ContactList data={data} actions={actions}/>}
                 showSearch={true}
+                canCreate={isAdmin}
             />
         </>
     )

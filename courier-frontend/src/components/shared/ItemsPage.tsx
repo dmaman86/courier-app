@@ -32,7 +32,7 @@ const initialState = <T extends Item>(): State<T> => ({
     responseDelete: { data: null, error: null },
     searchQuery: '',
     pagination: { page: 0, size: 5, totalItems: 0 },
-})
+});
 
 const reducer = <T extends Item>(state: State<T>, action: ActionType<T>): State<T> => {
     switch (action.type) {
@@ -71,7 +71,8 @@ export const ItemsPage = <T extends Item>({ title,
                                                     renderItemForm, 
                                                     renderItemList: ItemList, 
                                                     columns,
-                                                    showSearch = true }: ItemsPageProps<T>) => {
+                                                    showSearch = true,
+                                                    canCreate = false }: ItemsPageProps<T>) => {
 
 
     const [ state, dispatch ] = useReducer(reducer, initialState<T>());
@@ -208,7 +209,7 @@ export const ItemsPage = <T extends Item>({ title,
     return (
         <>
             <PageHeader title={title} placeholder={placeholder} buttonName={buttonName} onSearch={handleSearch} 
-                            onCreate={handleCreateItem} showSearch={showSearch}/>
+                            onCreate={handleCreateItem} showSearch={showSearch} canCreate={canCreate}/>
             <div className="container">
                 {
                     loading ? <CircularProgress disableShrink /> : (

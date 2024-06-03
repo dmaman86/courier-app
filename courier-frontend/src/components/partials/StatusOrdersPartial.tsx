@@ -4,8 +4,14 @@ import { PageResponse, StatusOrder, ValueColumn } from "@/types";
 import { StatusOrderForm } from "@/components/modal";
 import { ItemsPage } from "@/components/shared";
 import { StatusOrdersList } from "@/components/listTables";
+import { useAuth } from "@/hooks";
+import { useEffect, useState } from "react";
 
 export const StatusOrdersPartial = () => {
+
+    const { userDetails } = useAuth();
+
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 
     const fetchStatusOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<StatusOrder[]>>(`${paths.courier.statusOrder}?page=${page}&size=${size}`);
 
@@ -17,6 +23,13 @@ export const StatusOrdersPartial = () => {
     const statusOrdersColumns: ValueColumn[] = [
         { key: 'statusOrder', label: 'Status Order Name' }
     ]
+
+    useEffect(() => {
+        if(userDetails){
+            const userRoles = userDetails.roles;
+            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        }
+    }, [userDetails]);
 
     return(
         <>
@@ -31,6 +44,7 @@ export const StatusOrdersPartial = () => {
                 columns={statusOrdersColumns}
                 renderItemList={({ data, actions}) => <StatusOrdersList data={data} actions={actions}/>}
                 showSearch={false}
+                canCreate={isAdmin}
             />
         </>
     )

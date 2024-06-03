@@ -30,4 +30,6 @@ public interface ContactService {
     Page<Contact> searchContacts(String toSearch, int page, int size);
 
     List<Contact> findContactsByOfficeAndBranches(Office office, List<Branch> branches);
+
+    List<Contact> getContactsByOfficeIdAndBranchId(Long officeId, Long branchId);
 }

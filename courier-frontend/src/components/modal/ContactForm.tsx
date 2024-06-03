@@ -109,12 +109,6 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
                 branches: contact.branches
             });
 
-            setSelectedOffice({
-                id: contact.office.id,
-                name: contact.office.name,
-                branches: contact.branches
-            });
-
             setInitialState({
                 name: {
                     value: contact.name,
@@ -218,11 +212,24 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
     const fetchOffices = async() => await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`));
 
     const handleOfficesSuccess = (response: FetchResponse<OfficeResponse[]>) => {
-        if(response.data) setOffices(response.data);
+        if(response.data){
+            setOffices(response.data);
+        }
         else showBoundary(response.error);
     }
 
     useAsync(fetchOffices, handleOfficesSuccess, () => {}, []);
+
+    useEffect(() => {
+        if(contact && offices.length > 0){
+            const office = offices.find(office => office.id === contact.office.id);
+            setSelectedOffice({
+                id: contact.office.id,
+                name: contact.office.name,
+                branches: office ? office.branches : []
+            });
+        }
+    }, [contact, offices]);
 
     return(
         <>

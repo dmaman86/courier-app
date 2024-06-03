@@ -4,3 +4,4 @@ export { OfficeList } from './OfficeList';
 export { RoleList } from './RoleList';
 export { StatusOrdersList } from './StatusOrdersList';
 export { UserList } from './UserList';
+export { OrderList } from './OrderList';

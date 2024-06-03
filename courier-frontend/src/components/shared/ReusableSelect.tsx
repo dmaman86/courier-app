@@ -2,7 +2,7 @@ import Select from 'react-select';
 
 import { OptionType, SelectProps } from '@/types';
 
-export const ReusableSelect = <T extends OptionType>({ label, value, options, onChange, isMulti = false }: SelectProps<T>) => {
+export const ReusableSelect = <T extends OptionType>({ label, value, options, onChange, isMulti = false, isDisabled = false }: SelectProps<T>) => {
 
     
     return (
@@ -12,7 +12,8 @@ export const ReusableSelect = <T extends OptionType>({ label, value, options, on
                 value={value}
                 options={options}
                 onChange={onChange}
-                isMulti={isMulti} 
+                isMulti={isMulti}
+                isDisabled={isDisabled}
             />
         </>
     );

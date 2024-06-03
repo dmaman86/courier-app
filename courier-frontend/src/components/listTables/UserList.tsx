@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { TableBody, TableCell, TableRow, Stack } from "@mui/material";
-import { useSelector } from "react-redux";
 
-import { RootState } from "@/redux/store";
 import { Action, User } from "@/types";
 import { useAuth } from "@/hooks";
 

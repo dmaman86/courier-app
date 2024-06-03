@@ -52,6 +52,7 @@ export interface SelectProps<T>{
     options: T[];
     onChange: (selected: MultiValue<T> | SingleValue<T>) => void;
     isMulti?: boolean;
+    isDisabled?: boolean;
 }
 
 export interface AuthContextType {
@@ -110,4 +111,5 @@ export interface ItemsPageProps<T extends Item> {
     columns: ValueColumn[];
     renderItemList: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;
     showSearch?: boolean;
+    canCreate?: boolean;
 }

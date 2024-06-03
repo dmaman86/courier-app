@@ -16,6 +16,7 @@ interface PageHeaderProps {
     onCreate: () => void;
     delay?: number;
     showSearch?: boolean;
+    canCreate: boolean;
 }
 
 const initialState: FormState = {
@@ -26,7 +27,7 @@ const initialState: FormState = {
     }
 }
 
-export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate, delay = 250, showSearch = true }: PageHeaderProps) => {
+export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate, delay = 250, showSearch = true, canCreate }: PageHeaderProps) => {
 
     const userDetails = useSelector((state: RootState) => state.auth.userDetails);
 
@@ -80,7 +81,7 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
                                 )
                             }
                             {
-                                isAdmin && (
+                                canCreate && (
                                     <div className={`col-${onSearch ? '6' : '12'} d-flex justify-content-center`}>
                                         <button onClick={onCreate} className="btn btn-primary">{buttonName}</button>
                                     </div>

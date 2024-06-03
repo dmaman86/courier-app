@@ -89,6 +89,13 @@ public class OfficeController {
         return ResponseEntity.ok("Office deleted");
     }
 
+    @GetMapping("/search/name")
+    public ResponseEntity<?> searchOfficeByName(@RequestParam("query") String query){
+        List<Office> offices = officeService.searchOfficesByName(query);
+        List<OfficeDto> officesDto = offices.stream().map(officeMapper::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(officesDto);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchOffice(@RequestParam("query") String query,
                                             @RequestParam(value = "page", defaultValue = "0") int page,

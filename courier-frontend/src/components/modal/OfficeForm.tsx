@@ -15,7 +15,7 @@ import { ReusableInput, ReusableSelect } from "@/components/shared";
 
 interface OfficeFormProps {
     officeId: number | null;
-    onSubmit: (role: OfficeResponse) => void;
+    onSubmit: (office: OfficeResponse) => void;
 }
 
 const transformOptionsToBranches = (options: MultiValue<BranchOptionType> | SingleValue<BranchOptionType>): Branch[] => {

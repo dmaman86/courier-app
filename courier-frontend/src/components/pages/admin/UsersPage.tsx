@@ -67,6 +67,7 @@ export const UsersPage = () => {
                 renderItemForm={(userId, onSubmit) => <UserForm userId={userId} onSubmit={onSubmit} />}
                 columns={userColumns}
                 renderItemList={({ data, actions }) => <UserList data={data} actions={actions} />}
+                canCreate={isAdmin}
             />
         </>
     )

@@ -4,8 +4,14 @@ import { OfficeResponse, PageResponse, ValueColumn } from "@/types";
 import { OfficeForm } from "@/components/modal";
 import { ItemsPage } from "@/components/shared";
 import { OfficeList } from "@/components/listTables";
+import { useAuth } from "@/hooks";
+import { useEffect, useState } from "react";
 
 export const OfficesPage = () => {
+
+    const { userDetails } = useAuth();
+
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 
     const fetchOffices = (page: number, size: number) => serviceRequest.getItem<PageResponse<OfficeResponse[]>>(`${paths.courier.offices}?page=${page}&size=${size}`);
 
@@ -21,6 +27,13 @@ export const OfficesPage = () => {
         { key: 'branches', label: 'Branches' }
     ]
 
+    useEffect(() => {
+        if(userDetails){
+            const userRoles = userDetails.roles;
+            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        }
+    }, [userDetails]);
+
     return(
         <>
             <ItemsPage<OfficeResponse>
@@ -35,6 +48,7 @@ export const OfficesPage = () => {
                 columns={officeColumns}
                 renderItemList={({ data, actions}) => <OfficeList data={data} actions={actions}/>}
                 showSearch={true}
+                canCreate={isAdmin}
             />
         </>
     )

@@ -6,3 +6,4 @@ export { OfficeForm } from './OfficeForm';
 export { BranchForm } from './BranchForm';
 export { ContactForm } from './ContactForm';
 export { StatusOrderForm } from './StatusOrderForm';
+export { OrderForm } from './OrderForm';

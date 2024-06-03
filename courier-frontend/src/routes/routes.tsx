@@ -12,6 +12,7 @@ import { SettingsAdmin } from '@/components/pages/admin/SettingsAdmin';
 import { UsersPage } from '@/components/pages/admin/UsersPage';
 import { ContactsPage } from '@/components/common/ContactsPage';
 import { OfficesPage } from '@/components/common/OfficesPage';
+import { OrdersPage } from '@/components/common/OrdersPage';
 
 export const publicRoutes: RouteConfig[] = [
     {
@@ -39,6 +40,12 @@ export const privateRoutes: RouteConfig[] = [
         path: '/home',
         label: 'Home',
         element: <Home />,
+        allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER', 'ROLE_CLIENT']
+    },
+    {
+        path: '/orders',
+        label: 'Orders',
+        element: <OrdersPage />,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER', 'ROLE_CLIENT']
     },
     {

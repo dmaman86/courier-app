@@ -59,6 +59,14 @@ public class ContactController {
         return ResponseEntity.ok(contactDtos);
     }
 
+    @GetMapping("/office/{officeId}/branch/{branchId}")
+    public ResponseEntity<?> getContactsByOfficeAndBranch(@PathVariable Long officeId, @PathVariable Long branchId){
+        List<Contact> contacts = contactService.getContactsByOfficeIdAndBranchId(officeId, branchId);
+        List<ContactDto> contactDtos = contacts.stream().map(contactMapper::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(contactDtos);
+
+    }
+
     @GetMapping("/")
     public ResponseEntity<?> getAllContacts(@RequestParam(value = "page", defaultValue = "0") int page,
                                             @RequestParam(value = "size", defaultValue = "10") int size){

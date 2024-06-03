@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Divider, Stack, TableBody, TableCell, TableRow } from "@mui/material";
-import { useSelector } from "react-redux";
 
-import { RootState } from "@/redux/store";
 import { Action, Contact } from "@/types";
 import { useAuth } from "@/hooks";
 
@@ -17,6 +15,10 @@ export const ContactList = ({ data, actions }: { data: Contact[], actions?: Acti
             setIsAdmin(userDetails.roles.some(role => role.name === 'ROLE_ADMIN'));
         }
     }, [userDetails]);
+
+    useEffect(() => {
+        if(data) console.log(data);
+    }, [data]);
 
     return(
         <>
