@@ -1,8 +1,13 @@
 package com.david.maman.courierserver.mappers;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +30,8 @@ import com.david.maman.courierserver.services.OrderStatusHistoryService;
 @Component
 public class OrderMapper {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderMapper.class);
+
     @Autowired
     private ContactMapper contactMapper;
 
@@ -43,38 +50,58 @@ public class OrderMapper {
     @Autowired
     private BranchMapper branchMapper;
 
+    @Autowired
+    private OrderStatusHistoryMapper orderStatusHistoryMapper;
+
+
     public OrderDto toDto(Order order){
+
+        OrderStatusHistory currenStatusHistory = order.getStatusHistory().stream()
+                    .max(Comparator.comparing(OrderStatusHistory::getTimestamp))
+                    .orElse(null);
+
         return OrderDto.builder()
                     .id(order.getId())
-                    .client(userMapper.toClientDto(order.getClient(), getClientContact(order)))
-                    .originOffice(officeMapper.toDto(order.getOriginOffice()))
+                    .client(userMapper.toDto(order.getClient()))
                     .originBranch(branchMapper.toDto(order.getOriginBranch()))
-                    .destinationOffice(officeMapper.toDto(order.getDestinationOffice()))
                     .destinationBranch(branchMapper.toDto(order.getDestinationBranch()))
                     .contacts(order.getContacts().stream()
                                 .map(contactMapper::toDto)
                                 .collect(Collectors.toList()))
-                    .couriers(order.getCouriers().stream()
+                    .couriers(order.getCouriers() != null ? order.getCouriers().stream()
                                 .map(userMapper::toDto)
-                                .collect(Collectors.toList()))
+                                .collect(Collectors.toList()) : null)
                     .deliveryDate(order.getDeliveryDate())
                     .receiverName(order.getReceiverName())
                     .receiverPhone(order.getReceiverPhone())
                     .destinationAddress(order.getDestinationAddress())
-                    .currentStatus(toOrderStatusDto(orderStatusHistoryService.getCurrentStatus(order.getId())))
+                    .currentStatus(currenStatusHistory != null ? statusMapper.toDto(currenStatusHistory.getStatus()) : null)
                     .statusHistory(orderStatusHistoryService.getOrderStatusHistory(order.getId()).stream()
                                     .map(this::toOrderStatusDto)
                                     .collect(Collectors.toList()))
                     .build();
     }
 
+    public Order toEntity(OrderDto orderDto){
 
-    public Order toEntity(OrderDto orderDto, User client, Office originOffice, Branch originBranch, Office destinationOffice, Branch destinationBranch, List<Contact> contacts, List<User> couriers){
+        List<OrderStatusHistory> statusHistory = orderDto.getStatusHistory() != null ?
+            orderDto.getStatusHistory().stream().map(orderStatusHistoryMapper::toEntity).collect(Collectors.toList()) :
+            new ArrayList<>();
+
+        Branch destinationBranch = branchMapper.toEntity(orderDto.getDestinationBranch());
+        Office destinationOffice = destinationBranch != null ? destinationBranch.getOffice() : null;
+        List<Contact> contacts = destinationOffice != null ? orderDto.getContacts().stream().map(
+            contactDto -> contactMapper.toEntity(contactDto, destinationOffice, destinationOffice.getBranches())
+        ).collect(Collectors.toList()) : new ArrayList<>();
+
+        List<User> couriers = orderDto.getCouriers() != null ?
+            orderDto.getCouriers().stream().map(userMapper::toEntity).collect(Collectors.toList()) :
+            new ArrayList<>();
+
         return Order.builder()
-                    .client(client)
-                    .originOffice(originOffice)
-                    .originBranch(originBranch)
-                    .destinationOffice(destinationOffice)
+                    .id(orderDto.getId())
+                    .client(userMapper.toEntity(orderDto.getClient()))
+                    .originBranch(branchMapper.toEntity(orderDto.getOriginBranch()))
                     .destinationBranch(destinationBranch)
                     .contacts(contacts)
                     .couriers(couriers)
@@ -82,15 +109,47 @@ public class OrderMapper {
                     .receiverName(orderDto.getReceiverName())
                     .receiverPhone(orderDto.getReceiverPhone())
                     .destinationAddress(orderDto.getDestinationAddress())
+                    .statusHistory(statusHistory)
                     .isDelivered(false)
                     .build();
+
     }
 
-    private Contact getClientContact(Order order){
-        return order.getContacts().stream()
-                    .filter(contact -> contact.getOffice().equals(order.getOriginOffice()) && contact.getBranches().contains(order.getOriginBranch()))
-                    .findFirst()
-                    .orElse(null);
+
+    public Order toEntity(OrderDto orderDto, Branch originBranch, Branch destinationBranch, List<Contact> contacts, List<User> couriers){
+
+        List<OrderStatusHistory> statusHistory = orderDto.getStatusHistory() != null ?
+            orderDto.getStatusHistory().stream().map(orderStatusHistoryMapper::toEntity).collect(Collectors.toList()) :
+            new ArrayList<>();
+
+        Order ord = Order.builder()
+                    .id(orderDto.getId())
+                    .client(userMapper.toEntity(orderDto.getClient()))
+                    .originBranch(originBranch)
+                    .destinationBranch(destinationBranch)
+                    .contacts(contacts)
+                    .couriers(couriers)
+                    .deliveryDate(orderDto.getDeliveryDate())
+                    .receiverName(orderDto.getReceiverName())
+                    .receiverPhone(orderDto.getReceiverPhone())
+                    .destinationAddress(orderDto.getDestinationAddress())
+                    .statusHistory(statusHistory)
+                    .isDelivered(false) // Assuming a new order is not delivered yet
+                    .build();
+        logger.info("Order entity created: {}", ord);
+        return ord;
+    }
+
+    public void updateEntityFromDto(Order order, OrderDto orderDto, Branch originBranch, Branch destinationBranch, List<Contact> contacts, List<User> couriers){
+        order.setClient(userMapper.toEntity(orderDto.getClient()));
+        order.setOriginBranch(originBranch);
+        order.setDestinationBranch(destinationBranch);
+        order.setContacts(contacts);
+        order.setCouriers(couriers);
+        order.setDeliveryDate(orderDto.getDeliveryDate());
+        order.setReceiverName(orderDto.getReceiverName());
+        order.setReceiverPhone(orderDto.getReceiverPhone());
+        order.setDestinationAddress(orderDto.getDestinationAddress());
     }
 
     private OrderStatusDto toOrderStatusDto(OrderStatusHistory history){

@@ -1,5 +1,6 @@
 package com.david.maman.courierserver.models.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -36,19 +37,11 @@ public class Order {
     private User client;
 
     @ManyToOne
-    @JoinColumn(name = "origin_office_id", nullable = false)
-    private Office originOffice;
-
-    @ManyToOne
     @JoinColumn(name = "origin_branch_id", nullable = false)
     private Branch originBranch;
 
     @ManyToOne
-    @JoinColumn(name = "destination_office_id")
-    private Office destinationOffice;
-
-    @ManyToOne
-    @JoinColumn(name = "destination_branch_id")
+    @JoinColumn(name = "destination_branch_id", nullable = true)
     private Branch destinationBranch;
 
     @ManyToMany

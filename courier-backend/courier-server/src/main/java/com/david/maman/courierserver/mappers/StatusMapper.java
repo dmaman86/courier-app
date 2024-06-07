@@ -9,6 +9,9 @@ import com.david.maman.courierserver.models.entities.Status;
 public class StatusMapper {
 
     public Status toEntity(StatusDto statusDto){
+        if(statusDto == null)
+            return null;
+
         return Status.builder()
                     .id(statusDto.getId())
                     .name(statusDto.getName())
@@ -16,6 +19,9 @@ public class StatusMapper {
     }
 
     public StatusDto toDto(Status status){
+        if(status == null)
+            return null;
+            
         return StatusDto.builder()
                         .id(status.getId())
                         .name(status.getName())

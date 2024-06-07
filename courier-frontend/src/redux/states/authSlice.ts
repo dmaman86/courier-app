@@ -28,7 +28,8 @@ const getUserDetailsFromToken = (accessToken: string): User | null => {
             name: decoded.name,
             lastName: decoded.lastname,
             phone: decoded.phone,
-            roles: decoded.roles
+            roles: decoded.roles,
+            isActive: true
         }
     }catch(error){
         console.error('Error decoding token: ', error);

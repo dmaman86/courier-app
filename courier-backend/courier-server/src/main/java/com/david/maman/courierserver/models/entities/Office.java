@@ -33,4 +33,9 @@ public class Office {
 
     @OneToMany(mappedBy = "office", cascade = CascadeType.ALL)
     private List<Contact> contacts;
+
+    @Override
+    public String toString(){
+        return "Office{id=" + id + ", name=" + name + "}";
+    }
 }

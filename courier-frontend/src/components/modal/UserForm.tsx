@@ -68,7 +68,8 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
         phone: user?.phone || '',
         roles: user?.roles || [],
         office: { id: 0, name: ''},
-        branches: []
+        branches: [],
+        isActive: true
     });
 
     const [ roles, setRoles ] = useState<Role[]>([]);
@@ -146,7 +147,8 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                 phone: user.phone,
                 roles: user.roles,
                 office: (user as Client).office || { id: 0, name: ''},
-                branches: (user as Client).branches || []
+                branches: (user as Client).branches || [],
+                isActive: user.isActive
             });
 
             setInitialState({
@@ -226,13 +228,16 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
     }, [user, selectedOffice]);
 
     useEffect(() => {
-        setFormData((prev) => ({
-            ...prev,
-            name: values.name.value,
-            lastName: values.lastName.value,
-            email: values.email.value,
-            phone: values.phone.value,
-        }));
+        if(values){
+            setFormData((prev) => ({
+                ...prev,
+                name: values.name.value,
+                lastName: values.lastName.value,
+                email: values.email.value,
+                phone: values.phone.value,
+            }));
+        }
+        
     }, [values]);
 
     useEffect(() => {
@@ -321,12 +326,12 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                             label: 'Name',
                             name: 'name',
                             type: 'text',
-                            value: values.name.value,
-                            placeholder: 'Enter your name'
+                            value: values!.name.value,
+                            placeholder: 'Enter user name'
                         }}
                         onChange={handleChange}
                         onFocus={onFocus}
-                        errorsMessage={values.name.error}
+                        errorsMessage={values!.name.error}
                     />    
                 </div>
                 <div className='col-6'>
@@ -335,12 +340,12 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                             label: 'Last Name',
                             name: 'lastName',
                             type: 'text',
-                            value: values.lastName.value,
-                            placeholder: 'Enter your last name'
+                            value: values!.lastName.value,
+                            placeholder: 'Enter user last name'
                         }}
                         onChange={handleChange}
                         onFocus={onFocus}
-                        errorsMessage={values.lastName.error}
+                        errorsMessage={values!.lastName.error}
                     />    
                 </div>
                 <div className='row'>
@@ -350,12 +355,12 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                                 label: 'Email',
                                 name: 'email',
                                 type: 'email',
-                                value: values.email.value,
-                                placeholder: 'Enter your email'
+                                value: values!.email.value,
+                                placeholder: 'Enter user email'
                             }}
                             onChange={handleChange}
                             onFocus={onFocus}
-                            errorsMessage={values.email.error}
+                            errorsMessage={values!.email.error}
                         />    
                     </div>
                     <div className='col-6'>
@@ -364,12 +369,12 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                                 label: 'Phone',
                                 name: 'phone',
                                 type: 'tel',
-                                value: values.phone.value,
-                                placeholder: 'Enter your phone'
+                                value: values!.phone.value,
+                                placeholder: 'Enter user phone'
                             }}
                             onChange={handleChange}
                             onFocus={onFocus}
-                            errorsMessage={values.phone.error}
+                            errorsMessage={values!.phone.error}
                         />    
                     </div>
                 </div>

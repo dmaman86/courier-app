@@ -158,12 +158,14 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
     }, [contact]);
 
     useEffect(() => {
-        setFormData((prev) => ({
-            ...prev,
-            name: values.name.value,
-            lastName: values.lastName.value,
-            phone: values.phone.value
-        }));
+        if(values){
+            setFormData((prev) => ({
+                ...prev,
+                name: values.name.value,
+                lastName: values.lastName.value,
+                phone: values.phone.value
+            }));
+        }
     }, [values]);
 
     useEffect(() => {
@@ -234,16 +236,16 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
     return(
         <>
             {
-                !loading && (
+                (!loading && values) && (
                     <form onSubmit={handleSubmit} className='row g-4'>
                         <div className='col-6'>
                             <ReusableInput
                                 inputProps={{
-                                    label: 'Name',
+                                    label: 'Contact Name',
                                     name: 'name',
                                     type: 'text',
                                     value: values.name.value,
-                                    placeholder: 'Enter your name'
+                                    placeholder: 'Enter contact name'
                                 }}
                                 onChange={handleChange}
                                 onFocus={onFocus}
@@ -253,11 +255,11 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
                         <div className='col-6'>
                             <ReusableInput
                                 inputProps={{
-                                    label: 'Last Name',
+                                    label: 'Contact Last Name',
                                     name: 'lastName',
                                     type: 'text',
                                     value: values.lastName.value,
-                                    placeholder: 'Enter your last name'
+                                    placeholder: 'Enter contact last name'
                                 }}
                                 onChange={handleChange}
                                 onFocus={onFocus}
@@ -268,11 +270,11 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
                             <div className='col'>
                                 <ReusableInput
                                     inputProps={{
-                                        label: 'Phone',
+                                        label: 'Contact Phone',
                                         name: 'phone',
                                         type: 'tel',
                                         value: values.phone.value,
-                                        placeholder: 'Enter your phone'
+                                        placeholder: 'Enter contact phone'
                                     }}
                                     onChange={handleChange}
                                     onFocus={onFocus}

@@ -31,21 +31,32 @@ export const RolePartial = () => {
         }
     }, [userDetails]);
 
+    const roleAllowedRoles = {
+        create: ['ROLE_ADMIN'],
+        update: ['ROLE_ADMIN'],
+        delete: ['ROLE_ADMIN']
+    }
+
     return (
         <>
-            <ItemsPage<Role>
-                title="Roles"
-                placeholder="Search role..."
-                buttonName="Create Role"
-                fetchItems={fetchRoles}
-                createOrUpdateItem={createOrUpdateRole}
-                deleteItem={deleteRole}
-                renderItemForm={(roleId, onSubmit) => <RoleForm roleId={roleId} onSubmit={onSubmit} />}
-                columns={rolesColumns}
-                renderItemList={({ data, actions }) => <RoleList data={data} actions={actions} />}
-                showSearch={false}
-                canCreate={isAdmin}
-            />
+            {
+                userDetails && (
+                    <ItemsPage<Role>
+                        userDetails={userDetails}
+                        title="Roles"
+                        placeholder="Search role..."
+                        buttonName="Create Role"
+                        fetchItems={fetchRoles}
+                        createOrUpdateItem={createOrUpdateRole}
+                        deleteItem={deleteRole}
+                        renderItemForm={(roleId, onSubmit) => <RoleForm roleId={roleId} onSubmit={onSubmit} />}
+                        columns={rolesColumns}
+                        renderItemList={({ data, actions }) => <RoleList data={data} actions={actions} />}
+                        showSearch={false}
+                        allowedRoles={roleAllowedRoles}
+                    />
+                )
+            }
         </>
     );
 }

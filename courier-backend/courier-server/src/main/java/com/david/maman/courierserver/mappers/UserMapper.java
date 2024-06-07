@@ -24,6 +24,7 @@ public class UserMapper{
                     .lastName(user.getLastName())
                     .phone(user.getPhone())
                     .email(user.getEmail())
+                    .isActive(user.getIsActive())
                     .roles(toDto(user.getRoles()))
                     .build();
     }
@@ -37,6 +38,7 @@ public class UserMapper{
                 .phone(userDto.getLastName())
                 .email(userDto.getEmail())
                 .roles(toEntity(userDto.getRoles()))
+                .isActive(true)
                 .build();
     }
 

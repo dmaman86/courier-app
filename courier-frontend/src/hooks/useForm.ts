@@ -1,39 +1,11 @@
 import { useState, ChangeEvent, useCallback } from 'react';
 
 import { FormState } from '../types';
+import moment from 'moment';
 
-export const useForm = (initialState: FormState) => {
+export const useForm = (initialState: FormState | null) => {
 
     const [ values, setValues ] = useState(initialState);
-
-    const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-
-        const fieldErrors = values[name].validateRealTime ?
-                            validateField(name, value, values) : [];
-
-        const updateValues: FormState = {
-            ...values,
-            [name]: {
-                ...values[name],
-                value,
-                isValid: fieldErrors.every(error => error === ''),
-                error: fieldErrors
-            },
-        };
-        setValues(updateValues);
-    }, [values]);
-
-    const onFocus = useCallback((fieldName: string) => {
-        setValues(prev => ({
-            ...prev,
-            [fieldName]: {
-                ...prev[fieldName],
-                error: [],
-                isValid: true
-            }
-        }));
-    }, []);
 
     const validateField = useCallback((fieldName: string, value: string, currentValues: FormState): string[] => {
         const field = currentValues[fieldName];
@@ -68,5 +40,62 @@ export const useForm = (initialState: FormState) => {
         return value.trim();
     }
 
-    return { values, handleChange, onFocus, validateForm, setValues };
+    const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        if(values){
+            const { name, value } = event.target;
+
+            const fieldErrors = values[name].validateRealTime ?
+                                validateField(name, value, values) : [];
+
+            const updateValues: FormState = {
+                ...values,
+                [name]: {
+                    ...values[name],
+                    value,
+                    isValid: fieldErrors.every(error => error === ''),
+                    error: fieldErrors
+                },
+            };
+            setValues(updateValues);
+        }
+    }, [values]);
+
+    const handleDateChange = useCallback((date: moment.Moment | null) => {
+        if(date && values){
+            const formattedDate = date.format('DD/MM/YYYY');
+            const updateValues: FormState = { ...values };
+
+            Object.keys(values).forEach(fieldName => {
+                if(fieldName.includes('Date')){
+                    const fieldErrors = values[fieldName].validateRealTime ?
+                                        validateField(fieldName, formattedDate, values) : [];
+
+                    updateValues[fieldName] = {
+                        ...values[fieldName],
+                        value: formattedDate,
+                        isValid: fieldErrors.every(error => error === ''),
+                        error: fieldErrors
+                    };
+                }
+            });
+            setValues(updateValues);
+        }
+    }, [values, validateField]);
+
+    const onFocus = useCallback((fieldName: string) => {
+        setValues(prev => ({
+            ...prev,
+            [fieldName]: {
+                ...prev![fieldName],
+                error: [],
+                isValid: true
+            }
+        }));
+    }, []);
+
+    const updateValues = useCallback((newValues: FormState) => {
+        setValues(newValues);
+    }, []);
+
+    return { values, handleChange, onFocus, validateForm, setValues, handleDateChange, updateValues };
 }

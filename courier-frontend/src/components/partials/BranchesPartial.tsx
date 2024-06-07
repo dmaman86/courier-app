@@ -35,22 +35,33 @@ export const BranchesPartial = () => {
         }
     }, [userDetails]);
 
+    const branchAllowedRoles = {
+        create: ['ROLE_ADMIN'],
+        update: ['ROLE_ADMIN'],
+        delete: ['ROLE_ADMIN']
+    }
+
     return(
         <>
-            <ItemsPage<BranchResponse>
-                title="Branches"
-                placeholder="Search branch..."
-                buttonName="Create Branch"
-                fetchItems={fetchBranches}
-                createOrUpdateItem={createOrUpdateBranch}
-                deleteItem={deleteBranch}
-                searchItem={searchBranch}
-                renderItemForm={(branchId, onSubmit) => <BranchForm branchId={branchId} onSubmit={onSubmit} />}
-                columns={branchColumns}
-                renderItemList={({ data, actions}) => <BranchList data={data} actions={actions}/>}
-                showSearch={true}
-                canCreate={isAdmin}
-            />
+            {
+                userDetails && (
+                    <ItemsPage<BranchResponse>
+                        userDetails={userDetails}
+                        title="Branches"
+                        placeholder="Search branch..."
+                        buttonName="Create Branch"
+                        fetchItems={fetchBranches}
+                        createOrUpdateItem={createOrUpdateBranch}
+                        deleteItem={deleteBranch}
+                        searchItem={searchBranch}
+                        renderItemForm={(branchId, onSubmit) => <BranchForm branchId={branchId} onSubmit={onSubmit} />}
+                        columns={branchColumns}
+                        renderItemList={({ data, actions}) => <BranchList data={data} actions={actions}/>}
+                        showSearch={true}
+                        allowedRoles={branchAllowedRoles}
+                    />
+                )
+            }
         </>
     )
 }

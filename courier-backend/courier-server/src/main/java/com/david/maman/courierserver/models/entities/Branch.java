@@ -38,4 +38,9 @@ public class Branch {
 
     @ManyToMany(mappedBy = "branches")
     private List<Contact> contacts;
+
+    @Override
+    public String toString(){
+        return "Branch{id=" + id + ", city=" + city + ", address=" + address + "}";
+    }
 }

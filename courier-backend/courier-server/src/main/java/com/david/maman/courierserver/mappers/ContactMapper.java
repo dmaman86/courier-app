@@ -17,26 +17,14 @@ import com.david.maman.courierserver.models.entities.Office;
 public class ContactMapper {
 
     public ContactDto toDto(Contact contact){
-
-        OfficeInfoDto officeDto = OfficeInfoDto.builder()
-                                                .id(contact.getOffice().getId())
-                                                .name(contact.getOffice().getName())
-                                                .build();
-
         return ContactDto.builder()
                 .id(contact.getId())
                 .name(contact.getName())
                 .lastName(contact.getLastName())
                 .phone(contact.getPhone())
-                .office(officeDto)
+                .office(this.toDto(contact.getOffice()))
                 .branches(contact.getBranches().stream()
-                            .map(branch -> {
-                                return BranchInfoDto.builder()
-                                            .id(branch.getId())
-                                            .city(branch.getCity())
-                                            .address(branch.getAddress())
-                                            .build();
-                            }).collect(Collectors.toList()))
+                            .map(this::toBranchInfoDto).collect(Collectors.toList()))
                 .build();
     }
 
@@ -60,6 +48,21 @@ public class ContactMapper {
                     .office(office)
                     .branches(branchs)
                     .build();
+    }
+
+    private OfficeInfoDto toDto(Office office) {
+        return OfficeInfoDto.builder()
+                .id(office.getId())
+                .name(office.getName())
+                .build();
+    }
+
+    private BranchInfoDto toBranchInfoDto(Branch branch) {
+        return BranchInfoDto.builder()
+                .id(branch.getId())
+                .city(branch.getCity())
+                .address(branch.getAddress())
+                .build();
     }
 
 

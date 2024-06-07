@@ -2,9 +2,7 @@ package com.david.maman.courierserver.models.dto;
 
 import java.util.List;
 
-import com.david.maman.courierserver.models.dto.base.BranchInfoDto;
-import com.david.maman.courierserver.models.dto.base.OfficeInfoDto;
-
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,15 +11,13 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class OrderDto {
 
     private Long id;
-    private ClientDto client;
-    private OfficeInfoDto originOffice;
-    private BranchInfoDto originBranch;
-    private OfficeInfoDto destinationOffice;
-    private BranchInfoDto destinationBranch;
+    private UserDto client;
+    private BranchDto originBranch;
+    private BranchDto destinationBranch;
     private List<ContactDto> contacts;
     private List<UserDto> couriers;
 
@@ -30,6 +26,6 @@ public class OrderDto {
     private String receiverPhone;
     private String destinationAddress;
 
-    private OrderStatusDto currentStatus;
+    private StatusDto currentStatus;
     private List<OrderStatusDto> statusHistory;
 }

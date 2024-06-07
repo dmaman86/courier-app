@@ -34,22 +34,33 @@ export const OfficesPage = () => {
         }
     }, [userDetails]);
 
+    const officeAllowedRoles = {
+        create: ['ROLE_ADMIN'],
+        update: ['ROLE_ADMIN'],
+        delete: ['ROLE_ADMIN']
+    }
+
     return(
         <>
-            <ItemsPage<OfficeResponse>
-                title="Offices"
-                placeholder="Search office..."
-                buttonName="Create Office"
-                fetchItems={fetchOffices}
-                createOrUpdateItem={createOrUpdateOffice}
-                deleteItem={deleteOffice}
-                searchItem={searchOffice}
-                renderItemForm={(officeId, onSubmit) => <OfficeForm officeId={officeId} onSubmit={onSubmit} />}
-                columns={officeColumns}
-                renderItemList={({ data, actions}) => <OfficeList data={data} actions={actions}/>}
-                showSearch={true}
-                canCreate={isAdmin}
-            />
+            {
+                userDetails && (
+                    <ItemsPage<OfficeResponse>
+                        userDetails={userDetails}
+                        title="Offices"
+                        placeholder="Search office..."
+                        buttonName="Create Office"
+                        fetchItems={fetchOffices}
+                        createOrUpdateItem={createOrUpdateOffice}
+                        deleteItem={deleteOffice}
+                        searchItem={searchOffice}
+                        renderItemForm={(officeId, onSubmit) => <OfficeForm officeId={officeId} onSubmit={onSubmit} />}
+                        columns={officeColumns}
+                        renderItemList={({ data, actions}) => <OfficeList data={data} actions={actions}/>}
+                        showSearch={true}
+                        allowedRoles={officeAllowedRoles}
+                    />
+                )
+            }
         </>
     )
 }

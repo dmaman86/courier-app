@@ -1,6 +1,7 @@
 package com.david.maman.courierserver.services.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +36,15 @@ public class OrderStatusHistoryServiceImpl implements OrderStatusHistoryService{
         OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
                                                                 .order(order)
                                                                 .status(status)
-                                                                .admin(admin)
                                                                 .timestamp(LocalDateTime.now())   
                                                                 .build();
-        order.getStatusHistory().add(orderStatusHistory);
+
+        if(admin != null) orderStatusHistory.setAdmin(admin);
+
+        // if(order.getStatusHistory() == null)
+        //    order.setStatusHistory(new ArrayList<>());
+            
+        // order.getStatusHistory().add(orderStatusHistory);
         orderStatusHistoryRepository.save(orderStatusHistory);
     }
 

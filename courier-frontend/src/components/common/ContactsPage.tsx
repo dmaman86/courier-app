@@ -30,6 +30,12 @@ export const ContactsPage = () => {
         { key: 'branches', label: 'Branches' }
     ]
 
+    const contactAllowedRoles = {
+        create: ['ROLE_ADMIN'],
+        update: ['ROLE_ADMIN'],
+        delete: ['ROLE_ADMIN']
+    }
+
     useEffect(() => {
         if(userDetails){
             const userRoles = userDetails.roles;
@@ -39,20 +45,25 @@ export const ContactsPage = () => {
 
     return(
         <>
-            <ItemsPage<Contact>
-                title="Contacts"
-                placeholder="Search contact..."
-                buttonName="Create Contact"
-                fetchItems={fetchContacts}
-                createOrUpdateItem={createOrUpdateContact}
-                deleteItem={deleteContact}
-                searchItem={searchContact}
-                renderItemForm={(contactId, onSubmit) => <ContactForm contactId={contactId} onSubmit={onSubmit}/>}
-                columns={contactColumns}
-                renderItemList={({ data, actions }) => <ContactList data={data} actions={actions}/>}
-                showSearch={true}
-                canCreate={isAdmin}
-            />
+            {
+                userDetails && (
+                    <ItemsPage<Contact>
+                        userDetails={userDetails}
+                        title="Contacts"
+                        placeholder="Search contact..."
+                        buttonName="Create Contact"
+                        fetchItems={fetchContacts}
+                        createOrUpdateItem={createOrUpdateContact}
+                        deleteItem={deleteContact}
+                        searchItem={searchContact}
+                        renderItemForm={(contactId, onSubmit) => <ContactForm contactId={contactId} onSubmit={onSubmit}/>}
+                        columns={contactColumns}
+                        renderItemList={({ data, actions }) => <ContactList data={data} actions={actions}/>}
+                        showSearch={true}
+                        allowedRoles={contactAllowedRoles}
+                    />
+                )
+            }
         </>
     )
 }

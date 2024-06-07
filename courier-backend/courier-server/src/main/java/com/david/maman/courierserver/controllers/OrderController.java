@@ -2,6 +2,8 @@ package com.david.maman.courierserver.controllers;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,18 +26,23 @@ import com.david.maman.courierserver.services.OrderService;
 @RequestMapping("/api/courier/order")
 public class OrderController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
     @Autowired
     private OrderService orderService;
 
     @PostMapping("/")
     public ResponseEntity<?> createOrder(@RequestBody OrderDto orderDto){
+        //OrderDto createdOrder = orderService.createOrder(orderDto);
+        logger.info("Receive order dto: {}", orderDto);
         OrderDto createdOrder = orderService.createOrder(orderDto);
         return ResponseEntity.ok(createdOrder);
     }
 
-    @PutMapping("/")
-    public ResponseEntity<?> updateOrder(@RequestBody OrderDto orderDto){
-        return ResponseEntity.ok("save");
+    @PutMapping("/{orderId}")
+    public ResponseEntity<?> updateOrder(@PathVariable Long orderId, @RequestBody OrderDto orderDto){
+        OrderDto updatedOrder = orderService.updateOrder(orderId, orderDto);
+        return ResponseEntity.ok(updatedOrder);
     }
 
     @GetMapping("/")
@@ -73,6 +80,18 @@ public class OrderController {
     public ResponseEntity<?> getOrderById(@PathVariable Long orderId){
         OrderDto order = orderService.findById(orderId);
         return ResponseEntity.ok(order);
+    }
+
+    @PutMapping("/client/update")
+    public ResponseEntity<OrderDto> clientUpdateOrder(@RequestBody OrderDto orderDto) {
+        OrderDto updatedOrder = orderService.clientUpdateOrder(orderDto);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @PutMapping("/status")
+    public ResponseEntity<Void> changeOrderStatus(@RequestParam Long orderId, @RequestParam Long statusId, @RequestParam(required = false) Long adminId, @RequestParam(required = false) List<Long> courierIds) {
+        orderService.changeOrderStatus(orderId, statusId, adminId, courierIds);
+        return ResponseEntity.ok().build();
     }
 
 }

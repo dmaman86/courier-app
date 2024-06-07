@@ -21,21 +21,21 @@ export const OrderList = ({ data, actions }: { data: Order[], actions?: Action<O
     return (
         <>
             {
-                userDetails && (
+                userDetails && data.length > 0 && (
                     <TableBody>
                         {
                             data.map(order => (
                                 <TableRow key={order.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                     <TableCell>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span>{order.client.name} {order.client.lastName}</span>
-                                            <span>{order.client.phone} {order.client.email}</span>
+                                            <span>{order.client?.name} {order.client?.lastName}</span>
+                                            <span>{order.client?.phone} {order.client?.email}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span>{order.originOffice.name}</span>
-                                            <span>{order.originBranch.city} {order.originBranch.address}</span>
+                                            <span>{order.originOffice?.name}</span>
+                                            <span>{order.originBranch?.city} {order.originBranch?.address}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell>

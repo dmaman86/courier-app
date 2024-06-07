@@ -35,7 +35,7 @@ public class OrderStatusHistory {
     private Status status;
 
     @ManyToOne
-    @JoinColumn(name = "admin_id")
+    @JoinColumn(name = "admin_id", nullable = true)
     private User admin;
 
     private LocalDateTime timestamp;

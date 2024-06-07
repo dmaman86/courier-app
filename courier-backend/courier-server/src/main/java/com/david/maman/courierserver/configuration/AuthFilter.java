@@ -80,6 +80,7 @@ public class AuthFilter extends OncePerRequestFilter{
                 .email(claims.get("email", String.class))
                 .phone(claims.get("phone", String.class))
                 .roles(roles)
+                .isActive(true)
                 .build();
                 
 

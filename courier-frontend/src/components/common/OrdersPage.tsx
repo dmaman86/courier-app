@@ -3,9 +3,10 @@ import { useAuth } from "@/hooks"
 import { serviceRequest } from "@/services";
 import { Order, PageResponse, ValueColumn } from "@/types";
 import { ItemsPage } from "../shared";
+
+import { useEffect, useState } from "react";
 import { OrderForm } from "../modal";
 import { OrderList } from "../listTables";
-import { useEffect, useState } from "react";
 
 export const OrdersPage = () => {
 
@@ -33,21 +34,32 @@ export const OrdersPage = () => {
         }
     }, [userDetails]);
 
+    const orderAllowedRoles = {
+        create: ['ROLE_CLIENT'],
+        update: ['ROLE_CLIENT', 'ROLE_ADMIN', 'ROLE_COURIER'],
+        delete: ['ROLE_CLIENT', 'ROLE_ADMIN']
+    }
+
     return(
         <>
-            <ItemsPage<Order> 
-                title="Orders"
-                placeholder="Search order..."
-                buttonName="Create Order"
-                fetchItems={fetchOrders}
-                createOrUpdateItem={createOrUpdateOrder}
-                deleteItem={deleteOrder}
-                renderItemForm={(orderId, onSubmit) => <OrderForm orderId={orderId} onSubmit={onSubmit}/>}
-                columns={orderColumns}
-                renderItemList={({ data, actions }) => <OrderList data={data} actions={actions}/> }
-                showSearch={false}
-                canCreate={isClient}
-            />
+            {
+                userDetails && (
+                    <ItemsPage<Order>
+                        userDetails={userDetails}
+                        title="Orders"
+                        placeholder="Search order..."
+                        buttonName="Create Order"
+                        fetchItems={fetchOrders}
+                        createOrUpdateItem={createOrUpdateOrder}
+                        deleteItem={deleteOrder}
+                        renderItemForm={(orderId, onSubmit) => <OrderForm orderId={orderId} onSubmit={onSubmit}/>}
+                        columns={orderColumns}
+                        renderItemList={({ data, actions }) => <OrderList data={data} actions={actions}/> }
+                        showSearch={false}
+                        allowedRoles={orderAllowedRoles}
+                    />
+                )
+            }
         </>
     )
 }

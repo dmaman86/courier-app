@@ -1,3 +1,4 @@
+import moment from "moment";
 import { ValidationRule } from "../types";
 
 const isNotEmpty = (value: string): boolean => value.length > 0;
@@ -30,12 +31,24 @@ export const validatorForm = ( () => {
         message: 'Please enter a valid email address or cellular number'
     }
 
+    const isDate: ValidationRule = {
+        isValid: (value: string): boolean => /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(value),
+        message: 'Please enter a valid date'
+    }
+
+    const isSelectedDateValid: ValidationRule = {
+        isValid: (value: string): boolean => moment(value, 'DD/MM/YYYY').isAfter(moment()),
+        message: 'Please select a valid date'
+    }
+
     return {
         validateNotEmpty,
         validateMinLength,
         isCellularNumber,
         isEmail,
-        isEmailOrPhone
+        isEmailOrPhone,
+        isDate,
+        isSelectedDateValid
     }
 
 })();

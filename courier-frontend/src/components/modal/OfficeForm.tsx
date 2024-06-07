@@ -123,8 +123,8 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
 
     const buildListBranchInfo = () => {
         return branches.map((_, index) => ({
-            city: values[`city_${index}`].value,
-            address: values[`address_${index}`].value
+            city: values![`city_${index}`].value,
+            address: values![`address_${index}`].value
         }))
     }
 
@@ -134,7 +134,7 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
         if(validateForm() && branches.length > 0){
             const officeToSubmit: OfficeResponse = {
                 id: officeId || 0,
-                name: values.name.value,
+                name: values!.name.value,
                 branches: branches
             };
 
@@ -159,7 +159,7 @@ export const OfficeForm = ({ officeId, onSubmit }: OfficeFormProps) => {
     return(
         <>
             {
-                !loading && (
+                (!loading && values) && (
                     <form onSubmit={handleSubmit}>
                         <div className="row g-4">
                             <div className="col">

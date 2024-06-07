@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.david.maman.courierserver.models.dto.OfficeDto;
 import com.david.maman.courierserver.models.dto.base.BranchInfoDto;
+import com.david.maman.courierserver.models.dto.base.OfficeInfoDto;
 import com.david.maman.courierserver.models.entities.Office;
 
 @Component

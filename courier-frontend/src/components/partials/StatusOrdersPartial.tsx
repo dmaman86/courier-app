@@ -31,21 +31,32 @@ export const StatusOrdersPartial = () => {
         }
     }, [userDetails]);
 
+    const statusOrderAllowedRoles = {
+        create: ['ROLE_ADMIN'],
+        update: ['ROLE_ADMIN'],
+        delete: ['ROLE_ADMIN']
+    }
+
     return(
         <>
-            <ItemsPage<StatusOrder> 
-                title="Status Order"
-                placeholder="Search status order..."
-                buttonName="Create Status Order"
-                fetchItems={fetchStatusOrders}
-                createOrUpdateItem={createOrUpdateStatusOrder}
-                deleteItem={deleteStatusOrder}
-                renderItemForm={(statusOrderId, onSubmit) => <StatusOrderForm statusOrderId={statusOrderId} onSubmit={onSubmit}/>}
-                columns={statusOrdersColumns}
-                renderItemList={({ data, actions}) => <StatusOrdersList data={data} actions={actions}/>}
-                showSearch={false}
-                canCreate={isAdmin}
-            />
+            {
+                userDetails && (
+                    <ItemsPage<StatusOrder>
+                        userDetails={userDetails}
+                        title="Status Order"
+                        placeholder="Search status order..."
+                        buttonName="Create Status Order"
+                        fetchItems={fetchStatusOrders}
+                        createOrUpdateItem={createOrUpdateStatusOrder}
+                        deleteItem={deleteStatusOrder}
+                        renderItemForm={(statusOrderId, onSubmit) => <StatusOrderForm statusOrderId={statusOrderId} onSubmit={onSubmit}/>}
+                        columns={statusOrdersColumns}
+                        renderItemList={({ data, actions}) => <StatusOrdersList data={data} actions={actions}/>}
+                        showSearch={false}
+                        allowedRoles={statusOrderAllowedRoles}
+                    />
+                )
+            }
         </>
     )
 }

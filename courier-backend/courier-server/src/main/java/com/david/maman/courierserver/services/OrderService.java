@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.david.maman.courierserver.models.dto.OrderDto;
 import com.david.maman.courierserver.models.entities.OrderStatusHistory;
+import com.david.maman.courierserver.models.entities.Status;
 
 public interface OrderService {
 
@@ -20,8 +21,10 @@ public interface OrderService {
 
     OrderDto createOrder(OrderDto orderDto);
 
-    List<OrderStatusHistory> getOrderStatusHistory(Long orderId);
+    OrderDto updateOrder(Long orderId, OrderDto orderDto);
 
-    OrderStatusHistory getCurrentStatus(Long orderId);
+    void changeOrderStatus(Long orderId, Long statusId, Long adminId, List<Long> courierIds);
+
+    OrderDto clientUpdateOrder(OrderDto orderDto);
 
 }

@@ -25,6 +25,7 @@ export interface UserBase {
 
 export interface User extends UserBase{
     roles: Role[];
+    isActive: boolean;
 }
 
 export interface Office {
@@ -89,17 +90,15 @@ export interface ContactOptionType extends OptionType {
 
 export interface Order{
     id: number;
-    client: Client | null;
-    originOffice: Office | null;
-    originBranch: Branch | null;
-    destinationOffice: Office | null;
-    destinationBranch: Branch | null;
-    contacts: Contact[] | null;
-    couriers: UserBase[] | null;
+    client: User | null;
+    originBranch: BranchResponse | null;
+    destinationBranch: BranchResponse | null;
+    contacts: Contact[];
     deliveryDate: string;
-    receiverName: string | null;
-    receiverPhone: string | null;
-    destinationAddress: string | null;
+    receiverName: string;
+    receiverPhone: string;
+    destinationAddress: string;
+    couriers: User[] | null;
     currentStatus: {
         status: StatusOrder;
         admin: User;

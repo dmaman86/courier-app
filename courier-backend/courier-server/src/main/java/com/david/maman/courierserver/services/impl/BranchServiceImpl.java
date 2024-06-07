@@ -68,7 +68,7 @@ public class BranchServiceImpl implements BranchService{
         Office office = officeRepository.findById(branchDto.getOffice().getId()).orElseThrow(
             () -> new ResourceNotFoundException("Office not found")
         );
-        Branch branch = branchMapper.toEntity(branchDto, office);
+        Branch branch = branchMapper.toEntity(branchDto);
         branch = branchRepository.save(branch);
         return branchMapper.toDto(branch);
     }

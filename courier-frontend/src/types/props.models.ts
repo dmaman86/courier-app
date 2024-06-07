@@ -100,6 +100,7 @@ export interface Item {
 }
 
 export interface ItemsPageProps<T extends Item> {
+    userDetails: User;
     title: string;
     placeholder: string;
     buttonName: string;
@@ -111,5 +112,9 @@ export interface ItemsPageProps<T extends Item> {
     columns: ValueColumn[];
     renderItemList: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;
     showSearch?: boolean;
-    canCreate?: boolean;
+    allowedRoles: {
+        create: string[];
+        update: string[];
+        delete: string[];
+    }
 }

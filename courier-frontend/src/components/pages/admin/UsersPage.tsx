@@ -54,21 +54,32 @@ export const UsersPage = () => {
                 (item as Client).office !== undefined && (item as Client).branches !== undefined;
     };
 
+    const userAllowedRoles = {
+        create: ['ROLE_ADMIN'],
+        update: ['ROLE_ADMIN'],
+        delete: ['ROLE_ADMIN']
+    }
+
     return(
         <>
-            <ItemsPage<User>
-                title="Users"
-                placeholder="Search user..."
-                buttonName="Create User"
-                fetchItems={fetchUsers}
-                createOrUpdateItem={createOrUpdateItem}
-                deleteItem={deleteUser}
-                searchItem={searchUser}
-                renderItemForm={(userId, onSubmit) => <UserForm userId={userId} onSubmit={onSubmit} />}
-                columns={userColumns}
-                renderItemList={({ data, actions }) => <UserList data={data} actions={actions} />}
-                canCreate={isAdmin}
-            />
+            {
+                userDetails && (
+                    <ItemsPage<User>
+                        userDetails={userDetails}
+                        title="Users"
+                        placeholder="Search user..."
+                        buttonName="Create User"
+                        fetchItems={fetchUsers}
+                        createOrUpdateItem={createOrUpdateItem}
+                        deleteItem={deleteUser}
+                        searchItem={searchUser}
+                        renderItemForm={(userId, onSubmit) => <UserForm userId={userId} onSubmit={onSubmit} />}
+                        columns={userColumns}
+                        renderItemList={({ data, actions }) => <UserList data={data} actions={actions} />}
+                        allowedRoles={userAllowedRoles}
+                    />
+                )
+            }
         </>
     )
 }

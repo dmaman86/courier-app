@@ -34,10 +34,12 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit}: StatusOrderFormProps
     const { values, handleChange, onFocus, validateForm, setValues } = useForm(initialState);
 
     useEffect(() => {
-        setFormData({
-            ...formData,
-            name: values.name.value
-        });
+        if(values){
+            setFormData({
+                ...formData,
+                name: values.name.value
+            });
+        }
     }, [values]);
 
     useEffect(() => {
@@ -83,25 +85,29 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit}: StatusOrderFormProps
 
     return(
         <>
-            <form onSubmit={ handleSubmit } className="row g-4">
-                <div className="col-6">
-                    <ReusableInput 
-                        inputProps={{
-                            label: 'Status Order Name',
-                            name: 'name',
-                            type: 'text',
-                            value: values.name.value,
-                            placeholder: 'Enter status order name'
-                        }}
-                        onChange={handleChange}
-                        onFocus={onFocus}
-                        errorsMessage={values.name.error}
-                    />
-                </div>
-                <div className="col pt-3 text-center">
-                    <button className="btn btn-primary" type="submit">Save</button>
-                </div>
-            </form>
+            {
+                (!loading && values) && (
+                    <form onSubmit={ handleSubmit } className="row g-4">
+                        <div className="col-6">
+                            <ReusableInput 
+                                inputProps={{
+                                    label: 'Status Order Name',
+                                    name: 'name',
+                                    type: 'text',
+                                    value: values.name.value,
+                                    placeholder: 'Enter status order name'
+                                }}
+                                onChange={handleChange}
+                                onFocus={onFocus}
+                                errorsMessage={values.name.error}
+                            />
+                        </div>
+                        <div className="col pt-3 text-center">
+                            <button className="btn btn-primary" type="submit">Save</button>
+                        </div>
+                    </form>
+                )
+            }
         </>
     )
 }

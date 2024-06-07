@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { CircularProgress } from "@mui/material";
 import { useErrorBoundary } from "react-error-boundary";
 
 
-import { Action, FetchResponse, Item, ItemsPageProps, PageResponse, State } from "@/types";
-import { useAsync, useFetchAndLoad, useList } from "@/hooks";
+import { Action, FetchResponse, Item, ItemsPageProps, PageResponse, State, User } from "@/types";
+import { useAsync, useAuth, useFetchAndLoad, useList } from "@/hooks";
 import { PageHeader } from "./PageHeader";
 import { ReusableTable } from "./ReusableTable";
 import { GenericModal } from "@/components/modal";
@@ -61,7 +61,29 @@ const reducer = <T extends Item>(state: State<T>, action: ActionType<T>): State<
     }
 };
 
-export const ItemsPage = <T extends Item>({ title, 
+const getItemActions = () => {
+    
+    const userHasRole = (roles: string[], userDetails: User) => {
+        return userDetails.roles.some(userRole => roles.includes(userRole.name));
+    };
+
+    const buildActions = <T extends Item>(userDetails: User, allowedRoles: { create: string[], update: string[], delete: string[] }, handleEditItem: (item: T) => void, handleDeleteItem: (item: T) => void): Action<T>[] => {
+        const actions: Action<T>[] = [];
+
+        if(userHasRole(allowedRoles.update, userDetails)){
+            actions.push({ label: 'Edit', classNameButton: 'btn btn-outline-warning', classNameIcon: 'fas fa-edit', method: handleEditItem });
+        }
+        if(userHasRole(allowedRoles.delete, userDetails)){
+            actions.push({ label: 'Delete', classNameButton: 'btn btn-outline-danger', classNameIcon: 'fas fa-trash-alt',method: handleDeleteItem });
+        }
+        return actions;
+    }
+
+    return { userHasRole, buildActions };
+}
+
+export const ItemsPage = <T extends Item>({         userDetails,
+                                                    title, 
                                                     placeholder, 
                                                     buttonName, 
                                                     fetchItems, 
@@ -72,10 +94,13 @@ export const ItemsPage = <T extends Item>({ title,
                                                     renderItemList: ItemList, 
                                                     columns,
                                                     showSearch = true,
-                                                    canCreate = false }: ItemsPageProps<T>) => {
+                                                    allowedRoles }: ItemsPageProps<T>) => {
 
 
     const [ state, dispatch ] = useReducer(reducer, initialState<T>());
+    const { userHasRole, buildActions } = getItemActions();
+
+    const [ displayCreateItem, setDisplayCreateItem ] = useState<boolean>(false);
 
     const { items, setAllItems, addItem, updateItem, removeItem, existItem } = useList<T>([]);
     const { loading, callEndPoint } = useFetchAndLoad();
@@ -147,7 +172,7 @@ export const ItemsPage = <T extends Item>({ title,
             if (!existItem(item.id)) addItem(item as T); // Add type assertion here
             else updateItem(item as T);
             dispatch({ type: 'SET_RESPONSE_ITEM', payload: { data: null, error: null } });
-            dispatch({ type: 'TOGGLE_MODAL' });
+            // dispatch({ type: 'TOGGLE_MODAL' });
             dispatch({ type: 'SET_SELECTED_ITEM', payload: null });
         }
     }, [addItem, existItem, loading, state.responseItem, updateItem]);
@@ -182,7 +207,8 @@ export const ItemsPage = <T extends Item>({ title,
 
     const handleCreateItem = () => {
         dispatch({ type: 'SET_SELECTED_ITEM', payload: null });
-        dispatch({ type: 'TOGGLE_MODAL' });
+        setDisplayCreateItem(true);
+        // dispatch({ type: 'TOGGLE_MODAL' });
     }
 
     const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,18 +226,34 @@ export const ItemsPage = <T extends Item>({ title,
         else getApiData();
     }
 
-    const itemActions: Action<T>[] = [
+    const itemActions: Action<T>[] = buildActions(userDetails, allowedRoles, handleEditItem, handleDeleteItem);
+
+    /*const itemActions: Action<T>[] = [
         { label: 'Edit', classNameButton: 'btn btn-outline-warning', classNameIcon: 'fas fa-edit', method: handleEditItem },
         { label: 'Delete', classNameButton: 'btn btn-outline-danger', classNameIcon: 'fas fa-trash-alt',method: handleDeleteItem }
-    ];
+    ];*/
 
     
     return (
         <>
             <PageHeader title={title} placeholder={placeholder} buttonName={buttonName} onSearch={handleSearch} 
-                            onCreate={handleCreateItem} showSearch={showSearch} canCreate={canCreate}/>
-            <div className="container">
-                {
+                            onCreate={handleCreateItem} showSearch={showSearch} canCreate={userHasRole(allowedRoles.create, userDetails)}/>
+            {
+                    displayCreateItem && (
+                        <div className="container">
+                            <div className="card">
+                                <div className="card-body">
+                                    {renderItemForm(state.selectedItem, handleFormSubmit)}
+                                </div>
+                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" onClick={() => setDisplayCreateItem(false)}>
+                                    <i className="fas fa-times"></i>
+                                </span>
+                            </div>
+                        </div>
+                    )
+            }
+            <div className="container pt-3">
+            {
                     loading ? <CircularProgress disableShrink /> : (
                         <ReusableTable<T> 
                             data={items}
