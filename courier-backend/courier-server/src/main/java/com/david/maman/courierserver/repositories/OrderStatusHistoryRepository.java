@@ -12,4 +12,6 @@ public interface OrderStatusHistoryRepository extends JpaRepository<OrderStatusH
     // List<OrderStatusHistory> findByOrderIdByTimestamDesc(Long orderId);
 
     List<OrderStatusHistory> findByOrderIdOrderByTimestampDesc(Long orderId);
+
+    List<OrderStatusHistory> findByOrderId(Long orderId);
 }

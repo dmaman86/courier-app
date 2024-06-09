@@ -3,6 +3,7 @@ package com.david.maman.courierserver.mappers;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.david.maman.courierserver.models.dto.ClientDto;
@@ -16,6 +17,9 @@ import com.david.maman.courierserver.models.entities.User;
 
 @Component
 public class UserMapper{
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     public UserDto toDto(User user){
         return UserDto.builder()
@@ -35,7 +39,7 @@ public class UserMapper{
                 .id(userDto.getId())
                 .name(userDto.getName())
                 .lastName(userDto.getLastName())
-                .phone(userDto.getLastName())
+                .phone(userDto.getPhone())
                 .email(userDto.getEmail())
                 .roles(toEntity(userDto.getRoles()))
                 .isActive(true)
@@ -78,13 +82,13 @@ public class UserMapper{
 
     private Set<Role> toEntity(Set<RoleDto> roles){
         return roles.stream().map(role -> {
-            return Role.builder().id(role.getId()).name(role.getName()).build();
+            return roleMapper.toEntity(role);
         }).collect(Collectors.toSet());
     }
 
     private Set<RoleDto> toDto(Set<Role> roles){
         return roles.stream().map(role -> {
-            return RoleDto.builder().id(role.getId()).name(role.getName()).build();
+            return roleMapper.toDto(role);
         }).collect(Collectors.toSet());
     }
 }

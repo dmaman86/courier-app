@@ -1,20 +1,10 @@
 import { useEffect, useState } from "react";
 import { Box, Divider, Stack, TableBody, TableCell, TableRow } from "@mui/material";
 
-import { Action, Contact } from "@/types";
-import { useAuth } from "@/hooks";
+import { Action, Contact, User, ListProps } from "@/types";
 
 
-export const ContactList = ({ data, actions }: { data: Contact[], actions?: Action<Contact>[]}) => {
-
-    const { userDetails } = useAuth();
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
-
-    useEffect(() => {
-        if(userDetails){
-            setIsAdmin(userDetails.roles.some(role => role.name === 'ROLE_ADMIN'));
-        }
-    }, [userDetails]);
+export const ContactList = ({ data, actions }: ListProps<Contact>) => {
 
     useEffect(() => {
         if(data) console.log(data);
@@ -22,9 +12,7 @@ export const ContactList = ({ data, actions }: { data: Contact[], actions?: Acti
 
     return(
         <>
-            {
-                userDetails && (
-                    <TableBody>
+            <TableBody>
                         {
                             data.map(contact => (
                                 <TableRow key={contact.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
@@ -42,27 +30,21 @@ export const ContactList = ({ data, actions }: { data: Contact[], actions?: Acti
                                             ))
                                         }
                                     </TableCell>
-                                    {
-                                        (isAdmin && actions) && (
-                                            <TableCell>
-                                                <Stack spacing={2} direction='row'>
-                                                    {
-                                                        actions.map(action => (
-                                                            <button key={action.label} className={action.classNameButton} onClick={() => action.method(contact)}>
-                                                                <i className={action.classNameIcon}></i>
-                                                            </button>
-                                                        ))
-                                                    }
-                                                </Stack>
-                                            </TableCell>
-                                        )
-                                    }
+                                    <TableCell>
+                                        <Stack spacing={2} direction='row'>
+                                            {
+                                                actions?.map(action => (
+                                                    <button key={action.label} className={action.classNameButton} onClick={() => action.method(contact)}>
+                                                        <i className={action.classNameIcon}></i>
+                                                    </button>
+                                                ))
+                                            }
+                                        </Stack>
+                                    </TableCell>
                                 </TableRow>
                             ))
                         }
                     </TableBody>
-                )
-            }
         </>
     )
 }

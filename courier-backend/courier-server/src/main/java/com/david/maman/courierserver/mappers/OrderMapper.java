@@ -55,11 +55,6 @@ public class OrderMapper {
 
 
     public OrderDto toDto(Order order){
-
-        OrderStatusHistory currenStatusHistory = order.getStatusHistory().stream()
-                    .max(Comparator.comparing(OrderStatusHistory::getTimestamp))
-                    .orElse(null);
-
         return OrderDto.builder()
                     .id(order.getId())
                     .client(userMapper.toDto(order.getClient()))
@@ -75,19 +70,11 @@ public class OrderMapper {
                     .receiverName(order.getReceiverName())
                     .receiverPhone(order.getReceiverPhone())
                     .destinationAddress(order.getDestinationAddress())
-                    .currentStatus(currenStatusHistory != null ? statusMapper.toDto(currenStatusHistory.getStatus()) : null)
-                    .statusHistory(orderStatusHistoryService.getOrderStatusHistory(order.getId()).stream()
-                                    .map(this::toOrderStatusDto)
-                                    .collect(Collectors.toList()))
+                    .currentStatus(statusMapper.toDto(order.getCurrentStatus()))
                     .build();
     }
 
     public Order toEntity(OrderDto orderDto){
-
-        List<OrderStatusHistory> statusHistory = orderDto.getStatusHistory() != null ?
-            orderDto.getStatusHistory().stream().map(orderStatusHistoryMapper::toEntity).collect(Collectors.toList()) :
-            new ArrayList<>();
-
         Branch destinationBranch = branchMapper.toEntity(orderDto.getDestinationBranch());
         Office destinationOffice = destinationBranch != null ? destinationBranch.getOffice() : null;
         List<Contact> contacts = destinationOffice != null ? orderDto.getContacts().stream().map(
@@ -109,7 +96,7 @@ public class OrderMapper {
                     .receiverName(orderDto.getReceiverName())
                     .receiverPhone(orderDto.getReceiverPhone())
                     .destinationAddress(orderDto.getDestinationAddress())
-                    .statusHistory(statusHistory)
+                    .currentStatus(statusMapper.toEntity(orderDto.getCurrentStatus()))
                     .isDelivered(false)
                     .build();
 
@@ -117,11 +104,6 @@ public class OrderMapper {
 
 
     public Order toEntity(OrderDto orderDto, Branch originBranch, Branch destinationBranch, List<Contact> contacts, List<User> couriers){
-
-        List<OrderStatusHistory> statusHistory = orderDto.getStatusHistory() != null ?
-            orderDto.getStatusHistory().stream().map(orderStatusHistoryMapper::toEntity).collect(Collectors.toList()) :
-            new ArrayList<>();
-
         Order ord = Order.builder()
                     .id(orderDto.getId())
                     .client(userMapper.toEntity(orderDto.getClient()))
@@ -133,7 +115,7 @@ public class OrderMapper {
                     .receiverName(orderDto.getReceiverName())
                     .receiverPhone(orderDto.getReceiverPhone())
                     .destinationAddress(orderDto.getDestinationAddress())
-                    .statusHistory(statusHistory)
+                    .currentStatus(statusMapper.toEntity(orderDto.getCurrentStatus()))
                     .isDelivered(false) // Assuming a new order is not delivered yet
                     .build();
         logger.info("Order entity created: {}", ord);

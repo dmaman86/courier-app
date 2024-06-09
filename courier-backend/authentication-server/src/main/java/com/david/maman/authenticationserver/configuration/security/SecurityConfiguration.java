@@ -36,7 +36,7 @@ public class SecurityConfiguration {
             .addFilterAfter(jwtAuthenticationFilter, ExceptionHandlerFilter.class)
             .authorizeHttpRequests(request -> request
                 .requestMatchers("/api/auth/signin", "/api/auth/signup").permitAll()
-                .requestMatchers("/api/auth/**").authenticated()
+                // .requestMatchers("/api/auth/**").authenticated()
                 .anyRequest().authenticated())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider);

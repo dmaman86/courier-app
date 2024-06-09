@@ -56,7 +56,7 @@ export const BranchesPartial = () => {
                         searchItem={searchBranch}
                         renderItemForm={(branchId, onSubmit) => <BranchForm branchId={branchId} onSubmit={onSubmit} />}
                         columns={branchColumns}
-                        renderItemList={({ data, actions}) => <BranchList data={data} actions={actions}/>}
+                        renderItemList={({ data, actions }) => <BranchList data={data} actions={actions}/>}
                         showSearch={true}
                         allowedRoles={branchAllowedRoles}
                     />

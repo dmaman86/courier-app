@@ -15,6 +15,7 @@ public class StatusMapper {
         return Status.builder()
                     .id(statusDto.getId())
                     .name(statusDto.getName())
+                    .description(statusDto.getDescription())
                     .build();
     }
 
@@ -25,6 +26,7 @@ public class StatusMapper {
         return StatusDto.builder()
                         .id(status.getId())
                         .name(status.getName())
+                        .description(status.getDescription())
                         .build();
     }
 

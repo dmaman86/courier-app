@@ -70,20 +70,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
     const [ query, setQuery ] = useState<string>('');
     const [ found, setFound ] = useState<boolean>(true);
 
-    const [ order, setOrder ] = useState<Order>({
-        id: orderId || 0,
-        client: userDetails,
-        originBranch: selectedBranchOrigin,
-        destinationBranch: selectedBranchDestination,
-        contacts: contacts || [],
-        deliveryDate: moment().format('DD/MM/YYYY'),
-        receiverName: '',
-        receiverPhone: '',
-        destinationAddress: '',
-        couriers: null,
-        currentStatus: null,
-        statusHistory: null
-    });
+    const [ order, setOrder ] = useState<Order | null>(null);
 
     const [ initialState, setInitialState ] = useState<FormState | null>(null);
 
@@ -91,92 +78,110 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
 
     const [ isValidForm, setIsValidForm ] = useState<boolean>(false);
 
+    const [autocompleteValue, setAutocompleteValue] = useState<OptionType | null>(null);
+
+    const updateInitialState = useCallback((order: Order) => {
+        setInitialState({
+            deliveryDate: {
+                value: order.deliveryDate,
+                validation: [validatorForm.isDate, validatorForm.isSelectedDateValid],
+                validateRealTime: false
+            },
+            receiverName: {
+                value: order.receiverName,
+                validation: [validatorForm.validateNotEmpty],
+                validateRealTime: false
+            },
+            receiverPhone: {
+                value: order.receiverPhone,
+                validation: [validatorForm.validateNotEmpty, validatorForm.isCellularNumber],
+                validateRealTime: false
+            },
+            destinationAddress: {
+                value: order.destinationAddress,
+                validation: [validatorForm.validateNotEmpty],
+                validateRealTime: false
+            }
+        });
+    }, []);
+
     useEffect(() => {
-        if(order.id === 0){
+        if (!orderId && !order && userDetails && client) {
+            setOrder({
+                id: 0,
+                client: userDetails,
+                originBranch: {
+                    id: client.branches[0].id,
+                    city: client.branches[0].city,
+                    address: client.branches[0].address,
+                    office: client.office
+                },
+                destinationBranch: selectedBranchDestination,
+                contacts: contacts || [],
+                deliveryDate: moment().format('DD/MM/YYYY'),
+                receiverName: '',
+                receiverPhone: '',
+                destinationAddress: '',
+                couriers: null,
+                currentStatus: null,
+            });
+            setBranchesOrigin(client.branches);
+            setSelectedBranchOrigin({
+                id: client.branches[0].id,
+                city: client.branches[0].city,
+                address: client.branches[0].address,
+                office: client.office
+            });
+        }else if(order && order.id === 0){
             const { id, ...rest } = order;
             setOrder(rest as Order);
         }
-    }, [order.id]);
+    }, [orderId, order, userDetails, client]);
 
     useEffect(() => {
-        if(!orderId){
-            setInitialState({
-                deliveryDate: {
-                    value: order.deliveryDate,
-                    validation: [validatorForm.isDate, validatorForm.isSelectedDateValid],
-                    validateRealTime: false
-                },
-                receiverName: {
-                    value: order.receiverName,
-                    validation: [validatorForm.validateNotEmpty],
-                    validateRealTime: false
-                },
-                receiverPhone: {
-                    value: order.receiverPhone,
-                    validation: [validatorForm.validateNotEmpty, validatorForm.isCellularNumber],
-                    validateRealTime: false
-                },
-                destinationAddress: {
-                    value: order.destinationAddress,
-                    validation: [validatorForm.validateNotEmpty],
-                    validateRealTime: false
-                }
-            });
+        if (order && !initialState) {
+            updateInitialState(order);
         }
-    }, [orderId]);
+    }, [order, initialState, updateInitialState]);
 
     useEffect(() => {
-        if(initialState){
-            if(!found){
-                console.log("Updating values with initialState:", initialState);
-                updateValues(initialState);
-                setOrder((prevOrder) => ({
-                    ...prevOrder,
-                    destinationBranch: null,
-                    contacts: []
-                }));
-            }else{
-                const { deliveryDate } = initialState;
-                console.log("Updating values with:", deliveryDate);
-                updateValues({ deliveryDate });
-            }
+        if (initialState) {
+            updateValues(initialState);
         }
-    }, [found, initialState]);
+    }, [initialState, updateValues]);
 
     useEffect(() => {
-        if(values){
-            if(values.receiverName && values.receiverPhone && values.destinationAddress){
-                const { receiverName, receiverPhone, destinationAddress } = values;
-                setOrder((prev) => ({
-                    ...prev,
-                    receiverName: receiverName.value,
-                    receiverPhone: receiverPhone.value,
-                    destinationAddress: destinationAddress.value,
-                    deliveryDate: values.deliveryDate.value
-                    
-                }));
-            }else{
-                setOrder((prev) => ({
-                    ...prev,
-                    receiverName: '',
-                    receiverPhone: '',
-                    destinationAddress: '',
-                    deliveryDate: values.deliveryDate.value
-                }));
-            }
+        if (values && order) {
+            const updatedOrder = {
+                ...order,
+                receiverName: values.receiverName.value,
+                receiverPhone: values.receiverPhone.value,
+                destinationAddress: values.destinationAddress.value,
+                deliveryDate: values.deliveryDate.value,
+            };
+            setOrder(updatedOrder);
         }
-    }, [values]);
+    }, [values, order]);
 
     const fetchOrderDetails = async() => {
-        if(orderId){
-            return await callEndPoint(serviceRequest.getItem<Order>(`${paths.courier.users}${orderId}`));
+        if(orderId && !order){
+            return await callEndPoint(serviceRequest.getItem<Order>(`${paths.courier.orders}${orderId}`));
         }
         return Promise.resolve({ data: null, error: null });
     }
 
     const handleGetOrderDetails = (response: FetchResponse<Order>) => {
-        if(orderId){
-            if(response.data) setOrder(response.data);
+        if(orderId && !order){
+            if(response.data){
+                setOrder(response.data);
+                if(response.data.destinationBranch && response.data.destinationBranch.office){
+                    setAutocompleteValue({
+                        value: response.data.destinationBranch.office.id,
+                        label: response.data.destinationBranch.office.name
+                    });
+                }
+                
+            }
             else showBoundary(response.error);
         }
     }
@@ -199,31 +204,10 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
 
     useAsync(fetchClientDetails, handleClientDetailsSuccess, () => {}, [userDetails]);
 
-    useEffect(() => {
-        if(!orderId && client && !branchesOrigin.length){
-
-            setOrder({
-                ...order,
-                originBranch: {
-                    id: client.branches[0].id,
-                    city: client.branches[0].city,
-                    address: client.branches[0].address,
-                    office: client.office
-                }
-            });
-            
-            setBranchesOrigin(client.branches);
-            setSelectedBranchOrigin({
-                id: client.branches[0].id,
-                city: client.branches[0].city,
-                address: client.branches[0].address,
-                office: client.office
-            });
-        }
-    }, [client, orderId, branchesOrigin, order]);
-
     const handleOfficeAutoComplete = (event: React.SyntheticEvent<Element, Event>, value: OptionType | null) => {
+        
         if(value){
+            setAutocompleteValue(value);
             if(value.value === 0){
                 setFound(false);
                 setSelectedBranchDestination(null);
@@ -244,27 +228,23 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
 
     useEffect(() => {
         if(officeDestination){
-            setOrder({
-                ...order,
-                destinationBranch: {
-                    id: (officeDestination.branches[0] as Branch).id,
-                    city: (officeDestination.branches[0] as Branch).city,
-                    address: (officeDestination.branches[0] as Branch).address,
-                    office: {
-                        id: officeDestination.id,
-                        name: officeDestination.name
-                    }
-                },
-                contacts: []
-            })
-        }else{
-            setOrder({
-                ...order,
-                destinationBranch: null,
-                contacts: []
-            });
+            if(order && !order.destinationBranch){
+                setOrder({
+                    ...order,
+                    destinationBranch: {
+                        id: (officeDestination.branches[0] as Branch).id,
+                        city: (officeDestination.branches[0] as Branch).city,
+                        address: (officeDestination.branches[0] as Branch).address,
+                        office: {
+                            id: officeDestination.id,
+                            name: officeDestination.name
+                        }
+                    },
+                    contacts: []
+                });
+            }
         }
-    }, [officeDestination]);
+    }, [officeDestination, order]);
 
     const handleInputChange = (event: React.ChangeEvent<{}>, value: string) => {
         setQuery(value);
@@ -275,27 +255,27 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
         if(!selected || Array.isArray(selected)) return;
 
         // setSelectedBranch(transformOptionsToBranches(selected));
-        if(client){
+        if(order){
             setOrder({
                 ...order,
                 originBranch: transformOptionsToBranches(selected)
             });
         }
-    }, [client, order]);
+    }, [order]);
 
 
     const handleBranchDestinationChange = useCallback((selected: MultiValue<BranchOptionType> | SingleValue<BranchOptionType>) => {
         if(!selected || Array.isArray(selected)) return;
-
-        setContacts([]);
-        if(client){
+        console.log(selected);
+        if(order){
+            setContacts([]);
             setOrder({
                 ...order,
                 destinationBranch: transformOptionsToBranches(selected),
                 contacts: []
             });
         }
-    }, [client, order]);
+    }, [order]);
 
     const handleContactChange = useCallback((selected: MultiValue<ContactOptionType> | SingleValue<ContactOptionType>) => {
         if(!selected) return;
@@ -303,16 +283,19 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
         if(Array.isArray(selected)){
             const selectedAll = selected.find(option => option.value === 0);
             const newContacts: Contact[] = (selectedAll && contacts) ? contacts : transformOptionsToContacts(selected);
-
-            setOrder({
-                ...order,
-                contacts: newContacts
-            });
+            
+            if(order){
+                setOrder({
+                    ...order,
+                    contacts: newContacts
+                });
+            }
+            
         }
     }, [order]);
 
     const searchContacts = async(): Promise<FetchResponse<Contact[]>> => {
-        if(order.destinationBranch){
+        if(order && order.destinationBranch){
             const { destinationBranch } = order;
             return await callEndPoint(serviceRequest.getItem<Contact[]>(`${paths.courier.contacts}office/${destinationBranch.office.id}/branch/${destinationBranch.id}`));
         }
@@ -320,7 +303,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
     }
 
     const searchContactsSuccess = (response: FetchResponse<Contact[]>) => {
-        if(order.destinationBranch){
+        if(order && order.destinationBranch){
             if(response.data){
                 setContacts(response.data);
             }
@@ -328,7 +311,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
         }
     }
 
-    useAsync(searchContacts, searchContactsSuccess, () => {}, [order.destinationBranch?.id, order.destinationBranch?.office.id]);
+    useAsync(searchContacts, searchContactsSuccess, () => {}, [order?.destinationBranch?.id, order?.destinationBranch?.office.id]);
 
     const searchOffice = async(): Promise<FetchResponse<OfficeResponse[]>> => {
         if(query){
@@ -349,9 +332,11 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
     const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        const isValid = validateForm();
-        const v2 = (!found) ? (order.originBranch !== null) : (order.originBranch !== null) && (order.destinationBranch !== null) && (order.contacts.length > 0);
-        setIsValidForm(isValid && v2);
+        if(order){
+            const isValid = validateForm();
+            const v2 = (!found) ? (order.originBranch !== null) : (order.originBranch !== null) && (order.destinationBranch !== null) && (order.contacts.length > 0);
+            setIsValidForm(isValid && v2);
+        }
 
     }, [order, found, validateForm]);
 
@@ -359,7 +344,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
     
     
     useEffect(() => {
-        if (isValidForm) {
+        if (isValidForm && order) {
             console.log("Form is valid, submitting data:", order);
             setIsValidForm(false);
             onSubmit(order);
@@ -371,14 +356,14 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
     return(
         <>
             {
-                (client && values) && (
+                (values && order) && (
                     <>
                         <form onSubmit={handleSubmit} className="row g-4 pt-3">
                             <div className='row'>
                                 <div className='col-6'>
                                         <ReusableSelect<OptionType> 
                                             label='Select Origin Office:'
-                                            value={order.originBranch ? { value: order.originBranch.office.id, label: order.originBranch.office.name }: null }
+                                            value={order.originBranch?.office ? { value: order.originBranch.office.id, label: order.originBranch.office.name }: null }
                                             options={[]}
                                             onChange={() => {}}
                                             isMulti={false}
@@ -389,7 +374,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                         <ReusableSelect<BranchOptionType>
                                             label='Select Origin Branche:'
                                             value={order.originBranch ? { value: order.originBranch.id, label: `${order.originBranch.city}\n${order.originBranch.address}`, address: order.originBranch.address, office: { id: order.originBranch.office.id, name: order.originBranch.office.name } } : null}
-                                            options={branchesOrigin.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address, office: { id: client.office.id, name: client.office.name } }))}
+                                            options={client ? branchesOrigin.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address, office: { id: client.office.id, name: client.office.name } })) : []}
                                             onChange={handleBranchChange}
                                             isMulti={false}
                                         />
@@ -436,7 +421,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                     <div className="col-6">
                                         <ReusableSelect<BranchOptionType>
                                             label='Select Destination Branch:'
-                                            value={order.destinationBranch ? { value: order.destinationBranch.id, label: `${order.destinationBranch.city}\n${order.destinationBranch.address}`, address: order.destinationBranch.address, office: order.destinationBranch.office } : null}
+                                            value={order.destinationBranch && order.destinationBranch.office ? { value: order.destinationBranch.id, label: `${order.destinationBranch.city}\n${order.destinationBranch.address}`, address: order.destinationBranch.address, office: order.destinationBranch.office } : null}
                                             options={officeDestination ? officeDestination.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address, office: {id: officeDestination.id, name: officeDestination.name } })) : []}
                                             onChange={handleBranchDestinationChange}
                                             isMulti={false}

@@ -1,5 +1,6 @@
 package com.david.maman.courierserver.services.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -108,8 +109,6 @@ public class OrderServiceImpl implements OrderService{
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
 
-        
-        
         Order orderToCreate = orderMapper.toEntity(orderDto);
         logger.info("Order to create: {}", orderToCreate);
 
@@ -155,8 +154,10 @@ public class OrderServiceImpl implements OrderService{
                             .receiverName(orderDto.getReceiverName())
                             .receiverPhone(orderDto.getReceiverPhone())
                             .destinationAddress(orderDto.getDestinationAddress())
-                            .statusHistory(Collections.emptyList())
+                            .currentStatus(statusPending)
                             .isDelivered(false)
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
                             .build();
 
         logger.info("Order created: {}", order);

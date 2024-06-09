@@ -108,11 +108,13 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
     }, [branch, selectedOffice]);
 
     useEffect(() => {
-        setFormData((prev) => ({
-            ...prev,
-            city: values.city.value,
-            address: values.address.value
-        }));
+        if(values){
+            setFormData((prev) => ({
+                ...prev,
+                city: values.city.value,
+                address: values.address.value
+            }));
+        }
     }, [values]);
 
     useEffect(() => {
@@ -164,7 +166,7 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
     return(
         <>
             {
-                !loading && (
+                (!loading && values) && (
                     <form onSubmit={handleSubmit}>
                         <div className="row g-4">
                             <div className="col-6">

@@ -29,6 +29,7 @@ export const OfficesPage = () => {
 
     useEffect(() => {
         if(userDetails){
+            console.log(userDetails);
             const userRoles = userDetails.roles;
             setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
         }
@@ -55,7 +56,7 @@ export const OfficesPage = () => {
                         searchItem={searchOffice}
                         renderItemForm={(officeId, onSubmit) => <OfficeForm officeId={officeId} onSubmit={onSubmit} />}
                         columns={officeColumns}
-                        renderItemList={({ data, actions}) => <OfficeList data={data} actions={actions}/>}
+                        renderItemList={({ data, actions }) => <OfficeList data={data} actions={actions}/>}
                         showSearch={true}
                         allowedRoles={officeAllowedRoles}
                     />

@@ -14,7 +14,7 @@ interface StatusOrderFormProps {
 export const StatusOrderForm = ({ statusOrderId, onSubmit}: StatusOrderFormProps) => {
 
     const [ formData, setFormData ] = useState<StatusOrder>({
-        id: 0, name: ''
+        id: 0, name: '', description: ''
     });
 
     const { loading, callEndPoint } = useFetchAndLoad();
@@ -28,6 +28,11 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit}: StatusOrderFormProps
             value: formData.name,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
+        },
+        description: {
+            value: formData.description,
+            validation: [ validatorForm.validateNotEmpty ],
+            validateRealTime: false
         }
     }
 
@@ -37,7 +42,8 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit}: StatusOrderFormProps
         if(values){
             setFormData({
                 ...formData,
-                name: values.name.value
+                name: values.name.value,
+                description: values.description.value
             });
         }
     }, [values]);
@@ -70,12 +76,18 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit}: StatusOrderFormProps
         if(!loading && response.data && !response.error){
             setFormData({
                 id: Number(response.data.id),
-                name: response.data.name
+                name: response.data.name,
+                description: response.data.description
             });
 
             setValues({
                 name: {
                     value: response.data.name,
+                    validation: [ validatorForm.validateNotEmpty ],
+                    validateRealTime: false
+                },
+                description: {
+                    value: response.data.description,
                     validation: [ validatorForm.validateNotEmpty ],
                     validateRealTime: false
                 }
@@ -87,23 +99,41 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit}: StatusOrderFormProps
         <>
             {
                 (!loading && values) && (
-                    <form onSubmit={ handleSubmit } className="row g-4">
-                        <div className="col-6">
-                            <ReusableInput 
-                                inputProps={{
-                                    label: 'Status Order Name',
-                                    name: 'name',
-                                    type: 'text',
-                                    value: values.name.value,
-                                    placeholder: 'Enter status order name'
-                                }}
-                                onChange={handleChange}
-                                onFocus={onFocus}
-                                errorsMessage={values.name.error}
-                            />
-                        </div>
-                        <div className="col pt-3 text-center">
-                            <button className="btn btn-primary" type="submit">Save</button>
+                    <form onSubmit={ handleSubmit } className="row">
+                        <div className="row pt-3">
+                            <div className="col-md-4">
+                                <ReusableInput 
+                                    inputProps={{
+                                        label: 'Status Order Name',
+                                        name: 'name',
+                                        type: 'text',
+                                        value: values.name.value,
+                                        placeholder: 'Enter status order name'
+                                    }}
+                                    onChange={handleChange}
+                                    onFocus={onFocus}
+                                    errorsMessage={values.name.error}
+                                />
+                            </div>
+                            <div className="col-md-8">
+                                <ReusableInput 
+                                        inputProps={{
+                                            label: 'Description Order',
+                                            name: 'description',
+                                            type: 'textarea',
+                                            value: values.description.value,
+                                            placeholder: 'Enter description order'
+                                        }}
+                                        onChange={handleChange}
+                                        onFocus={onFocus}
+                                        errorsMessage={values.description.error}
+                                    />
+                            </div>
+                        </div>                          
+                        <div className="row">
+                            <div className="col pt-3 text-center">
+                                <button className="btn btn-primary" type="submit">Save</button>
+                            </div>
                         </div>
                     </form>
                 )

@@ -13,6 +13,7 @@ export interface Role {
 export interface StatusOrder {
     id: number;
     name: string;
+    description: string;
 }
 
 export interface UserBase {
@@ -99,14 +100,5 @@ export interface Order{
     receiverPhone: string;
     destinationAddress: string;
     couriers: User[] | null;
-    currentStatus: {
-        status: StatusOrder;
-        admin: User;
-        timestamp: string;
-    } | null;
-    statusHistory: [{
-        status: StatusOrder;
-        admin: User;
-        timestamp: string;
-    }] | null;
+    currentStatus: StatusOrder | null;
 }

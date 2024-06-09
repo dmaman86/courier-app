@@ -13,4 +13,5 @@ public class StatusDto {
 
     private Long id;
     private String name;
+    private String description;
 }

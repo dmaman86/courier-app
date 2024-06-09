@@ -1,7 +1,7 @@
 import { Stack, TableBody, TableCell, TableRow } from "@mui/material"
-import { Action, StatusOrder } from "@/types"
+import { Action, StatusOrder, User, ListProps } from "@/types"
 
-export const StatusOrdersList = ({ data, actions }: { data: StatusOrder[], actions?: Action<StatusOrder>[]}) => {
+export const StatusOrdersList = ({ data, actions }: ListProps<StatusOrder>) => {
 
     return(
         <>
@@ -10,6 +10,7 @@ export const StatusOrdersList = ({ data, actions }: { data: StatusOrder[], actio
                     data.map(statusOrder => (
                         <TableRow key={statusOrder.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                             <TableCell>{statusOrder.name}</TableCell>
+                            <TableCell>{statusOrder.description}</TableCell>
                             {actions && (
                                 <TableCell>
                                     <Stack spacing={2} direction='row'>

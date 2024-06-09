@@ -40,7 +40,7 @@ export const useForm = (initialState: FormState | null) => {
         return value.trim();
     }
 
-    const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const handleChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if(values){
             const { name, value } = event.target;
 

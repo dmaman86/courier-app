@@ -1,8 +1,8 @@
 import { TableBody, TableCell, TableRow, Stack } from "@mui/material";
-import { Action, Role } from "@/types";
+import { Action, Role, User, ListProps } from "@/types";
 
 
-export const RoleList = ({ data, actions }: { data: Role[], actions?: Action<Role>[] }) => {
+export const RoleList = ({ data, actions }: ListProps<Role>) => {
 
 
     return (
@@ -12,17 +12,15 @@ export const RoleList = ({ data, actions }: { data: Role[], actions?: Action<Rol
                     data.map(item => (
                         <TableRow key={item.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                             <TableCell>{item.name}</TableCell>
-                            {actions && (
-                                <TableCell>
-                                    <Stack spacing={2} direction='row'>
-                                        {actions.map(action => (
-                                            <button key={action.label} className={action.classNameButton} onClick={() => action.method(item)}>
-                                                <i className={action.classNameIcon}></i>
-                                            </button>
-                                        ))}
-                                    </Stack>
-                                </TableCell>
-                            )}
+                            <TableCell>
+                                <Stack spacing={2} direction='row'>
+                                    {actions?.map(action => (
+                                        <button key={action.label} className={action.classNameButton} onClick={() => action.method(item)}>
+                                            <i className={action.classNameIcon}></i>
+                                        </button>
+                                    ))}
+                                </Stack>
+                            </TableCell>
                         </TableRow>
                     ))
                 }

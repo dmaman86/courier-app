@@ -11,7 +11,8 @@ import com.david.maman.courierserver.models.entities.Office;
 public class BranchMapper{
 
     public BranchDto toDto(Branch branch){
-
+        if(branch == null)
+            return null;
         return BranchDto.builder()
                         .id(branch.getId())
                         .city(branch.getCity())

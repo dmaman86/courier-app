@@ -13,7 +13,7 @@ export interface InputProps{
 
 export interface GenericInputProps{
     inputProps: InputProps;
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     onFocus: (fieldName: string) => void;
     errorsMessage?: string[];
 }
@@ -77,10 +77,15 @@ export interface GenericTableProps<T extends { id: number }>{
     data: T[] | null;
     columns: ValueColumn[];
     actions?: Action<T>[];
-    BodyComponent: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;
+    BodyComponent: React.ComponentType<{ data: T[], actions?: Action<T>[], userDetails?: User }>;
     pagination: { page: number, size: number, totalItems: number };
     onPageChange: (event: unknown, page: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export interface ListProps<T>{
+    data: T[];
+    actions?: Action<T>[];
 }
 
 export interface State<T> {

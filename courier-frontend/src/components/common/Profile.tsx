@@ -26,6 +26,10 @@ export const Profile = () => {
 
     const toogleModalDetails = () => setShowModalDetails(!showModalDetails);
 
+    useEffect(() => {
+        if(userDetails) console.log(userDetails);
+    }, [userDetails]);
+
     const fetchUserDetails = async () => {
         if(!userDetails || !userDetails.id) return Promise.resolve({ data: null, error: null });
         return  await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${userDetails.id}`));
@@ -41,6 +45,7 @@ export const Profile = () => {
 
     useEffect(() => {
         if(user){
+            console.log(user);
             setIsClient(user.roles.some(role => role.name === 'ROLE_CLIENT'))
         }
     }, [user]);

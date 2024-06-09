@@ -75,7 +75,7 @@ export const UsersPage = () => {
                         searchItem={searchUser}
                         renderItemForm={(userId, onSubmit) => <UserForm userId={userId} onSubmit={onSubmit} />}
                         columns={userColumns}
-                        renderItemList={({ data, actions }) => <UserList data={data} actions={actions} />}
+                        renderItemList={({ data, actions }) => <UserList data={data} actions={actions}/>}
                         allowedRoles={userAllowedRoles}
                     />
                 )

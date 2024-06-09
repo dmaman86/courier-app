@@ -1,24 +1,9 @@
 import { useEffect, useState } from "react";
 import { Stack, TableBody, TableCell, TableRow } from "@mui/material";
-import { useSelector } from "react-redux";
 
-import { Action, BranchResponse } from "@/types";
-import { RootState } from "@/redux/store";
-import { useAuth } from "@/hooks";
+import { BranchResponse, ListProps } from "@/types";
 
-export const BranchList = ({ data, actions }: { data: BranchResponse[], actions?: Action<BranchResponse>[]}) => {
-
-    const { userDetails } = useAuth();
-
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
-
-
-    useEffect(() => {
-        if(userDetails){
-            const userRoles = userDetails.roles;
-            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
-        }
-    }, [userDetails]);
+export const BranchList = ({ data, actions }: ListProps<BranchResponse>) => {
 
     return(
         <>
@@ -33,17 +18,15 @@ export const BranchList = ({ data, actions }: { data: BranchResponse[], actions?
                                 </div>
                             </TableCell>
                             <TableCell>{branch.office.name}</TableCell>
-                            {actions && (
-                                    <TableCell>
-                                        <Stack spacing={2} direction='row'>
-                                            {isAdmin && actions.map(action => (
-                                                <button key={action.label} className={action.classNameButton} onClick={() => action.method(branch)}>
-                                                    <i className={action.classNameIcon}></i>
-                                                </button>
-                                            ))}
-                                        </Stack>
-                                    </TableCell>
-                                )}
+                            <TableCell>
+                                <Stack spacing={2} direction='row'>
+                                    {actions?.map(action => (
+                                        <button key={action.label} className={action.classNameButton} onClick={() => action.method(branch)}>
+                                            <i className={action.classNameIcon}></i>
+                                        </button>
+                                    ))}
+                                </Stack>
+                            </TableCell>
                         </TableRow>
                     ))
                 }

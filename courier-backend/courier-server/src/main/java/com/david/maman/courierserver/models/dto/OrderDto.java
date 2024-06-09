@@ -1,5 +1,6 @@
 package com.david.maman.courierserver.models.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AccessLevel;
@@ -27,5 +28,7 @@ public class OrderDto {
     private String destinationAddress;
 
     private StatusDto currentStatus;
-    private List<OrderStatusDto> statusHistory;
+    
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -22,13 +22,16 @@ import com.david.maman.courierserver.mappers.ContactMapper;
 import com.david.maman.courierserver.mappers.UserMapper;
 import com.david.maman.courierserver.models.criteria.UserSepecification;
 import com.david.maman.courierserver.models.dto.ClientDto;
+import com.david.maman.courierserver.models.dto.RoleDto;
 import com.david.maman.courierserver.models.dto.UserDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
+import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
 import com.david.maman.courierserver.repositories.BranchRepository;
 import com.david.maman.courierserver.repositories.OfficeRepository;
+import com.david.maman.courierserver.repositories.RoleRepository;
 import com.david.maman.courierserver.repositories.UserRepository;
 import com.david.maman.courierserver.services.ContactService;
 import com.david.maman.courierserver.services.KafkaProducerService;
@@ -60,6 +63,9 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private BranchRepository branchRepository;
 
+    @Autowired
+    private RoleRepository roleRepository;
+
     @Override
     public Optional<User> loadUserByEmail(String email) {
         return userRepository.findByEmailAndIsActive(email, true);
@@ -86,6 +92,15 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public User createUser(UserDto userDto) {
         User user = userMapper.toEntity(userDto);
+
+        Set<Role> managedRoles = new HashSet<>();
+        for(RoleDto roleDto : userDto.getRoles()){
+            Role role = roleRepository.findById(roleDto.getId()).orElseThrow(
+                () -> new IllegalArgumentException("Role not found")
+            );
+            managedRoles.add(role);
+        }
+        user.setRoles(managedRoles);
 
         return this.save(user);
     }

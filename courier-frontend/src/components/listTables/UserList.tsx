@@ -1,23 +1,12 @@
-import { useEffect, useState } from "react";
 import { TableBody, TableCell, TableRow, Stack } from "@mui/material";
 
-import { Action, User } from "@/types";
+import { User, ListProps } from "@/types";
 import { useAuth } from "@/hooks";
 
 
-export const UserList = ({ data, actions }: { data: User[], actions?: Action<User>[]}) => {
+export const UserList = ({ data, actions }: ListProps<User>) => {
 
     const { userDetails } = useAuth();
-
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
-
-
-    useEffect(() => {
-        if(userDetails){
-            const userRoles = userDetails.roles;
-            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
-        }
-    }, [userDetails]);
 
     const extractRoleNames = (item: User) => {
         const formattedRoles = item.roles.map((role) => {
@@ -40,22 +29,16 @@ export const UserList = ({ data, actions }: { data: User[], actions?: Action<Use
                                         <span>{item.phone}</span>
                                     </div>
                                 </TableCell>
-                                {
-                                    isAdmin && (
-                                        <>
-                                            <TableCell>{extractRoleNames(item)}</TableCell>
-                                            <TableCell>
-                                                <Stack spacing={2} direction='row'>
-                                                    {userDetails.id !== item.id && actions?.map(action => (
-                                                        <button key={action.label} className={action.classNameButton} onClick={() => action.method(item)}>
-                                                            <i className={action.classNameIcon}></i>
-                                                        </button>
-                                                    ))}
-                                                </Stack>
-                                            </TableCell>
-                                        </>
-                                    )
-                                }
+                                <TableCell>{extractRoleNames(item)}</TableCell>
+                                <TableCell>
+                                    <Stack spacing={2} direction='row'>
+                                        {userDetails.id !== item.id && actions?.map(action => (
+                                            <button key={action.label} className={action.classNameButton} onClick={() => action.method(item)}>
+                                                <i className={action.classNameIcon}></i>
+                                            </button>
+                                        ))}
+                                    </Stack>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

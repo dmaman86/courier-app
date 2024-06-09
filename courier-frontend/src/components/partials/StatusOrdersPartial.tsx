@@ -21,7 +21,8 @@ export const StatusOrdersPartial = () => {
     const deleteStatusOrder = (statusOrderId: number) => serviceRequest.deleteItem<string>(`${paths.courier.statusOrder}id/${statusOrderId}`);
 
     const statusOrdersColumns: ValueColumn[] = [
-        { key: 'statusOrder', label: 'Status Order Name' }
+        { key: 'statusOrder', label: 'Status Order Name' },
+        { key: 'description', label: 'Description' }
     ]
 
     useEffect(() => {
@@ -51,7 +52,7 @@ export const StatusOrdersPartial = () => {
                         deleteItem={deleteStatusOrder}
                         renderItemForm={(statusOrderId, onSubmit) => <StatusOrderForm statusOrderId={statusOrderId} onSubmit={onSubmit}/>}
                         columns={statusOrdersColumns}
-                        renderItemList={({ data, actions}) => <StatusOrdersList data={data} actions={actions}/>}
+                        renderItemList={({ data, actions }) => <StatusOrdersList data={data} actions={actions}/>}
                         showSearch={false}
                         allowedRoles={statusOrderAllowedRoles}
                     />

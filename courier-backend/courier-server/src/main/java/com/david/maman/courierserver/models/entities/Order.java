@@ -1,5 +1,6 @@
 package com.david.maman.courierserver.models.entities;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +62,10 @@ public class Order {
     )
     private List<User> couriers;
 
+    @ManyToOne
+    @JoinColumn(name = "status_id")
+    private Status currentStatus;
+
     private String deliveryDate;
 
     private String receiverName;
@@ -71,6 +76,6 @@ public class Order {
 
     private Boolean isDelivered;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderStatusHistory> statusHistory;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

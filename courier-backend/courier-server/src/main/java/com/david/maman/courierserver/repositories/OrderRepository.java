@@ -1,5 +1,6 @@
 package com.david.maman.courierserver.repositories;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -20,4 +21,12 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     Page<Order> findAll(Pageable pageable);
     // List<Order> findAll();
+
+    List<Order> findByClientIdAndCurrentStatusIdNotIn(Long clientId, List<Long> statusIds);
+
+    List<Order> findByCurrentStatusIdNotIn(List<Long> statusIds);
+
+    List<Order> findByCurrentStatusId(Long statusId);
+
+    List<Order> findByCouriersIdAndCreatedAtBetween(Long courierId, LocalDateTime startOfDay, LocalDateTime endOfDay);
 }

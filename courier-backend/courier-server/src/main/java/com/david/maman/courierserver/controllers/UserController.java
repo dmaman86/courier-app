@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.david.maman.courierserver.helpers.CustomUserDetails;
 import com.david.maman.courierserver.mappers.UserMapper;
 import com.david.maman.courierserver.models.dto.ClientDto;
 import com.david.maman.courierserver.models.dto.UserDto;
@@ -66,20 +68,21 @@ public class UserController {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id){
-        User user = userService.loadUserById(id).orElseThrow(
+    public ResponseEntity<?> getUserById(@PathVariable Long id, Authentication authentication){
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        /*User user = userService.loadUserById(id).orElseThrow(
             () -> new RuntimeException("User not found")
-        );
+        );*/
 
-        Contact contact = contactService.findContactByPhone(user.getPhone()).orElse(null);
+        Contact contact = contactService.findContactByPhone(user.getUser().getPhone()).orElse(null);
         if(contact != null){
             logger.info("Found contact: {}", contact);
-            ClientDto clientDto = userMapper.toClientDto(user, contact);
+            ClientDto clientDto = userMapper.toClientDto(user.getUser(), contact);
             logger.info("Build client dto: {}", clientDto);
             return ResponseEntity.ok(clientDto);
         }
         
-        UserDto userDto = userMapper.toDto(user);
+        UserDto userDto = userMapper.toDto(user.getUser());
         return ResponseEntity.ok(userDto);
     }
 
