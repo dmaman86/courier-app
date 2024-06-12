@@ -1,8 +1,7 @@
 package com.david.maman.courierserver.mappers;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,21 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.david.maman.courierserver.models.dto.ClientDto;
-import com.david.maman.courierserver.models.dto.ContactDto;
 import com.david.maman.courierserver.models.dto.OrderDto;
-import com.david.maman.courierserver.models.dto.OrderStatusDto;
-import com.david.maman.courierserver.models.dto.UserDto;
-import com.david.maman.courierserver.models.dto.base.BranchInfoDto;
-import com.david.maman.courierserver.models.dto.base.OfficeInfoDto;
 import com.david.maman.courierserver.models.entities.Branch;
 import com.david.maman.courierserver.models.entities.Contact;
 import com.david.maman.courierserver.models.entities.Office;
 import com.david.maman.courierserver.models.entities.Order;
-import com.david.maman.courierserver.models.entities.OrderStatusHistory;
 import com.david.maman.courierserver.models.entities.User;
-import com.david.maman.courierserver.services.OrderService;
-import com.david.maman.courierserver.services.OrderStatusHistoryService;
 
 @Component
 public class OrderMapper {
@@ -36,22 +26,13 @@ public class OrderMapper {
     private ContactMapper contactMapper;
 
     @Autowired
-    private OrderStatusHistoryService orderStatusHistoryService;
-
-    @Autowired
     private UserMapper userMapper;
 
     @Autowired
     private StatusMapper statusMapper;
 
     @Autowired
-    private OfficeMapper officeMapper;
-
-    @Autowired
     private BranchMapper branchMapper;
-
-    @Autowired
-    private OrderStatusHistoryMapper orderStatusHistoryMapper;
 
 
     public OrderDto toDto(Order order){
@@ -132,14 +113,6 @@ public class OrderMapper {
         order.setReceiverName(orderDto.getReceiverName());
         order.setReceiverPhone(orderDto.getReceiverPhone());
         order.setDestinationAddress(orderDto.getDestinationAddress());
-    }
-
-    private OrderStatusDto toOrderStatusDto(OrderStatusHistory history){
-        return OrderStatusDto.builder()
-                    .status(statusMapper.toDto(history.getStatus()))
-                    .admin(userMapper.toDto(history.getAdmin()))
-                    .timestamp(history.getTimestamp())
-                    .build();
     }
 
 }

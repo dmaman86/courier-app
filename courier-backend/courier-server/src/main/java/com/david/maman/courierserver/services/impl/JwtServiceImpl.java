@@ -4,9 +4,12 @@ import java.security.PublicKey;
 import java.util.Date;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.david.maman.courierserver.models.entities.User;
 import com.david.maman.courierserver.services.JwtService;
+import com.david.maman.courierserver.services.UserService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -15,6 +18,9 @@ import io.jsonwebtoken.Jwts;
 public class JwtServiceImpl implements JwtService{
 
     public PublicKey jwtPublicKey;
+
+    @Autowired
+    private UserService userService;
 
     private volatile boolean isPublicKeyAvailable = false;
 
@@ -46,6 +52,15 @@ public class JwtServiceImpl implements JwtService{
     @Override
     public Boolean isTokenExpired(String token){
         return extractExpiration(token).before(new Date());
+    }
+
+    @Override
+    public User getUserFromToken(String token){
+        Claims claims = extractAllClaims(token);
+        String phone = claims.get("phone", String.class);
+        String email = claims.get("email", String.class);
+
+        return userService.loadUserByEmailAndPhone(email, phone).orElse(null);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

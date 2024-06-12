@@ -22,16 +22,16 @@ export const OfficesPage = () => {
 
     const searchOffice = (query: string, page: number, size: number) => serviceRequest.getItem<PageResponse<OfficeResponse[]>>(`${paths.courier.offices}search?query=${query}&page=${page}&size=${size}`);
 
-    const officeColumns: ValueColumn[] = [
+    const [ officeColumns, setOfficeColumns ] = useState<ValueColumn[]>([
         { key: 'name', label: 'Office Name' },
         { key: 'branches', label: 'Branches' }
-    ]
+    ]);
+
+    
 
     useEffect(() => {
-        if(userDetails){
-            console.log(userDetails);
-            const userRoles = userDetails.roles;
-            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+            setOfficeColumns([...officeColumns, { key: 'actions', label: '' }]);
         }
     }, [userDetails]);
 

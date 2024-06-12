@@ -1,10 +1,6 @@
 package com.david.maman.courierserver.configuration;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +14,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.david.maman.courierserver.exceptions.PublicKeyNotAvailableException;
 import com.david.maman.courierserver.helpers.CustomUserDetails;
-import com.david.maman.courierserver.models.entities.Role;
 import com.david.maman.courierserver.models.entities.User;
 import com.david.maman.courierserver.services.JwtService;
 import com.google.common.base.Strings;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -70,19 +64,11 @@ public class AuthFilter extends OncePerRequestFilter{
             if(jwtService.isTokenExpired(token))
                 throw new SignatureException("Invalid or expired JWT token");
 
-            Claims claims = jwtService.extractAllClaims(token);
-            Set<Role> roles = getRolesFromClaims(claims);
 
-            User user = User.builder()
-                .id(claims.get("id", Long.class))
-                .name(claims.get("name", String.class))
-                .lastName(claims.get("lastname", String.class))
-                .email(claims.get("email", String.class))
-                .phone(claims.get("phone", String.class))
-                .roles(roles)
-                .isActive(true)
-                .build();
-                
+            User user = jwtService.getUserFromToken(token);
+            if(user == null){
+                throw new IllegalStateException("User not found");
+            }                
 
             CustomUserDetails userDetails = new CustomUserDetails(user, "");
 
@@ -94,17 +80,6 @@ public class AuthFilter extends OncePerRequestFilter{
         } catch(SignatureException e){
             throw new SignatureException("Invalid or expired JWT token");
         }
-    }
-
-    private Set<Role> getRolesFromClaims(Claims claims){
-        List<Map<String, Object>> rolesMap = claims.get("roles", List.class);
-
-        return rolesMap.stream()
-            .map(role -> Role.builder()
-                            .id(((Number) role.get("id")).longValue())
-                            .name((String) role.get("name"))
-                            .build())
-            .collect(Collectors.toSet());
     }
 
 }

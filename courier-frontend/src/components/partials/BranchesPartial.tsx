@@ -7,12 +7,6 @@ import { BranchList } from "@/components/listTables";
 import { useAuth } from "@/hooks";
 import { useEffect, useState } from "react";
 
-
-const branchColumns: ValueColumn[] = [
-    { key: 'branch', label: 'Branch' },
-    { key: 'name', label: 'Office Name' }
-]
-
 export const BranchesPartial = () => {
 
     const { userDetails } = useAuth();
@@ -28,10 +22,14 @@ export const BranchesPartial = () => {
 
     const searchBranch = (query: string, page: number, size: number) => serviceRequest.getItem<PageResponse<BranchResponse[]>>(`${paths.courier.branches}search?query=${query}&page=${page}&size=${size}`);
 
+    const [ branchColumns, setBranchColumns ] = useState<ValueColumn[]>([
+        { key: 'branch', label: 'Branch' },
+        { key: 'name', label: 'Office Name' }
+    ]);
+
     useEffect(() => {
-        if(userDetails){
-            const userRoles = userDetails.roles;
-            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+            setBranchColumns([...branchColumns, { key: 'actions', label: '' }]);
         }
     }, [userDetails]);
 

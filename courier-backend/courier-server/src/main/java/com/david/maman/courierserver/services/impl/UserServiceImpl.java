@@ -72,6 +72,11 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public Optional<User> loadUserByEmailAndPhone(String email, String phone){
+        return userRepository.findByEmailAndPhoneAndIsActive(email, phone, true);
+    }
+
+    @Override
     public UserDto loadUserDtoByEmail(String email) {
         User user = userRepository.findByEmailAndIsActive(email, true).get();
         return userMapper.toDto(user);
@@ -184,6 +189,16 @@ public class UserServiceImpl implements UserService{
     @Transactional(readOnly = true)
     public Page<User> getAllUsers(Pageable pageable){
         return userRepository.findByIsActive(true, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDto> getAllByRole(Long roleId){
+        Role role = roleRepository.findById(roleId).orElseThrow(
+            () -> new IllegalArgumentException("Role not found")
+        );
+        return userRepository.findAllByRolesAndIsActive(role, true).stream()
+                .map(userMapper::toDto).collect(Collectors.toList());
     }
 
     @Override

@@ -9,8 +9,9 @@ import moment from "moment";
 import { paths, validatorForm } from "@/helpers";
 import { useAsync, useAuth, useFetchAndLoad, useForm } from "@/hooks";
 import { serviceRequest } from "@/services";
-import { Branch, BranchResponse, Client, Contact, ContactOptionType, FetchResponse, FormState, Office, OfficeResponse, OptionType, Order } from "@/types";
+import { Branch, BranchResponse, Client, Contact, ContactOptionType, FetchResponse, FormState, Office, OfficeResponse, OptionType, Order, StatusOrder, User } from "@/types";
 import { ReusableInput, ReusableSelect } from "../shared";
+import { set } from "lodash";
 
 
 interface OrderFormProps {
@@ -56,6 +57,9 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
 
     const { showBoundary } = useErrorBoundary();
 
+    const [ isClient, setIsClient ] = useState<boolean>(false);
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+
     const [ client, setClient ] = useState<Client | null>(null);
 
     const [ offices, setOffices ] = useState<OfficeResponse[]>([{ id: 0, name: 'Not Found', branches: [] }]);
@@ -79,6 +83,11 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
     const [ isValidForm, setIsValidForm ] = useState<boolean>(false);
 
     const [autocompleteValue, setAutocompleteValue] = useState<OptionType | null>(null);
+
+    const [ statusOrderList, setStatusOrderList ] = useState<StatusOrder[]>([]);
+    const [ selectedStatusOrder, setSelectedStatusOrder ] = useState<StatusOrder | null>(null);
+    const [ couriersList, setCouriersList ] = useState<User[]>([]);
+    const [ selectedCourier, setSelectedCourier ] = useState<User[]>([]);
 
     const updateInitialState = useCallback((order: Order) => {
         setInitialState({
@@ -122,8 +131,8 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                 receiverName: '',
                 receiverPhone: '',
                 destinationAddress: '',
-                couriers: null,
-                currentStatus: null,
+                couriers: selectedCourier,
+                currentStatus: selectedStatusOrder,
             });
             setBranchesOrigin(client.branches);
             setSelectedBranchOrigin({
@@ -140,6 +149,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
 
     useEffect(() => {
         if (order && !initialState) {
+            console.log(order);
             updateInitialState(order);
         }
     }, [order, initialState, updateInitialState]);
@@ -158,6 +168,8 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                 receiverPhone: values.receiverPhone.value,
                 destinationAddress: values.destinationAddress.value,
                 deliveryDate: values.deliveryDate.value,
+                currentStatus: selectedStatusOrder,
+                couriers: selectedCourier
             };
             setOrder(updatedOrder);
         }
@@ -174,6 +186,8 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
         if(orderId && !order){
             if(response.data){
                 setOrder(response.data);
+                setSelectedStatusOrder(response.data.currentStatus);
+                setSelectedCourier(response.data.couriers);
                 if(response.data.destinationBranch && response.data.destinationBranch.office){
                     setAutocompleteValue({
                         value: response.data.destinationBranch.office.id,
@@ -188,21 +202,67 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
 
     useAsync(fetchOrderDetails, handleGetOrderDetails, () => {}, [orderId]);
 
+    useEffect(() => {
+        if(userDetails){
+            setIsClient(userDetails.roles.some(role => role.name === 'ROLE_CLIENT'));
+            setIsAdmin(userDetails.roles.some(role => role.name === 'ROLE_ADMIN'));
+        }
+    }, [userDetails]);
+
     const fetchClientDetails = async() => {
-        if(userDetails && userDetails.id){
+        if(userDetails && userDetails.id && isClient){
             return await callEndPoint(serviceRequest.getItem<Client>(`${paths.courier.users}id/${userDetails.id}`));
         }
         return Promise.resolve({ data: null, error: null });
     }
 
     const handleClientDetailsSuccess = (response: FetchResponse<Client>) => {
-        if(userDetails && userDetails.id){
+        if(userDetails && userDetails.id && isClient){
             if(response.data) setClient(response.data);
             else showBoundary(response.error);
         }
     }
 
-    useAsync(fetchClientDetails, handleClientDetailsSuccess, () => {}, [userDetails]);
+    useAsync(fetchClientDetails, handleClientDetailsSuccess, () => {}, [userDetails, isClient]);
+
+    const fetchStatusOrders = async() => {
+        if(!isClient && !statusOrderList.length)
+            return await callEndPoint(serviceRequest.getItem<StatusOrder[]>(`${paths.courier.statusOrder}all`));
+        return { data: null, error: null };
+    }
+
+    const handleStatusOrdersSuccess = (response: FetchResponse<StatusOrder[]>) => {
+        if(!isClient && !statusOrderList.length){
+            if(response.data) setStatusOrderList(response.data);
+            else showBoundary(response.error);
+        }
+    }
+
+    useAsync(fetchStatusOrders, handleStatusOrdersSuccess, () => {}, [isClient, statusOrderList]);
+
+    const fetchCouriers = async() => {
+        if(isAdmin && !couriersList.length)
+            return await callEndPoint(serviceRequest.getItem<User[]>(`${paths.courier.users}role/2`));
+        return { data: null, error: null };
+    }
+
+    const handleCouriersSuccess = (response: FetchResponse<User[]>) => {
+        if(isAdmin && !couriersList.length){
+            if(response.data) setCouriersList(response.data);
+            else showBoundary(response.error);
+        }
+    }
+
+    useAsync(fetchCouriers, handleCouriersSuccess, () => {}, [isAdmin, couriersList]);
+
+    useEffect(() => {
+        if(!isClient){
+            if(statusOrderList.length > 0) console.log(statusOrderList);
+        }
+        if(isAdmin && couriersList.length > 0){
+            console.log(couriersList);
+        }
+    }, [isClient, statusOrderList, couriersList, isAdmin]);
 
     const handleOfficeAutoComplete = (event: React.SyntheticEvent<Element, Event>, value: OptionType | null) => {
         
@@ -294,6 +354,37 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
         }
     }, [order]);
 
+    const handleStatusChange = useCallback((selected: MultiValue<OptionType> | SingleValue<OptionType>) => {
+        if(!selected || Array.isArray(selected)) return;
+
+        const status = statusOrderList.find(status => status.id === (selected as OptionType).value);
+        if(status && order){
+            setSelectedStatusOrder(status);
+            setOrder({
+                ...order,
+                currentStatus: status
+            });
+        }
+
+    }, [order]);
+
+    const handleCouriersChange = useCallback((selected: MultiValue<OptionType> | SingleValue<OptionType>) => {
+        if (Array.isArray(selected) && couriersList.length > 0) {
+            /*const couriers = selected
+                .map(option => couriersList.find(courier => courier?.id === option.value))
+                .filter(courier => courier !== undefined) as User[];*/
+            const couriers = couriersList.filter(courier => selected.some(option => option.value === courier.id));
+            
+            if (order) {
+                setSelectedCourier(couriers);
+                setOrder({
+                    ...order,
+                    couriers
+                });
+            }
+        }
+    }, [order, couriersList]);
+
     const searchContacts = async(): Promise<FetchResponse<Contact[]>> => {
         if(order && order.destinationBranch){
             const { destinationBranch } = order;
@@ -333,9 +424,14 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
         event.preventDefault();
 
         if(order){
-            const isValid = validateForm();
-            const v2 = (!found) ? (order.originBranch !== null) : (order.originBranch !== null) && (order.destinationBranch !== null) && (order.contacts.length > 0);
-            setIsValidForm(isValid && v2);
+            if(isClient){
+                const isValid = validateForm();
+                const v2 = (!found) ? (order.originBranch !== null) : (order.originBranch !== null) && (order.destinationBranch !== null) && (order.contacts.length > 0);
+                setIsValidForm(isValid && v2);
+            }else{
+                const v3 = (isAdmin) ? (order.currentStatus !== null) && (order.couriers.length > 0) : (order.currentStatus !== null);
+                setIsValidForm(v3);
+            }
         }
 
     }, [order, found, validateForm]);
@@ -377,6 +473,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                             options={client ? branchesOrigin.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address, office: { id: client.office.id, name: client.office.name } })) : []}
                                             onChange={handleBranchChange}
                                             isMulti={false}
+                                            isDisabled={!isClient}
                                         />
                                 </div>
                             </div>
@@ -395,6 +492,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                                 placeholder="Search for a destination office"
                                                 variant="outlined"
                                                 fullWidth
+                                                disabled={!isClient}
                                             />
                                         )}
                                     />
@@ -407,6 +505,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                             onChange={handleDateChange}
                                             minDate={moment()}
                                             format="DD/MM/YYYY"
+                                            disabled={!isClient}
                                         />
                                         {
                                             values.deliveryDate.error?.map((error, index) => (
@@ -425,7 +524,7 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                             options={officeDestination ? officeDestination.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address, office: {id: officeDestination.id, name: officeDestination.name } })) : []}
                                             onChange={handleBranchDestinationChange}
                                             isMulti={false}
-                                            isDisabled={order.destinationBranch?.office !== null ? false : true}
+                                            isDisabled={isAdmin || !isClient}
                                         />
                                     </div>
                                     <div className="col">
@@ -435,12 +534,12 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                                     options={[ { value: 0, label: 'Select All', phone: '', office: {id: 0, name: ''}, branches: []}, ...(contacts ? contacts.map(contact => ({ value: contact.id, label: `${contact.name} ${contact.lastName}`, phone: contact.phone, office: contact.office, branches: contact.branches})) : [])]}
                                                     onChange={handleContactChange}
                                                     isMulti={true}
-                                                    isDisabled={order.destinationBranch !== null ? false : true}
+                                                    isDisabled={isClient && order.destinationBranch !== null ? false : true}
                                                 />
                                             </div>
                                 </div>
                             )}
-                            { (!found && values.receiverName && values.receiverPhone && values.destinationAddress) && (
+                            { (isClient && !found && values.receiverName && values.receiverPhone && values.destinationAddress) && (
                                 <>
                                     <div className="row pt-3">
                                         <div className='col-6'>
@@ -490,6 +589,32 @@ export const OrderForm = ({ orderId, onSubmit }: OrderFormProps) => {
                                     </div>
                                 </>
                             )}
+                            {
+                                !isClient && (
+                                    <div className="row pt-3">
+                                        <div className="col-6">
+                                            <ReusableSelect<OptionType>
+                                                label='Select Status Order:'
+                                                value={order.currentStatus ? { value: order.currentStatus.id, label: order.currentStatus.name } : null}
+                                                options={statusOrderList.map(statusOrder => ({ value: statusOrder.id, label: statusOrder.name }))}
+                                                onChange={handleStatusChange}
+                                                isMulti={false}
+                                                isDisabled={false}
+                                            />
+                                        </div>
+                                        <div className="col-6">
+                                            <ReusableSelect<OptionType>
+                                                label='Select Courier:'
+                                                value={order.couriers.length > 0 ? order.couriers.map(courier => ({ value: courier.id, label: `${courier.name} ${courier.lastName}` })) : null}
+                                                options={couriersList.map(courier => ({ value: courier.id, label: `${courier.name} ${courier.lastName}` }))}
+                                                onChange={handleCouriersChange}
+                                                isMulti={true}
+                                                isDisabled={!isAdmin}
+                                            />
+                                        </div>
+                                    </div>
+                                )
+                            }
                             <div className="row">
                                 <div className='col pt-3 text-center'>
                                     <button className='btn btn-primary' type='submit'>Save</button>

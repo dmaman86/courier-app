@@ -106,6 +106,17 @@ public class UserController {
         return ResponseEntity.ok(userDtoPage);
     }
 
+    @GetMapping("/role/{roleId}")
+    public ResponseEntity<?> getAllByRole(@PathVariable Long roleId, Authentication authentication){
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        boolean isAdmin = user.getUser().getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+        if(!isAdmin){
+            throw new RuntimeException("Unauthorized");
+        }
+        List<UserDto> couriers = userService.getAllByRole(roleId);
+        return ResponseEntity.ok(couriers);
+    }
+
     @DeleteMapping("/id/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id){
         User user = userService.loadUserById(id).orElseThrow(

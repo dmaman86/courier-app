@@ -7,10 +7,6 @@ import { RoleList } from "@/components/listTables";
 import { useAuth } from "@/hooks";
 import { useEffect, useState } from "react";
 
-const rolesColumns: ValueColumn[] = [
-    { key: 'role', label: 'Role Name' }
-];
-
 export const RolePartial = () => {
 
     const { userDetails } = useAuth();
@@ -24,10 +20,13 @@ export const RolePartial = () => {
 
     const deleteRole = (roleId: number) => serviceRequest.deleteItem<string>(`${paths.courier.roles}id/${roleId}`);
 
+    const [ roleColumns, setRoleColumns ] = useState<ValueColumn[]>([
+        { key: 'role', label: 'Role Name' }
+    ]);
+
     useEffect(() => {
-        if(userDetails){
-            const userRoles = userDetails.roles;
-            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+            setRoleColumns([...roleColumns, { key: 'actions', label: '' }]);
         }
     }, [userDetails]);
 
@@ -50,7 +49,7 @@ export const RolePartial = () => {
                         createOrUpdateItem={createOrUpdateRole}
                         deleteItem={deleteRole}
                         renderItemForm={(roleId, onSubmit) => <RoleForm roleId={roleId} onSubmit={onSubmit} />}
-                        columns={rolesColumns}
+                        columns={roleColumns}
                         renderItemList={({ data, actions }) => <RoleList data={data} actions={actions} />}
                         showSearch={false}
                         allowedRoles={roleAllowedRoles}

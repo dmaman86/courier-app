@@ -1,17 +1,19 @@
-import { Stack, TableBody, TableCell, TableRow, Tooltip } from "@mui/material";
+import { Box, Divider, Stack, TableBody, TableCell, TableRow, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { Action, Order, User } from "@/types";
+import { ListProps, Order } from "@/types";
+import { useAuth } from "@/hooks";
 
 
-export const OrderList = ({ data, actions, userDetails }: { data: Order[], actions?: Action<Order>[], userDetails?: User}) => {
+export const OrderList = ({ data, actions }: ListProps<Order>) => {
 
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+    const { userDetails } = useAuth();
+    const [ isClient, setIsClient ] = useState<boolean>(false);
 
     useEffect(() => {
         if(userDetails){
             const userRoles = userDetails.roles;
-            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+            setIsClient(userRoles.some(userRole => userRole.name === 'ROLE_CLIENT'));
         }
     }, [userDetails]);
 
@@ -48,7 +50,20 @@ export const OrderList = ({ data, actions, userDetails }: { data: Order[], actio
                                             <Tooltip title={order.currentStatus?.description || ''}>
                                                 <i className='fas fa-info-circle' style={{ marginLeft: '5px' }}></i>
                                             </Tooltip>
+                                            
+                                            {/*order.deliveryDate*/}
                                         </div>
+                                    </TableCell>
+                                    <TableCell>
+                                    {
+                                        !isClient && order.couriers.map((courier, index) => (
+                                                        <Box key={courier.id}>
+                                                            <div>{courier.name} {courier.lastName}</div>
+                                                            <div>{courier.phone}</div>
+                                                            {index < order.couriers.length - 1 && <Divider />}
+                                                        </Box>
+                                                    ))
+                                    }
                                     </TableCell>
                                     <TableCell>
                                                 <Stack spacing={2} direction='row'>

@@ -14,6 +14,8 @@ public interface UserService {
 
     Optional<User> loadUserByEmail(String email);
 
+    Optional<User> loadUserByEmailAndPhone(String email, String phone);
+
     UserDto loadUserDtoByEmail(String email);
 
     Optional<User> loadUserById(Long id);
@@ -29,6 +31,8 @@ public interface UserService {
     void delete(User user);
 
     List<UserDto> getAll();
+
+    List<UserDto> getAllByRole(Long roleId);
 
     Page<User> getAllUsers(Pageable pageable);
 

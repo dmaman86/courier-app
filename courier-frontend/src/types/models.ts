@@ -99,6 +99,6 @@ export interface Order{
     receiverName: string;
     receiverPhone: string;
     destinationAddress: string;
-    couriers: User[] | null;
+    couriers: User[];
     currentStatus: StatusOrder | null;
 }

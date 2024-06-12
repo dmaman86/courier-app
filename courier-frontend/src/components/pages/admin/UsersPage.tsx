@@ -6,6 +6,7 @@ import { ItemsPage } from "@/components/shared";
 import { UserList } from "@/components/listTables";
 import { UserForm } from "@/components/modal";
 import { useAuth } from "@/hooks";
+import { useEffect, useState } from "react";
 
 
 
@@ -27,13 +28,21 @@ export const UsersPage = () => {
     const deleteUser = (userId: number) => serviceRequest.deleteItem<string>(`${paths.courier.deleteUser}/${userId}`);
     const searchUser = (query: string, page: number, size: number) => serviceRequest.getItem<PageResponse<User[]>>(`${paths.courier.users}search?query=${query}&page=${page}&size=${size}`);
 
-    const isAdmin = userDetails ? userDetails.roles.some(role => role.name === 'ROLE_ADMIN') : false;
-
-    const userColumns: ValueColumn[] = [
+    const [ userColumns, setUserColumns ] = useState<ValueColumn[]>([
         { key: 'fullname', label: 'Fullname' },
-        { key: 'contactInfo', label: 'Contact Information' },
-        ...(isAdmin ? [{ key: 'roles', label: 'Roles' }] : [])
-    ];
+        { key: 'contactInfo', label: 'Contact Information' }
+    ]);
+
+    const userAllowedRoles = {
+        create: ['ROLE_ADMIN'],
+        update: ['ROLE_ADMIN'],
+        delete: ['ROLE_ADMIN']
+    }
+
+    useEffect(() => {
+        if(userDetails && userDetails.roles.some(role => userAllowedRoles.update.includes(role.name) || userAllowedRoles.delete.includes(role.name)))
+            setUserColumns([...userColumns, { key: 'roles', label: 'Roles' }, { key: 'actions', label: '' }]);
+    }, [userDetails]);
 
 
     const createOrUpdateItem = (item: User | Client) => {
@@ -53,12 +62,6 @@ export const UsersPage = () => {
         return item.roles.some(role => role.name === 'ROLE_CLIENT') && 
                 (item as Client).office !== undefined && (item as Client).branches !== undefined;
     };
-
-    const userAllowedRoles = {
-        create: ['ROLE_ADMIN'],
-        update: ['ROLE_ADMIN'],
-        delete: ['ROLE_ADMIN']
-    }
 
     return(
         <>

@@ -20,10 +20,21 @@ export const StatusOrdersPartial = () => {
 
     const deleteStatusOrder = (statusOrderId: number) => serviceRequest.deleteItem<string>(`${paths.courier.statusOrder}id/${statusOrderId}`);
 
-    const statusOrdersColumns: ValueColumn[] = [
+    const [ statusOrdersColumns, setStatusOrdersColumns ] = useState<ValueColumn[]>([
+        { key: 'statusOrder', label: 'Status Order Name' },
+        { key: 'description', label: 'Description' },
+    ]);
+
+    useEffect(() =>{
+        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+            setStatusOrdersColumns([...statusOrdersColumns, { key: 'actions', label: '' }]);
+        }
+    }, [userDetails]);
+
+    /*const statusOrdersColumns: ValueColumn[] = [
         { key: 'statusOrder', label: 'Status Order Name' },
         { key: 'description', label: 'Description' }
-    ]
+    ]*/
 
     useEffect(() => {
         if(userDetails){

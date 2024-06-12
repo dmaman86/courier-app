@@ -1,6 +1,5 @@
 package com.david.maman.courierserver.repositories;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -11,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.david.maman.courierserver.models.entities.Order;
+import com.david.maman.courierserver.models.entities.Status;
 
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order>{
 
@@ -26,7 +26,11 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     List<Order> findByCurrentStatusIdNotIn(List<Long> statusIds);
 
+    Page<Order> findByClientIdAndCurrentStatusNotIn(Long clientId, List<Status> statuses, Pageable pageable);
+
     List<Order> findByCurrentStatusId(Long statusId);
 
-    List<Order> findByCouriersIdAndCreatedAtBetween(Long courierId, LocalDateTime startOfDay, LocalDateTime endOfDay);
+    Page<Order> findByCouriers_Id(Long courierId, Pageable pageable);
+
+    Page<Order> findByCouriers(Long courierId, Pageable pageable);
 }

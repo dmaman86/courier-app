@@ -12,33 +12,39 @@ export const OrdersPage = () => {
 
     const { userDetails } = useAuth();
 
-    const [ isClient, setIsClient ] = useState<boolean>(false);
-
     const fetchOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<Order[]>>(`${paths.courier.orders}?page=${page}&size=${size}`);
 
-    const createOrUpdateOrder = (order: Order) => order?.id ? serviceRequest.putItem<Order, Order>(paths.courier.orders, order) : serviceRequest.postItem<Order, Order>(paths.courier.orders, order);
+    const createOrUpdateOrder = (order: Order) => order?.id ? serviceRequest.putItem<Order, Order>(`${paths.courier.orders}${order.id}`, order) : serviceRequest.postItem<Order, Order>(paths.courier.orders, order);
 
     const deleteOrder = (orderId: number) => serviceRequest.deleteItem<string>(`${paths.courier.orders}${orderId}`);
 
-    const orderColumns: ValueColumn[] = [
+    // const isAdmin = userDetails ? userDetails.roles.some(role => role.name === 'ROLE_ADMIN') : false;
+
+    const [ orderColumns, setOrderColumns ] = useState<ValueColumn[]>([
         { key: 'client', label: 'Client Details' },
         { key: 'origin', label: 'Origin Details' },
         { key: 'destination', label: 'Destination Details' },
         { key: 'status', label: 'Status Order' }
-    ];
-
-    useEffect(() => {
-        if(userDetails){
-            const userRoles = userDetails.roles;
-            setIsClient(userRoles.some(userRole => userRole.name === 'ROLE_CLIENT'));
-        }
-    }, [userDetails]);
+    ]);
 
     const orderAllowedRoles = {
         create: ['ROLE_CLIENT'],
         update: ['ROLE_CLIENT', 'ROLE_ADMIN', 'ROLE_COURIER'],
         delete: ['ROLE_CLIENT', 'ROLE_ADMIN']
     }
+
+    useEffect(() => {
+        if(userDetails){
+            if(!userDetails.roles.some(role => role.name === 'ROLE_CLIENT')){
+                setOrderColumns([...orderColumns, { key: 'courier', label: 'Courier Details' }, { key: 'actions', label: ''}]);
+            }else{
+                if(userDetails.roles.some(role => orderAllowedRoles.update.includes(role.name) || orderAllowedRoles.delete.includes(role.name))){
+                    setOrderColumns([...orderColumns, { key: 'actions', label: ''}]);
+                }
+            }
+            
+        }
+    }, [userDetails]);
 
     return(
         <>

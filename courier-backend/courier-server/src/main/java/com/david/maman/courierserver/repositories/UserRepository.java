@@ -23,6 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Optional<User> findByNameAndLastNameAndPhoneAndEmailAndIsActive(String firstName, String lastName, String phone, String email, Boolean isActive);
 
+    Optional<User> findByEmailAndPhoneAndIsActive(String email, String phone, Boolean isActive);
+
     List<User> findByNameContainingAndIsActive(String firstName, Boolean isActive);
     List<User> findByLastNameContainingAndIsActive(String lastName, Boolean isActive);
     List<User> findByPhoneContainingAndIsActive(String phone, Boolean isActive);

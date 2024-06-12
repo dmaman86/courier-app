@@ -12,7 +12,7 @@ export const ContactsPage = () => {
 
     const { userDetails } = useAuth();
 
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+    // const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 
     const fetchContacts = (page: number, size: number) => serviceRequest.getItem<PageResponse<Contact[]>>(`${paths.courier.contacts}?page=${page}&size=${size}`);
 
@@ -23,12 +23,19 @@ export const ContactsPage = () => {
 
     const searchContact = (query: string, page: number, size: number) => serviceRequest.getItem<PageResponse<Contact[]>>(`${paths.courier.contacts}search?query=${query}&page=${page}&size=${size}`);
 
-    const contactColumns: ValueColumn[] = [
+    const [ contactColumns, setContactColumns ] = useState<ValueColumn[]>([
         { key: 'fullname', label: 'Fullname' },
         { key: 'contactInfo', label: 'Contact Information' },
         { key: 'name', label: 'Office Name' },
         { key: 'branches', label: 'Branches' }
-    ]
+    ]);
+
+    
+    useEffect(() => {
+        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+            setContactColumns([...contactColumns, { key: 'actions', label: '' }]);
+        }
+    }, [userDetails]);
 
     const contactAllowedRoles = {
         create: ['ROLE_ADMIN'],
@@ -36,12 +43,12 @@ export const ContactsPage = () => {
         delete: ['ROLE_ADMIN']
     }
 
-    useEffect(() => {
+    /*useEffect(() => {
         if(userDetails){
             const userRoles = userDetails.roles;
             setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
         }
-    }, [userDetails]);
+    }, [userDetails]);*/
 
     return(
         <>

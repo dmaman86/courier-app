@@ -22,8 +22,7 @@ export const ReusableTable = <T extends { id: number }>({ data, columns, actions
                             {columns.map((col) => (
                                 <TableCell key={col.key}>{col.label}</TableCell>
                             ))}
-                            {actions && <TableCell></TableCell>}
-                        </TableRow>
+                        </TableRow> 
                     </TableHead>
                     <BodyComponent data={data} actions={actions}/>
                 </Table>

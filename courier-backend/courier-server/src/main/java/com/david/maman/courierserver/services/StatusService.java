@@ -29,7 +29,7 @@ public interface StatusService {
 
     Page<Status> getAll(Pageable pageable);
 
-    List<Status> getFinishProccess();
+    List<Status> getAllById(List<Long> ids);
 
-    List<Status> getInProcess();
+    List<Status> getFinishProccess();
 }

@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.david.maman.courierserver.helpers.StateEnum;
+import com.david.maman.courierserver.helpers.StatusEnum;
 import com.david.maman.courierserver.mappers.StatusMapper;
 import com.david.maman.courierserver.models.dto.StatusDto;
 import com.david.maman.courierserver.models.entities.Status;
@@ -86,36 +86,22 @@ public class StatusServiceImpl implements StatusService{
     }
 
     @Override
+    public List<Status> getAllById(List<Long> ids){
+        return statusRepository.findAllById(ids);
+    }
+
+    @Override
     public List<Status> getFinishProccess(){
-        StateEnum cancelled = StateEnum.CANCELED;
-        StateEnum denied = StateEnum.DENIED;
-        StateEnum delivered = StateEnum.DELIVERED;
-        StateEnum returned = StateEnum.RETURNED;
+        StatusEnum cancelled = StatusEnum.CANCELLED;
+        StatusEnum denied = StatusEnum.DENIED;
+        StatusEnum delivered = StatusEnum.DELIVERED;
+        StatusEnum returned = StatusEnum.RETURNED;
 
         return statusRepository.findAllById(
             List.of(cancelled.getId(), 
                     denied.getId(), 
                     delivered.getId(), 
                     returned.getId()));
-    }
-
-    @Override
-    public List<Status> getInProcess(){
-        StateEnum accepted = StateEnum.ACCEPTED;
-        StateEnum taken = StateEnum.TAKEN;
-        StateEnum pending = StateEnum.PENDING;
-        StateEnum pendingTaken = StateEnum.PENDING_TAKEN;
-        StateEnum undelivered = StateEnum.UNDELIVERED;
-        StateEnum requiredToReturn = StateEnum.REQUIRED_TO_RETURN;
-
-        return statusRepository.findAllById(
-            List.of(accepted.getId(), 
-                    taken.getId(), 
-                    pending.getId(), 
-                    pendingTaken.getId(), 
-                    undelivered.getId(), 
-                    requiredToReturn.getId()));
-        
     }
 
 }
