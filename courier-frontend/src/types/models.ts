@@ -29,6 +29,11 @@ export interface User extends UserBase{
     isActive: boolean;
 }
 
+export interface Client extends User{
+    office: Office;
+    branches: Branch[];
+}
+
 export interface Office {
     id: number;
     name: string;
@@ -41,11 +46,6 @@ export interface BranchInfo {
 
 export interface Branch extends BranchInfo{
     id: number;
-}
-
-export interface Client extends User{
-    office: Office;
-    branches: Branch[];
 }
 
 export interface LoginCredentials {

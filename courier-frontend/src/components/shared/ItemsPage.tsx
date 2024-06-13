@@ -4,7 +4,7 @@ import { useErrorBoundary } from "react-error-boundary";
 
 
 import { Action, FetchResponse, Item, ItemsPageProps, PageResponse, State, User } from "@/types";
-import { useAsync, useAuth, useFetchAndLoad, useList } from "@/hooks";
+import { useAsync, useFetchAndLoad, useList } from "@/hooks";
 import { PageHeader } from "./PageHeader";
 import { ReusableTable } from "./ReusableTable";
 import { GenericModal } from "@/components/modal";

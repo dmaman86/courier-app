@@ -63,27 +63,39 @@ public class UserController {
             throw new RuntimeException("User already exists");
         }
         logger.info(clientDto.toString());
-        userService.createClient(clientDto);
-        return ResponseEntity.ok("Client registered successfully");
+        User userRegisterByClient = userService.createClient(clientDto);
+        return ResponseEntity.ok(userMapper.toDto(userRegisterByClient));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserLogged(Authentication authentication){
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+        ClientDto loggedClient = buildClient(user.getUser());
+        if(loggedClient != null){
+            return ResponseEntity.ok(loggedClient);
+        }        
+        return ResponseEntity.ok(userMapper.toDto(user.getUser()));
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id, Authentication authentication){
-        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-        /*User user = userService.loadUserById(id).orElseThrow(
+    public ResponseEntity<?> getUserById(@PathVariable Long id){
+        User user = userService.loadUserById(id).orElseThrow(
             () -> new RuntimeException("User not found")
-        );*/
-
-        Contact contact = contactService.findContactByPhone(user.getUser().getPhone()).orElse(null);
-        if(contact != null){
-            logger.info("Found contact: {}", contact);
-            ClientDto clientDto = userMapper.toClientDto(user.getUser(), contact);
-            logger.info("Build client dto: {}", clientDto);
-            return ResponseEntity.ok(clientDto);
+        );
+        ClientDto client = buildClient(user);
+        if(client != null){
+            return ResponseEntity.ok(client);
         }
-        
-        UserDto userDto = userMapper.toDto(user.getUser());
-        return ResponseEntity.ok(userDto);
+        return ResponseEntity.ok(userMapper.toDto(user));
+    }
+
+    private ClientDto buildClient(User user){
+        Contact contact = contactService.findContactByPhone(user.getPhone()).orElse(null);
+        if(contact != null){
+            return userMapper.toClientDto(user, contact);
+        }
+        return null;
     }
 
     @GetMapping("/all")

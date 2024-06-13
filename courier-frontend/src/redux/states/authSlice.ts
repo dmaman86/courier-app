@@ -1,50 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Token, User, Role } from '@/types';
-import { jwtDecode, JwtPayload } from "jwt-decode";
+import { Token, User, Client } from '@/types';
 import { TokenService } from "@/services/token.service";
 
 import { RootState } from "../store";
 
 interface AuthState {
     tokens: Token | null;
-    userDetails: User | null;
-}
-
-interface MyJwtPayload extends JwtPayload {
-    id: string;
-    name: string;
-    lastname: string;
-    email: string;
-    phone: string;
-    roles: Role[];
-}
-
-const getUserDetailsFromToken = (accessToken: string): User | null => {
-    try{
-        const decoded = jwtDecode<MyJwtPayload>(accessToken);
-        return {
-            id: parseInt(decoded.id),
-            email: decoded.email,
-            name: decoded.name,
-            lastName: decoded.lastname,
-            phone: decoded.phone,
-            roles: decoded.roles,
-            isActive: true
-        }
-    }catch(error){
-        console.error('Error decoding token: ', error);
-        return null;
-    }
+    userDetails: User | Client | null;
 }
 
 const initialState: AuthState = {
     tokens: TokenService.getToken(),
     userDetails: null
 };
-
-if(initialState.tokens && initialState.tokens.accessToken){
-    initialState.userDetails = getUserDetailsFromToken(initialState.tokens.accessToken);
-}
 
 const authSlice = createSlice({
     name: 'auth',
@@ -53,7 +21,9 @@ const authSlice = createSlice({
         setTokens: (state, action: PayloadAction<Token>) => {
             state.tokens = action.payload;
             TokenService.setToken(action.payload);
-            state.userDetails = getUserDetailsFromToken(action.payload.accessToken);
+        },
+        setUser: (state, action: PayloadAction<User | Client>) => {
+            state.userDetails = action.payload;
         },
         logout: (state) => {
             state.tokens = null;
@@ -70,7 +40,7 @@ const authSlice = createSlice({
     },
 });
 
-export const { setTokens, logout, updateToken } = authSlice.actions;
+export const { setTokens, setUser, logout, updateToken } = authSlice.actions;
 
 export const selectAuthTokens = (state: RootState) => state.auth.tokens;
 export const selectUserDetails = (state: RootState) => state.auth.userDetails;

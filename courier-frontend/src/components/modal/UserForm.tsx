@@ -60,56 +60,17 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 
-    const [ formData, setFormData ] = useState<Client>({
-        id: user?.id || 0,
-        email: user?.email || '',
-        name: user?.name || '',
-        lastName: user?.lastName || '',
-        phone: user?.phone || '',
-        roles: user?.roles || [],
-        office: { id: 0, name: ''},
-        branches: [],
-        isActive: true
-    });
-
     const [ roles, setRoles ] = useState<Role[]>([]);
     const [ offices, setOffices ] = useState<OfficeResponse[]>([]);
     const [ selectedOffice, setSelectedOffice ] = useState<OfficeResponse | null>(null);
 
-    const [ initialState, setInitialState ] = useState<FormState>({
-        name: {
-            value: formData.name,
-            validation: [
-                validatorForm.validateNotEmpty
-            ],
-            validateRealTime: false
-        },
-        lastName: {
-            value: formData.lastName,
-            validation: [
-                validatorForm.validateNotEmpty
-            ],
-            validateRealTime: false
-        },
-        email: {
-            value: formData.email,
-            validation: [
-                validatorForm.validateNotEmpty,
-                validatorForm.isEmail
-            ],
-            validateRealTime: false
-        },
-        phone: {
-            value: formData.phone,
-            validation: [
-                validatorForm.validateNotEmpty,
-                validatorForm.isCellularNumber
-            ],
-            validateRealTime: false
-        }
-    });
+    const [ isCurrentUser, setIsCurrentUser ] = useState<boolean>(false);
 
-    const { values, handleChange, onFocus, validateForm, setValues } = useForm(initialState);
+    const [ initialState, setInitialState ] = useState<FormState | null>(null);
+
+    const { values, handleChange, onFocus, validateForm, setValues, updateValues } = useForm(initialState);
+
+    const [ isValidForm, setIsValidForm ] = useState<boolean>(false);
 
     const fetchUserDetails = async() => {
         if(!userId) return Promise.resolve({ data: null, error: null });
@@ -118,7 +79,10 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     const handleUserDetailsSuccess = (response: FetchResponse<User | Client>) => {
         if(userId){
-            if(response.data) setUser(response.data);
+            if(response.data){
+                setUser(response.data);
+                setIsClient(response.data.roles.some(role => role.name === 'ROLE_CLIENT'));
+            }
             else showBoundary(response.error);
         }
     }
@@ -132,172 +96,163 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
         }
     }, [userDetails]);
 
-    useEffect(() => {
-        setIsClient(formData.roles.some(role => role.name === 'ROLE_CLIENT'));
-    }, [formData.roles]);
+    const updateInitialState = useCallback((user: User | Client) => {
+        setInitialState({
+            name: {
+                value: user.name,
+                validation: [
+                    validatorForm.validateNotEmpty
+                ],
+                validateRealTime: false
+            },
+            lastName: {
+                value: user.lastName,
+                validation: [
+                    validatorForm.validateNotEmpty
+                ],
+                validateRealTime: false
+            },
+            email: {
+                value: user.email,
+                validation: [
+                    validatorForm.validateNotEmpty,
+                    validatorForm.isEmail
+                ],
+                validateRealTime: false
+            },
+            phone: {
+                value: user.phone,
+                validation: [
+                    validatorForm.validateNotEmpty,
+                    validatorForm.isCellularNumber
+                ],
+                validateRealTime: false
+            }
+        })
+    }, []);
 
     useEffect(() => {
-        if(user !== null && selectedOffice === null){
-            console.log(user);
-            setFormData({
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                lastName: user.lastName,
-                phone: user.phone,
-                roles: user.roles,
-                office: (user as Client).office || { id: 0, name: ''},
-                branches: (user as Client).branches || [],
-                isActive: user.isActive
+        if(!userId && !user){
+            setUser({
+                id: 0,
+                email: '',
+                name: '',
+                lastName: '',
+                phone: '',
+                roles: [],
+                office: { id: 0, name: ''},
+                branches: [],
+                isActive: true
             });
-
-            setInitialState({
-                name: {
-                    value: user.name,
-                    validation: [
-                        validatorForm.validateNotEmpty
-                    ],
-                    validateRealTime: false
-                },
-                lastName: {
-                    value: user.lastName,
-                    validation: [
-                        validatorForm.validateNotEmpty
-                    ],
-                    validateRealTime: false
-                },
-                email: {
-                    value: user.email,
-                    validation: [
-                        validatorForm.validateNotEmpty,
-                        validatorForm.isEmail
-                    ],
-                    validateRealTime: false
-                },
-                phone: {
-                    value: user.phone,
-                    validation: [
-                        validatorForm.validateNotEmpty,
-                        validatorForm.isCellularNumber
-                    ],
-                    validateRealTime: false
-                }
-            });
-
-            setValues({
-                name: {
-                    value: user.name,
-                    validation: [
-                        validatorForm.validateNotEmpty
-                    ],
-                    validateRealTime: false
-                },
-                lastName: {
-                    value: user.lastName,
-                    validation: [
-                        validatorForm.validateNotEmpty
-                    ],
-                    validateRealTime: false
-                },
-                email: {
-                    value: user.email,
-                    validation: [
-                        validatorForm.validateNotEmpty,
-                        validatorForm.isEmail
-                    ],
-                    validateRealTime: false
-                },
-                phone: {
-                    value: user.phone,
-                    validation: [
-                        validatorForm.validateNotEmpty,
-                        validatorForm.isCellularNumber
-                    ],
-                    validateRealTime: false
-                }
-            })
-
-            if(user.roles.some(role => role.name === 'ROLE_CLIENT')){
-                setSelectedOffice({
-                    id: (user as Client).office.id,
-                    name: (user as Client).office.name,
-                    branches: (user as Client).branches
-                })
+        }else{
+            if(user && user.id === 0){
+                const { id, ...rest } = user;
+                setUser(rest as Client);
             }
         }
-    }, [user, selectedOffice]);
+    }, [userId, user]);
 
     useEffect(() => {
-        if(values){
-            setFormData((prev) => ({
-                ...prev,
+        if(isClient && (user as Client).office && (user as Client).office.id !== 0 && !selectedOffice){
+            setSelectedOffice({
+                id: (user as Client).office.id,
+                name: (user as Client).office.name,
+                branches: (user as Client).branches
+            });
+        }
+    }, [isClient, user, selectedOffice]);
+
+    useEffect(() => {
+        if(user && !initialState){
+            console.log(user);
+            updateInitialState(user);
+        }
+    }, [user, initialState, updateInitialState]);
+
+    useEffect(() => {
+        if(initialState) updateValues(initialState);
+    }, [initialState, updateValues]);
+
+    useEffect(() => {
+        if(values && user){
+            const updateUser = {
+                ...user,
                 name: values.name.value,
                 lastName: values.lastName.value,
                 email: values.email.value,
-                phone: values.phone.value,
-            }));
+                phone: values.phone.value
+            }
+            setUser(updateUser);
         }
-        
     }, [values]);
-
-    useEffect(() => {
-        if(formData.id === 0){
-            const { id, ...rest } = formData;
-            setFormData(rest as Client);
-        }
-    }, [formData.id]);
 
     const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if(validateForm() && formData.roles.length > 0){
-            let formDataToSubmit: User | Client = { ...formData };
-
-            if((formDataToSubmit as Client).office.id !== 0 && (formDataToSubmit as Client).branches.length > 0){
-                formDataToSubmit = {
-                    ...formDataToSubmit,
-                    office: (formDataToSubmit as Client).office,
-                    branches: (formDataToSubmit as Client).branches
-                } as Client;
+        if(user){
+            const v1 = validateForm() && user.roles.length > 0;
+            if(isClient){
+                const v2 = (user as Client).office.id !== 0 && (user as Client).branches.length > 0;
+                setIsValidForm(v1 && v2);
             }else{
-                const { office, branches, ...userData } = formDataToSubmit;
-                formDataToSubmit = userData as User;
+                setIsValidForm(v1);
+                const { office, branches, ...userData } = user as Client;
+                setUser(userData);
             }
-            console.log('Form is valid', formDataToSubmit);
-            onSubmit(formDataToSubmit);
+
         }
-    }, [validateForm, formData, onSubmit]);
+    }, [validateForm, user, isClient]);
+
+    useEffect(() => {
+        if(isValidForm && user){
+            console.log('User to submit:', user);
+            setIsValidForm(false);
+            onSubmit(user);
+        }
+    }, [isValidForm]);
 
     const handleRoleChange = useCallback((selected: MultiValue<OptionType> | SingleValue<OptionType>) => {
-        const updateRoles = transformOptionsToRoles(selected);
-        setFormData({
-            ...formData,
-            roles: updateRoles
-        });
-    }, [formData]);
+        if(!selected) return;
+
+        if(Array.isArray(selected) && user){
+            const updateRoles = transformOptionsToRoles(selected);
+            setUser({
+                ...user,
+                roles: updateRoles
+            });
+            setIsClient(updateRoles.some(role => role.name === 'ROLE_CLIENT'));
+        }
+    }, [user]);
 
     const handleOfficeChange = useCallback((selected: MultiValue<OptionType> | SingleValue<OptionType>) => {
         if(!selected || Array.isArray(selected)) return;
 
-        const office = offices.find(office => office.id === (selected as OptionType).value) || null;
-        setSelectedOffice(office);
-        setFormData({
-            ...formData,
-            office: office ? { id: office.id, name: office.name } : { id: 0, name: '' },
-            branches: []
-        });
-    }, [offices, formData]);
+        const office = offices.find(office => office.id === (selected as OptionType).value);
+        
+        if(user && office){
+            setSelectedOffice(office);
+            setUser({
+                ...user,
+                office: { id: office.id, name: office.name },
+                branches: []
+            });
+        }
+    }, [offices, user]);
 
     const handleBranchChange = useCallback((selected: MultiValue<BranchOptionType> | SingleValue<BranchOptionType>) => {
-        if(Array.isArray(selected)){
-            setFormData({
-                ...formData,
+        if(Array.isArray(selected) && user){
+            setUser({
+                ...user,
                 branches: transformOptionsToBranches(selected)
             });
         }
-    }, [formData]);
+    }, [user]);
 
-    const isCurrentUser = userDetails?.id === formData.id;
+    useEffect(() => {
+        if(user && userDetails){
+            setIsCurrentUser(user.id === userDetails.id);
+        }
+    }, [user, userDetails]);
 
     const fetchRoles = async() => await callEndPoint(serviceRequest.getItem<Role[]>(`${paths.courier.roles}all`));
 
@@ -319,112 +274,116 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
 
     return(
         <>
-            <form onSubmit={handleSubmit} className='row g-4'>
-                <div className='col-6'>
-                    <ReusableInput
-                        inputProps={{
-                            label: 'Name',
-                            name: 'name',
-                            type: 'text',
-                            value: values!.name.value,
-                            placeholder: 'Enter user name'
-                        }}
-                        onChange={handleChange}
-                        onFocus={onFocus}
-                        errorsMessage={values!.name.error}
-                    />    
-                </div>
-                <div className='col-6'>
-                    <ReusableInput
-                        inputProps={{
-                            label: 'Last Name',
-                            name: 'lastName',
-                            type: 'text',
-                            value: values!.lastName.value,
-                            placeholder: 'Enter user last name'
-                        }}
-                        onChange={handleChange}
-                        onFocus={onFocus}
-                        errorsMessage={values!.lastName.error}
-                    />    
-                </div>
-                <div className='row'>
-                    <div className='col-6'>
-                        <ReusableInput
-                            inputProps={{
-                                label: 'Email',
-                                name: 'email',
-                                type: 'email',
-                                value: values!.email.value,
-                                placeholder: 'Enter user email'
-                            }}
-                            onChange={handleChange}
-                            onFocus={onFocus}
-                            errorsMessage={values!.email.error}
-                        />    
-                    </div>
-                    <div className='col-6'>
-                        <ReusableInput
-                            inputProps={{
-                                label: 'Phone',
-                                name: 'phone',
-                                type: 'tel',
-                                value: values!.phone.value,
-                                placeholder: 'Enter user phone'
-                            }}
-                            onChange={handleChange}
-                            onFocus={onFocus}
-                            errorsMessage={values!.phone.error}
-                        />    
-                    </div>
-                </div>
-                {
-                    (isAdmin && !isCurrentUser) && (
+            {
+                (user && values && userDetails) && (
+                    <form onSubmit={handleSubmit} className='row g-4'>
+                        <div className='col-6'>
+                            <ReusableInput
+                                inputProps={{
+                                    label: 'Name',
+                                    name: 'name',
+                                    type: 'text',
+                                    value: values.name.value,
+                                    placeholder: 'Enter user name'
+                                }}
+                                onChange={handleChange}
+                                onFocus={onFocus}
+                                errorsMessage={values.name.error}
+                            />    
+                        </div>
+                        <div className='col-6'>
+                            <ReusableInput
+                                inputProps={{
+                                    label: 'Last Name',
+                                    name: 'lastName',
+                                    type: 'text',
+                                    value: values.lastName.value,
+                                    placeholder: 'Enter user last name'
+                                }}
+                                onChange={handleChange}
+                                onFocus={onFocus}
+                                errorsMessage={values.lastName.error}
+                            />    
+                        </div>
                         <div className='row'>
-                            <div className='col-12'>
-                                <ReusableSelect<OptionType>
-                                    label='Select Roles:'
-                                    value={formData.roles.map(role => ({ value: role.id, label: role.name }))}
-                                    options={tranformRoles(roles)}
-                                    onChange={handleRoleChange}
-                                    isMulti
-                                    />
+                            <div className='col-6'>
+                                <ReusableInput
+                                    inputProps={{
+                                        label: 'Email',
+                                        name: 'email',
+                                        type: 'email',
+                                        value: values.email.value,
+                                        placeholder: 'Enter user email'
+                                    }}
+                                    onChange={handleChange}
+                                    onFocus={onFocus}
+                                    errorsMessage={values.email.error}
+                                />    
+                            </div>
+                            <div className='col-6'>
+                                <ReusableInput
+                                    inputProps={{
+                                        label: 'Phone',
+                                        name: 'phone',
+                                        type: 'tel',
+                                        value: values.phone.value,
+                                        placeholder: 'Enter user phone'
+                                    }}
+                                    onChange={handleChange}
+                                    onFocus={onFocus}
+                                    errorsMessage={values.phone.error}
+                                />    
                             </div>
                         </div>
-                    )
-                }
-                {
-                    (isAdmin && isClient) && (
-                        <>
-                            <div className='row'>
-                                <div className='col-12'>
-                                    <ReusableSelect<OptionType> 
-                                        label='Select Office:'
-                                        value={formData.office ? { value: formData.office.id, label: formData.office.name }: null }
-                                        options={tranformOffices(offices)}
-                                        onChange={handleOfficeChange}
-                                        isMulti={false}
-                                    />
+                        {
+                            (isAdmin && !isCurrentUser) && (
+                                <div className='row'>
+                                    <div className='col-12'>
+                                        <ReusableSelect<OptionType>
+                                            label='Select Roles:'
+                                            value={user.roles.map(role => ({ value: role.id, label: role.name }))}
+                                            options={tranformRoles(roles)}
+                                            onChange={handleRoleChange}
+                                            isMulti
+                                            />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='row'>
-                                <div className='col-12'>
-                                    <ReusableSelect<BranchOptionType>
-                                        label='Select Branches:'
-                                        value={formData.branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
-                                        options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
-                                        onChange={handleBranchChange}
-                                        isMulti
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    )
-                }
-                <div className='col pt-3 text-center'>
-                    <button className='btn btn-primary' type='submit'>Save</button>
-                </div>
-            </form>
+                            )
+                        }
+                        {
+                            (isAdmin && isClient) && (
+                                <>
+                                    <div className='row'>
+                                        <div className='col-12'>
+                                            <ReusableSelect<OptionType> 
+                                                label='Select Office:'
+                                                value={(user as Client).office ? { value: (user as Client).office.id, label: (user as Client).office.name }: null }
+                                                options={tranformOffices(offices)}
+                                                onChange={handleOfficeChange}
+                                                isMulti={false}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className='row'>
+                                        <div className='col-12'>
+                                            <ReusableSelect<BranchOptionType>
+                                                label='Select Branches:'
+                                                value={(user as Client).branches ? (user as Client).branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
+                                                options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
+                                                onChange={handleBranchChange}
+                                                isMulti
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )
+                        }
+                        <div className='col pt-3 text-center'>
+                            <button className='btn btn-primary' type='submit'>Save</button>
+                        </div>
+                    </form>
+                )
+            }
         </>
     )
 }

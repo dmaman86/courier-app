@@ -98,23 +98,38 @@ public class UserServiceImpl implements UserService{
     public User createUser(UserDto userDto) {
         User user = userMapper.toEntity(userDto);
 
-        Set<Role> managedRoles = new HashSet<>();
+        Set<Role> managedRoles = getRolesFromDto(userDto.getRoles());
+        /*new HashSet<>();
         for(RoleDto roleDto : userDto.getRoles()){
             Role role = roleRepository.findById(roleDto.getId()).orElseThrow(
                 () -> new IllegalArgumentException("Role not found")
             );
             managedRoles.add(role);
-        }
+        }*/
         user.setRoles(managedRoles);
 
         return this.save(user);
     }
 
+    private Set<Role> getRolesFromDto(Set<RoleDto> rolesDto){
+        Set<Role> roles = new HashSet<>();
+        for(RoleDto roleDto : rolesDto){
+            Role role = roleRepository.findById(roleDto.getId()).orElseThrow(
+                () -> new IllegalArgumentException("Role not found")
+            );
+            roles.add(role);
+        }
+        return roles;
+    }
+
     @Override
     @Transactional
     public User createClient(ClientDto clientDto){
+        Set<Role> managedRoles = getRolesFromDto(clientDto.getRoles());
         User user = userMapper.clientDtoToUser(clientDto);
+        user.setRoles(managedRoles);
         user.setIsActive(true);
+        logger.info("User: {}", user);
 
         Office office = officeRepository.findById(clientDto.getOffice().getId()).orElseThrow(
             () -> new IllegalArgumentException("Office not found")

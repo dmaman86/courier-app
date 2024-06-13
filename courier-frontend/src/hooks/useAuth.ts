@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectAuthTokens, selectUserDetails, logout as logoutAction, setTokens } from "@/redux/states/authSlice";
-import { Token } from "@/types";
+import { selectAuthTokens, selectUserDetails, logout as logoutAction, setTokens, setUser } from "@/redux/states/authSlice";
+import { Client, Token, User } from "@/types";
 import { AppDispatch } from "@/redux/store";
 
 export const useAuth = () => {
@@ -13,9 +13,13 @@ export const useAuth = () => {
         dispatch(setTokens(tokens));
     }
 
+    const saveUser = (user: User | Client) => {
+        dispatch(setUser(user));
+    }
+
     const logout = () => {
         dispatch(logoutAction());
     }
 
-    return { tokens, userDetails, saveTokens, logout };
+    return { tokens, userDetails, saveTokens, saveUser, logout };
 }

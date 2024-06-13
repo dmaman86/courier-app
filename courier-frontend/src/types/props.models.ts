@@ -1,6 +1,6 @@
 import React, { ReactElement, ReactNode } from "react";
 import { Token, User } from "./models";
-import { ActionMeta, MultiValue, SingleValue } from "react-select";
+import { MultiValue, SingleValue } from "react-select";
 import { AxiosCall, FetchResponse, PageResponse } from "./axios.models";
 
 export interface InputProps{

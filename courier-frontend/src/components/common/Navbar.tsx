@@ -1,8 +1,9 @@
 import React, { useEffect, useReducer, useCallback } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
+import { useErrorBoundary } from "react-error-boundary";
 
-import { useFetchAndLoad, useRouteConfig } from "@/hooks";
-import { User } from "@/types";
+import { useAsync, useFetchAndLoad, useRouteConfig } from "@/hooks";
+import { Client, FetchResponse, User } from "@/types";
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { AlertDialog } from "@/components/shared";
@@ -41,7 +42,9 @@ const reducer = (state: State, action: Action): State => {
 
 export const Navbar = () => {
 
-    const { userDetails, logout } = useAuth();
+    const { userDetails, tokens, saveUser, logout } = useAuth();
+
+    const { showBoundary } = useErrorBoundary();
 
     const { getLinks } = useRouteConfig();
 
@@ -49,8 +52,26 @@ export const Navbar = () => {
     const location = useLocation();
     const [ state, dispatch ] = useReducer(reducer, initialState);
 
+    const fetchUserDetails = async () => {
+        if(!userDetails && tokens){
+            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}me`));
+        }
+        return Promise.resolve({ data: null, error: null });
+    }
+
+    const handleUserDetails = (response: FetchResponse<User | Client>) => {
+        if(!userDetails && tokens){
+            const { data, error } = response;
+            if(data && !error) saveUser(data);
+            else showBoundary(error);
+        }
+    }
+
+    useAsync(fetchUserDetails, handleUserDetails, () => {}, [userDetails, tokens]);
+
+
     useEffect(() => {
-        if(!loading && state.isLoggingOut){
+        if(!loading && userDetails && state.isLoggingOut){
             initiateLogout();
         }
     }, [state.isLoggingOut, loading]);

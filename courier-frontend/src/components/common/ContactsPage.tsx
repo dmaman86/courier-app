@@ -30,25 +30,18 @@ export const ContactsPage = () => {
         { key: 'branches', label: 'Branches' }
     ]);
 
-    
-    useEffect(() => {
-        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
-            setContactColumns([...contactColumns, { key: 'actions', label: '' }]);
-        }
-    }, [userDetails]);
-
     const contactAllowedRoles = {
         create: ['ROLE_ADMIN'],
         update: ['ROLE_ADMIN'],
         delete: ['ROLE_ADMIN']
     }
 
-    /*useEffect(() => {
-        if(userDetails){
-            const userRoles = userDetails.roles;
-            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+    
+    useEffect(() => {
+        if(userDetails && userDetails.roles.some(role => contactAllowedRoles.update.includes(role.name) || contactAllowedRoles.delete.includes(role.name))){
+            setContactColumns([...contactColumns, { key: 'actions', label: '' }]);
         }
-    }, [userDetails]);*/
+    }, [userDetails]);
 
     return(
         <>

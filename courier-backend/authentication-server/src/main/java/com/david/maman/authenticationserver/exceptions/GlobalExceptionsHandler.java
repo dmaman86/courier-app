@@ -1,6 +1,5 @@
 package com.david.maman.authenticationserver.exceptions;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
