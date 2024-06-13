@@ -2,6 +2,48 @@
 
 This project includes a backend developed with Spring Boot Cloud, Eureka, API Gateway, and Kafka, and a frontend developed with React and TypeScript.
 
+## Frontend Functionality
+
+| ![Login Page](./images/login-page.png) | ![Signup Page](./images/signup-page.png) |
+|:---:|:---:|
+| *Login Page* | *Signup Page* |
+
+### Admin Functionality
+Admins have access to a wide range of features including user management, office and branch management, and order oversight.
+
+![Admin Dashboard](./images/admin-dashboard.png)
+*Admin Dashboard*
+
+| ![Admin Manage User](./images/admin-manage-users.png) | ![Admin Create User](./images/admin-create-user.png) |
+|:---:|:---:|
+| *Admin Manage Users* | *Admin Create User* |
+
+| ![Admin Manage Branches](./images/admin-manage-offices-branches.png) | ![Admin Manage Orders](./images/admin-manage-orders.png) |
+|:---:|:---:|
+| *Admin Manage Branches* | *Admin Manage Orders* |
+
+### Courier Functionality
+
+Couriers can view and manage their assigned deliveries, update delivery statuses, and view order details.
+
+![Courier Dashboard](./images/courier-dashboard.png)
+*Courier Dashboard*
+
+| ![Courier Manage Order](./images/courier-manage-order.png) | ![Courier Update Status Order](./images/courier-update-status-order.png) |
+|:---:|:---:|
+| *Courier Manage Order* | *Courier Update Status Order* |
+
+### Client Functionality
+
+Clients can place orders, track the status of their deliveries, and update their profile information.
+
+![Client Dashboard](./images/client-dashboard.png)
+*Client Dashboard*
+
+| ![Client Create Order](./images/client-create-order.png) | ![Client Update Order](./images/client-update-order.png) |
+|:---:|:---:|
+| *Client Create Order* | *Client Update Order* |
+
 ## Backend Structure:
 
 ```plaintext

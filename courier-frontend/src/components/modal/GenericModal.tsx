@@ -24,7 +24,7 @@ export const GenericModal = ({ title, body, show, onClose }: ModalProps) => {
                                 {body}
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={handleClose}>Cerrar</button>
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={handleClose}>Close</button>
                             </div>
                         </div>
                     </div>
