@@ -97,6 +97,8 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                   │   ├── BranchController.java
 │       │   │                   │   ├── ContactController.java
 │       │   │                   │   ├── OfficeController.java
+│       │   │                   │   ├── OrderController.java
+│       │   │                   │   ├── OrderStatusHistoryController.java
 │       │   │                   │   ├── RoleController.java
 │       │   │                   │   ├── StatusController.java
 │       │   │                   │   └── UserController.java
@@ -110,21 +112,33 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                   │   ├── SearchByDate.java
 │       │   │                   │   ├── SearchByDateRange.java
 │       │   │                   │   ├── SearchFunction.java
-│       │   │                   │   └── StateEnum.java
+│       │   │                   │   └── StatusEnum.java
 │       │   │                   ├── mappers
 │       │   │                   │   ├── BranchMapper.java
 │       │   │                   │   ├── ContactMapper.java
 │       │   │                   │   ├── OfficeMapper.java
+│       │   │                   │   ├── OrderMapper.java
+│       │   │                   │   ├── OrderStatusHistoryMapper.java
 │       │   │                   │   ├── RoleMapper.java
+│       │   │                   │   ├── StatusMapper.java
 │       │   │                   │   └── UserMapper.java
 │       │   │                   ├── models
 │       │   │                   │   ├── criteria
+│       │   │                   │   │   ├── BranchSpecification.java
+│       │   │                   │   │   ├── ContactSpecification.java
+│       │   │                   │   │   ├── OfficeSpecification.java
+│       │   │                   │   │   ├── SearchCriteria.java
+│       │   │                   │   │   └── UserSepecification.java
 │       │   │                   │   ├── dto
+│       │   │                   │   │   ├── AdminDto.java
 │       │   │                   │   │   ├── BranchDto.java
 │       │   │                   │   │   ├── ClientDto.java
 │       │   │                   │   │   ├── ContactDto.java
+│       │   │                   │   │   ├── CourierDto.java
 │       │   │                   │   │   ├── ErrorLogDto.java
 │       │   │                   │   │   ├── OfficeDto.java
+│       │   │                   │   │   ├── OrderDto.java
+│       │   │                   │   │   ├── OrderStatusDto.java
 │       │   │                   │   │   ├── RoleDto.java
 │       │   │                   │   │   ├── StatusDto.java
 │       │   │                   │   │   ├── UserDto.java
@@ -135,6 +149,8 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                   │       ├── Branch.java
 │       │   │                   │       ├── Contact.java
 │       │   │                   │       ├── Office.java
+│       │   │                   │       ├── Order.java
+│       │   │                   │       ├── OrderStatusHistory.java
 │       │   │                   │       ├── Role.java
 │       │   │                   │       ├── Status.java
 │       │   │                   │       └── User.java
@@ -142,6 +158,8 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                   │   ├── BranchRepository.java
 │       │   │                   │   ├── ContactRepository.java
 │       │   │                   │   ├── OfficeRepository.java
+│       │   │                   │   ├── OrderRepository.java
+│       │   │                   │   ├── OrderStatusHistoryRepository.java
 │       │   │                   │   ├── RoleRepository.java
 │       │   │                   │   ├── StatusRepository.java
 │       │   │                   │   └── UserRepository.java
@@ -153,6 +171,8 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                       ├── JwtValidationService.java
 │       │   │                       ├── KafkaProducerService.java
 │       │   │                       ├── OfficeService.java
+│       │   │                       ├── OrderService.java
+│       │   │                       ├── OrderStatusHistoryService.java
 │       │   │                       ├── RoleService.java
 │       │   │                       ├── StatusService.java
 │       │   │                       ├── UserService.java
@@ -161,6 +181,8 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │       │   │                           ├── ContactServiceImpl.java
 │       │   │                           ├── JwtServiceImpl.java
 │       │   │                           ├── OfficeServiceImpl.java
+│       │   │                           ├── OrderServiceImpl.java
+│       │   │                           ├── OrderStatusHistoryServiceImpl.java
 │       │   │                           ├── RoleServiceImpl.java
 │       │   │                           ├── StatusServiceImpl.java
 │       │   │                           └── UserServiceImpl.java
@@ -292,6 +314,25 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 
 ```
 
+## Additional Backend Information:
+
+### Primes-Server
+- Generates two distinct prime numbers using the Rabin-Miller algorithm.
+- Sends the product of the prime numbers and the phi of this number to the Authentication-Server via Kafka.
+
+### Authentication-Server
+- Rejects all requests until it receives the values from Primes-Server.
+- Upon receiving the values, it generates private and public keys.
+- Uses the private key to sign tokens and the public key to validate the signature.
+- Sends the public key to Courier-Server.
+
+### Courier-Server
+- Rejects all requests until it receives the public key from the Authentication-Server.
+
+### Error-Server
+- Logs errors from the Authentication-Server and Courier-Server.
+- Receives errors via Kafka from these servers.
+
 ## Frontend Structure:
 
 ```plaintext
@@ -309,40 +350,52 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │   │   └── react.svg
 │   ├── components
 │   │   ├── common
+│   │   │   ├── ContactsPage.tsx
 │   │   │   ├── Navbar.tsx
+│   │   │   ├── OfficesPage.tsx
+│   │   │   ├── OrdersPage.tsx
 │   │   │   ├── Profile.tsx
-│   │   │   └── UsersPage.tsx
+│   │   │   └── index.ts
 │   │   ├── index.ts
+│   │   ├── listTables
+│   │   │   ├── BranchList.tsx
+│   │   │   ├── ContactList.tsx
+│   │   │   ├── OfficeList.tsx
+│   │   │   ├── OrderList.tsx
+│   │   │   ├── RoleList.tsx
+│   │   │   ├── StatusOrdersList.tsx
+│   │   │   ├── UserList.tsx
+│   │   │   └── index.ts
 │   │   ├── modal
 │   │   │   ├── BranchForm.tsx
+│   │   │   ├── ContactForm.tsx
 │   │   │   ├── GenericModal.tsx
 │   │   │   ├── OfficeForm.tsx
+│   │   │   ├── OrderForm.tsx
 │   │   │   ├── RoleForm.tsx
+│   │   │   ├── StatusOrderForm.tsx
 │   │   │   ├── UpdatePassword.tsx
 │   │   │   ├── UserForm.tsx
 │   │   │   └── index.ts
 │   │   ├── pages
-│   │   │   ├── ErrorBoundary.tsx
-│   │   │   ├── ErrorPage.tsx
+│   │   │   ├── ErrorFallback.tsx
 │   │   │   ├── Home.tsx
 │   │   │   ├── Login.tsx
 │   │   │   ├── SignUp.tsx
 │   │   │   ├── admin
 │   │   │   │   ├── HomeAdmin.tsx
-│   │   │   │   └── SettingsAdmin.tsx
+│   │   │   │   ├── SettingsAdmin.tsx
+│   │   │   │   ├── UsersPage.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── client
 │   │   │   │   └── HomeClient.tsx
 │   │   │   └── courier
 │   │   │       └── HomeCourier.tsx
 │   │   ├── partials
-│   │   │   ├── BranchList.tsx
 │   │   │   ├── BranchesPartial.tsx
-│   │   │   ├── OfficeList.tsx
-│   │   │   ├── OfficesPartial.tsx
 │   │   │   ├── PasswordRulesList.tsx
-│   │   │   ├── RoleList.tsx
 │   │   │   ├── RolePartial.tsx
-│   │   │   ├── UserList.tsx
+│   │   │   ├── StatusOrdersPartial.tsx
 │   │   │   └── index.ts
 │   │   └── shared
 │   │       ├── AlertDialog.tsx
@@ -358,16 +411,19 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │   │   ├── paths.ts
 │   │   └── validation.form.ts
 │   ├── hooks
-│   │   ├── authContext.tsx
 │   │   ├── index.ts
+│   │   ├── useAsync.ts
 │   │   ├── useAuth.ts
 │   │   ├── useFetchAndLoad.ts
 │   │   ├── useForm.ts
 │   │   ├── useList.ts
-│   │   ├── useLocalStorage.ts
 │   │   └── useRouteConfig.ts
 │   ├── index.css
 │   ├── main.tsx
+│   ├── redux
+│   │   ├── states
+│   │   │   └── authSlice.ts
+│   │   └── store.ts
 │   ├── routes
 │   │   ├── PrivateRoutes.tsx
 │   │   ├── PublicRoutes.tsx
@@ -377,7 +433,8 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 │   │   ├── api.ts
 │   │   ├── cache.ts
 │   │   ├── index.ts
-│   │   └── service-request.ts
+│   │   ├── service-request.ts
+│   │   └── token.service.ts
 │   ├── types
 │   │   ├── axios.models.ts
 │   │   ├── form.models.ts
@@ -389,6 +446,30 @@ This project includes a backend developed with Spring Boot Cloud, Eureka, API Ga
 ├── tsconfig.node.json
 └── vite.config.ts
 ```
+## Additional Frontend Information:
 
+### Components
+- **Common:** Contains reusable components like `Navbar`, `Profile`, `ContactsPage`, etc., which are used throughout the application.
+- **ListTables:** Components for displaying lists of entities such as branches, contacts, offices, orders, roles, status orders, and users.
+- **Modals:** Components for creating or editing entities. Examples include `BranchForm`, `ContactForm`, `OrderForm`, etc.
+- **Pages:** Different page components for various routes like `Home`, `Login`, `SignUp`, and role-specific pages like `HomeAdmin`, `HomeClient`, and `HomeCourier`.
+- **Partials:** Partial components used in other components or pages, such as `BranchesPartial`, `PasswordRulesList`, etc.
+- **Shared:** Shared components like `AlertDialog`, `ItemsPage`, `ReusableInput`, `ReusableSelect`, and `ReusableTable` that provide common functionalities across the application.
+
+### Helpers and Hooks
+- Custom hooks like `useAsync`, `useAuth`, `useFetchAndLoad`, `useForm`, `useList`, and `useRouteConfig` to manage data fetching, authentication, form handling, and other functionalities.
+- Helper functions for various utilities and configurations like `load-abort-axios`, `paths`, and `validation.form`.
+
+### Redux
+- **State Management:** The `authSlice` and `store.ts` files configure Redux for global state management, handling authentication and other states.
+
+### Routes
+- **Routing Configuration:** `PrivateRoutes` and `PublicRoutes` handle the routing logic for authenticated and unauthenticated users, respectively. The `routes.tsx` file defines the application's routes.
+
+### Services
+- **API Interaction:** Services like `api.ts`, `service-request.ts`, and `token.service.ts` manage interactions with the backend APIs, including token management and caching.
+
+### Types
+- **Type Definitions:** TypeScript models for Axios requests (`axios.models.ts`), form data (`form.models.ts`), general models (`models.ts`), and component props (`props.models.ts`) to ensure type safety across the application.
 
 

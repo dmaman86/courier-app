@@ -82,15 +82,6 @@ export const Login = () => {
         event.preventDefault();
         
         setIsValidForm(validateForm() && errorResponse === '');
-        /*if(validateForm() && errorResponse === ''){
-            const credentials: LoginCredentials = {
-                email: !isCellularNumber.isValid(usernameValue) ? usernameValue : null,
-                phone: isCellularNumber.isValid(usernameValue) ? removeNonNumeric(usernameValue) : null,
-                password: passwordValue
-            }
-            const result = await callEndPoint(serviceRequest.postItem<Token, LoginCredentials>(paths.auth.login, credentials));
-            setResponse(result);
-        }*/
     }
 
     useEffect(() => {

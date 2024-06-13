@@ -84,8 +84,6 @@ export const SignUp = () => {
                 passwordOne: values.newPassword.value,
                 passwordTwo: values.confirmPassword.value
             });
-            // const result = await callEndPoint(serviceRequest.postItem<Token, SignUpCredentials>(paths.auth.signUp, credentials));
-            // setResponse(result);
         }
     }, [values]);
 
@@ -103,17 +101,6 @@ export const SignUp = () => {
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsValidateForm(validateForm());
-        /*if(validateForm()){
-            const credentials: SignUpCredentials = {
-                email: isCellularNumber.isValid(values?.username.value) ? null : values?.username.value,
-                phone: isCellularNumber.isValid(values?.username.value) ? removeNonNumeric(values?.username.value) : null,
-                passwordOne: values.passwordOne.value,
-                passwordTwo: values.passwordTwo.value
-            }
-            const result = await callEndPoint(serviceRequest.postItem<Token, SignUpCredentials>(paths.auth.signUp, credentials));
-            setResponse(result);
-        }*/
-
     }
 
     const handleOnFocus = (name: string) => {
