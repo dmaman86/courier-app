@@ -1,6 +1,66 @@
 # Courier Fullstack Project
 
-This project includes a backend developed with Spring Boot Cloud, Eureka, API Gateway, and Kafka, and a frontend developed with React and TypeScript.
+This project includes a backend developed with Spring Boot Cloud, Eureka, API Gateway, and Kafka, and a frontend developed with React, Redux Toolkit, and TypeScript. It includes features for user authentication, order management, and real-time updates using Kafka. The frontend also utilizes `use-debounce` for optimized performance.
+
+## Getting Started
+
+### Prerequisites
+- Java 17 (Install using Homebrew: `brew install openjdk@17`)
+- Node.js and npm
+- Docker and Docker Compose
+
+### Installation
+
+1. **Clone the repository**
+    ```bash
+    git clone https://github.com/dmaman86/courier-app.git
+    cd courier-app
+    ```
+
+2. **Configure the enviroment**
+    - Make sure you have Java 17 installed.
+    - Update the database connection details in `./src/main/resources/application.yml` for `authentication-server`, `courier-server`, `primes-server` and `error-server`:
+        ```yaml
+        spring:
+        datasource:
+            username: your_db_username
+            password: your_db_password
+        ```
+
+3. **Start necessary services**
+    - Use Docker to start Kafka services, navigate to directory `courier-backend` and run:
+        ```bash
+        docker-compose up --build -d
+        ```
+
+4. **Build and run the backend servers**
+    - Navigate to each server directory (`service-registry`, `spring-cloud-gateway`, `primes-server`, `authentication-server`, `courier-server`, `error-server`) and run:
+        ```bash
+        mvn spring-boot:run
+        ```
+
+5. **Set up and run the frontend**
+    - Navigate to the frontend directory (e.g., `courier-frontend`) and run:
+        ```bash
+        npm install
+        npm run dev
+        ```
+
+6. **Access the application**
+    - The backend application will be available at `http://localhost:8080`.
+    - The frontend will be availabe at `http://localhost:5173`.
+
+## Note
+- The full Dockerization of the project is not yet completed, except for the use of Kafka. Please follow the instructions above to run the project locally.
+
+## Contributing
+
+Contributions are welcome! Please create a pull request or open an issue to discuss what you would like to change.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
 
 ## Frontend Functionality
 
