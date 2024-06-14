@@ -14,11 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
-import com.david.maman.authenticationserver.helpers.TokenType;
-import com.david.maman.authenticationserver.models.entities.Token;
 import com.david.maman.authenticationserver.models.entities.User;
 import com.david.maman.authenticationserver.models.entities.UserCredentials;
-import com.david.maman.authenticationserver.repositories.TokenRepository;
 import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
 import com.david.maman.authenticationserver.repositories.UserRepository;
 import com.david.maman.authenticationserver.services.JwtService;
@@ -35,13 +32,9 @@ public class JwtServiceImpl implements JwtService{
 
     private KeyPair jwtKeyPair;
 
-    // private long jwtExpiration = 86400000; // 1 day
-    private long jwtExpiration = 60000; // 1 minutes
+    private long jwtExpiration = 86400000; // 1 day
 
     private long jwtRefreshExpiration = 604800000; // 7 days
-
-    @Autowired
-    private TokenRepository tokenRepository;
 
     @Autowired
     private UserCredentialsRepository userCredentialsRepository;
@@ -71,25 +64,6 @@ public class JwtServiceImpl implements JwtService{
         Map<String, Object> claims = new HashMap<>();
         return buildToken(claims, credentials, jwtRefreshExpiration);
     }
-
-    /*@Override
-    public Boolean validateToken(String token, CustomUserDetails credentials) {
-        var tokenDb = tokenRepository.findByUserIdAndTokenAndIsExpiredAndIsRevoked(credentials.getCredentials().getUser().getId(), token, false, false);
-
-        if(tokenDb.isPresent()){
-            Boolean isExpired = isTokenExpired(tokenDb.get().getToken());
-
-            if(isExpired){
-                tokenDb.get().setIsExpired(true);
-                tokenRepository.save(tokenDb.get());
-                return false;
-            }
-            return true;
-
-        }
-        return false;
-
-    }*/
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
