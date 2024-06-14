@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useCallback } from "react";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { useErrorBoundary } from "react-error-boundary";
 
 import { useAsync, useFetchAndLoad, useRouteConfig } from "@/hooks";
@@ -45,7 +45,7 @@ export const Navbar = () => {
     const { userDetails, tokens, saveUser, logout } = useAuth();
 
     const { showBoundary } = useErrorBoundary();
-
+    const navigate = useNavigate();
     const { getLinks } = useRouteConfig();
 
     const { loading, callEndPoint } = useFetchAndLoad();
@@ -63,7 +63,7 @@ export const Navbar = () => {
         if(!userDetails && tokens){
             const { data, error } = response;
             if(data && !error) saveUser(data);
-            else showBoundary(error);
+            else if(!data && error) showBoundary(error);
         }
     }
 
@@ -74,7 +74,11 @@ export const Navbar = () => {
         if(!loading && userDetails && state.isLoggingOut){
             initiateLogout();
         }
-    }, [state.isLoggingOut, loading]);
+        if(!tokens && userDetails){
+            saveUser(null);
+            navigate('/login?message=Error refreshing token. Please login again.', { replace: true });
+        }
+    }, [state.isLoggingOut, loading, tokens, userDetails, navigate]);
 
     const initiateLogout = async () => {
         const result = await callEndPoint(serviceRequest.postItem(paths.auth.logout));

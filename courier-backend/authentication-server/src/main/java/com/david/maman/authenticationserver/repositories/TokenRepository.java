@@ -25,4 +25,6 @@ public interface TokenRepository extends JpaRepository<Token, Long>{
     Optional<Token> findByUserIdAndTokenTypeAndIsRevoked(Long userId, TokenType tokenType, Boolean isRevoked);
 
     Optional<Token> findByUserIdAndTokenTypeAndIsRevokedAndIsExpired(Long userId, TokenType tokenType, Boolean isRevoked, Boolean isExpired);
+
+    Optional<Token> findByTokenAndTokenTypeAndIsRevokedAndIsExpired(String token, TokenType tokenType, Boolean isRevoked, Boolean isExpired);
 }

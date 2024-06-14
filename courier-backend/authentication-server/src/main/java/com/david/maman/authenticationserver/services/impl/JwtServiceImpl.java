@@ -8,28 +8,46 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
+import com.david.maman.authenticationserver.helpers.TokenType;
+import com.david.maman.authenticationserver.models.entities.Token;
+import com.david.maman.authenticationserver.models.entities.User;
+import com.david.maman.authenticationserver.models.entities.UserCredentials;
 import com.david.maman.authenticationserver.repositories.TokenRepository;
+import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
+import com.david.maman.authenticationserver.repositories.UserRepository;
 import com.david.maman.authenticationserver.services.JwtService;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 @Service
 public class JwtServiceImpl implements JwtService{
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtServiceImpl.class);
+
     private KeyPair jwtKeyPair;
 
-    private long jwtExpiration = 86400000; // 1 day
+    // private long jwtExpiration = 86400000; // 1 day
+    private long jwtExpiration = 60000; // 1 minutes
 
     private long jwtRefreshExpiration = 604800000; // 7 days
 
     @Autowired
     private TokenRepository tokenRepository;
+
+    @Autowired
+    private UserCredentialsRepository userCredentialsRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Override
@@ -38,8 +56,8 @@ public class JwtServiceImpl implements JwtService{
     }
 
     @Override
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Boolean isPublicKeyAvailable(){
+        return jwtKeyPair.getPublic() != null;
     }
 
     @Override
@@ -54,7 +72,7 @@ public class JwtServiceImpl implements JwtService{
         return buildToken(claims, credentials, jwtRefreshExpiration);
     }
 
-    @Override
+    /*@Override
     public Boolean validateToken(String token, CustomUserDetails credentials) {
         var tokenDb = tokenRepository.findByUserIdAndTokenAndIsExpiredAndIsRevoked(credentials.getCredentials().getUser().getId(), token, false, false);
 
@@ -71,7 +89,7 @@ public class JwtServiceImpl implements JwtService{
         }
         return false;
 
-    }
+    }*/
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
@@ -105,8 +123,25 @@ public class JwtServiceImpl implements JwtService{
                     .compact();
     }
 
-    private Boolean isTokenExpired(String token) {
+    @Override
+    public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    @Override
+    public UserCredentials getUserFromToken(String token){
+        try{
+            Claims claims = extractAllClaims(token);
+            String phone = claims.get("phone", String.class);
+            String email = claims.get("email", String.class);
+
+            User user = userRepository.findByEmailAndPhoneAndIsActive(email, phone, true).orElse(null);
+            if(user == null) return null;
+            return userCredentialsRepository.findByUserId(user.getId()).orElse(null);
+        }catch (JwtException | IllegalArgumentException e) {
+            logger.error("Error parsing token claims: " + e.getMessage());
+            return null;
+        }
     }
 
     private Date extractExpiration(String token) {

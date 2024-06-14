@@ -1,6 +1,3 @@
-import { useSelector } from "react-redux";
-
-import { RootState } from "@/redux/store";
 import { HomeAdmin } from "@/components";
 import { HomeClient } from "./client/HomeClient";
 import { HomeCourier } from "./courier/HomeCourier";

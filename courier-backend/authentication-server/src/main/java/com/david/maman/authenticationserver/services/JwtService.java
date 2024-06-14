@@ -3,6 +3,7 @@ package com.david.maman.authenticationserver.services;
 import java.security.KeyPair;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
+import com.david.maman.authenticationserver.models.entities.UserCredentials;
 
 public interface JwtService {
 
@@ -10,9 +11,11 @@ public interface JwtService {
 
     String generateRefreshToken(CustomUserDetails credentials);
 
-    String extractUsername(String token);
-
-    Boolean validateToken(String token, CustomUserDetails credentials);
-
     void setKeyPair(KeyPair keyPair);
+
+    Boolean isPublicKeyAvailable();
+
+    Boolean isTokenExpired(String token);
+
+    UserCredentials getUserFromToken(String token);
 }

@@ -13,7 +13,7 @@ export const useAuth = () => {
         dispatch(setTokens(tokens));
     }
 
-    const saveUser = (user: User | Client) => {
+    const saveUser = (user: User | Client | null) => {
         dispatch(setUser(user));
     }
 

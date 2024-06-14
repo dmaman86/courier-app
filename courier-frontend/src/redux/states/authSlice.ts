@@ -22,7 +22,7 @@ const authSlice = createSlice({
             state.tokens = action.payload;
             TokenService.setToken(action.payload);
         },
-        setUser: (state, action: PayloadAction<User | Client>) => {
+        setUser: (state, action: PayloadAction<User | Client | null>) => {
             state.userDetails = action.payload;
         },
         logout: (state) => {
