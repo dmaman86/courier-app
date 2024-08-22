@@ -3,6 +3,10 @@ package com.david.maman.authenticationserver.services.impl;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.TokenType;
 import com.david.maman.authenticationserver.models.dto.AuthResponse;
+import com.david.maman.authenticationserver.models.dto.LoginDto;
 import com.david.maman.authenticationserver.models.dto.UserCredentialsPassword;
 import com.david.maman.authenticationserver.models.entities.Token;
 import com.david.maman.authenticationserver.models.entities.User;
@@ -26,6 +31,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AuthServiceImpl implements AuthService{
 
+    private final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
+
     private final JwtService jwtService;
     private final TokenRepository tokenRepository;
     private final UserCredentialsRepository userCredentialsRepository;
@@ -36,32 +43,32 @@ public class AuthServiceImpl implements AuthService{
     public AuthResponse login(CustomUserDetails credentials){
 
         var user = credentials.getCredentials().getUser();
-        var jwtToken = jwtService.generateToken(credentials);
-        var refreshToken = jwtService.generateRefreshToken(credentials);
+        var jwtTokenResponse = jwtService.generateToken(credentials);
+        var refreshTokenResponse = jwtService.generateRefreshToken(credentials);
 
         revokeAllUserTokens(user.getId(), List.of(TokenType.REFRESH_TOKEN, TokenType.ACCESS_TOKEN));
-        saveUserToken(user, jwtToken, TokenType.ACCESS_TOKEN);
-        saveUserToken(user, refreshToken, TokenType.REFRESH_TOKEN);
+        saveUserToken(user, jwtTokenResponse.getToken(), TokenType.ACCESS_TOKEN);
+        saveUserToken(user, refreshTokenResponse.getToken(), TokenType.REFRESH_TOKEN);
 
         return AuthResponse.builder()
-                            .accessToken(jwtToken)
-                            .refreshToken(refreshToken)
+                            .accessTokenCookie(createCookie("accessToken", jwtTokenResponse.getToken(), jwtTokenResponse.getExpirationTime()))
+                            .refreshTokenCookie(createCookie("refreshToken", refreshTokenResponse.getToken(), refreshTokenResponse.getExpirationTime()))
                             .build();
     }
 
-    @Override
+    /*@Override
     @Transactional
     public AuthResponse refreshToken(CustomUserDetails credentials, String refreshToken){
-        String accessToken = jwtService.generateToken(credentials);
+        var accessTokenResponse = jwtService.generateToken(credentials);
         var user = credentials.getCredentials().getUser();
         revokeAllUserTokens(user.getId(), List.of(TokenType.ACCESS_TOKEN));
-        saveUserToken(user, accessToken, TokenType.ACCESS_TOKEN);
+        saveUserToken(user, accessTokenResponse.getToken(), TokenType.ACCESS_TOKEN);
 
         return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
+                .accessTokenCookie(accessToken)
+                .refreshTokenCookie(refreshToken)
                 .build();
-    }
+    }*/
 
     @Override
     @Transactional
@@ -83,9 +90,14 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     @Transactional
-    public void logout(CustomUserDetails credentials){
+    public AuthResponse logout(CustomUserDetails credentials){
         var user = credentials.getCredentials().getUser();
         revokeAllUserTokens(user.getId(), List.of(TokenType.REFRESH_TOKEN, TokenType.ACCESS_TOKEN));
+
+        return AuthResponse.builder()
+                            .accessTokenCookie(createCookie("accessToken", "", 0))
+                            .refreshTokenCookie(createCookie("refreshToken", "", 0))
+                            .build();
     }
 
 
@@ -113,5 +125,14 @@ public class AuthServiceImpl implements AuthService{
                     .isRevoked(false)
                     .build();
         tokenRepository.save(token);
+    }
+
+    private HttpCookie createCookie(String type, String token, long expiration){
+        return ResponseCookie.from(type, token)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(expiration)
+                .build();
     }
 }

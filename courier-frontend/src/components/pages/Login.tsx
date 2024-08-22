@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Stack } from "@mui/material";
 import { useNavigate, useLocation} from "react-router-dom";
+import { useErrorBoundary } from "react-error-boundary";
 
 
 import { useForm, useFetchAndLoad, useAuth, useAsync } from "@/hooks";
 import { ReusableInput } from "@/components/shared";
-import { FetchResponse, FormState, Token } from "@/types";
+import { Client, FetchResponse, FormState, User } from "@/types";
 import { paths, validatorForm } from "@/helpers";
 import { LoginCredentials } from "@/types";
 import { AxiosError } from "axios";
@@ -13,8 +14,9 @@ import { serviceRequest } from "@/services";
 
 export const Login = () => {
 
-    const { saveTokens } = useAuth();
+    const { userDetails, saveUser } = useAuth();
     const navigate = useNavigate();
+    const { showBoundary } = useErrorBoundary();
 
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
@@ -49,32 +51,50 @@ export const Login = () => {
 
     const { loading, callEndPoint } = useFetchAndLoad();
 
-    const [ errorResponse, setErrorResponse ] = useState('');
+    const [ errorResponse, setErrorResponse ] = useState<string>('');
 
-    const [ response, setResponse ] = useState<FetchResponse<Token>>({
+    const [ response, setResponse ] = useState<FetchResponse<void>>({
         data: null,
         error: null
     });
 
-    const { data, error } = response;
-
     useEffect(() => {
-        if(!loading && error){
-            if(error instanceof AxiosError && error.response)
-                setErrorResponse(error.response.data);
+        if(!loading){
+            if(response.error){
+                const { error } = response;
+                if(error instanceof AxiosError && error.response){
+                    setErrorResponse(error.response.data);
+                } else {
+                    setErrorResponse('An error occurred. Please try again later');
+                }
+            }
         }
-    }, [error, loading]);
+    }, [loading, response, userDetails, credentials]);
 
     useEffect(() => {
         if(message) setErrorResponse(message);
     }, [message]);
 
-    useEffect(() => {
-        if(!loading && data){
-            saveTokens && saveTokens(data);
-            navigate('/home', { replace: true });
+    const fetchUserDetails = async () => {
+        if(isValidForm && credentials && !userDetails){
+            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}me`));
         }
-    }, [data, loading, navigate, saveTokens]);
+        return Promise.resolve({ data: null, error: null });
+    }
+
+    const handleUserDetails = (result: FetchResponse<User | Client>) => {
+        if(isValidForm && credentials && !userDetails){
+            const { data, error } = result;
+            if(data && !error){
+                saveUser(data);
+                navigate('/home', { replace: true });
+            } else if(!data && error){
+                showBoundary(error);
+            }
+        }
+    }
+
+    useAsync(fetchUserDetails, handleUserDetails, () => {}, [isValidForm, credentials, userDetails]);
 
     const removeNonNumeric = (value: string) => value.replace(/\D/g, '');
 
@@ -96,7 +116,7 @@ export const Login = () => {
 
     const fetchCredentials = async() => {
         if(credentials){
-            return await callEndPoint(serviceRequest.postItem<Token, LoginCredentials>(paths.auth.login, credentials));
+            return await callEndPoint(serviceRequest.postItem<void, LoginCredentials>(paths.auth.login, credentials));
         }
         return Promise.resolve({ data: null, error: null });
     }

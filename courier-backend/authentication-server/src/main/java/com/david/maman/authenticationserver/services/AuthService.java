@@ -10,11 +10,11 @@ public interface AuthService {
 
     AuthResponse login(CustomUserDetails credentials);
 
-    AuthResponse refreshToken(CustomUserDetails credentials, String refreshToken);
+    // AuthResponse refreshToken(CustomUserDetails credentials, String refreshToken);
 
     void updateUserCredentials(UserCredentialsPassword credentials);
 
     void updateUserCredentials(UserCredentials userCredentials, UserCredentialsPassword credentials);
 
-    void logout(CustomUserDetails credentials);
+    AuthResponse logout(CustomUserDetails credentials);
 }

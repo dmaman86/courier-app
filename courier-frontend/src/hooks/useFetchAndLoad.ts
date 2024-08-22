@@ -9,17 +9,21 @@ export const useFetchAndLoad = () => {
     let controller: AbortController;
 
     const callEndPoint = async <T>(axiosCall: AxiosCall<T>): Promise<FetchResponse<T>> => {
+        let response: FetchResponse<T> = { data: null, error: null };
+
         if(axiosCall.controller) controller = axiosCall.controller;
         setLoading(true);
 
         try{
             const result: AxiosResponse<T> = await axiosCall.call;
-            setLoading(false);
-            return { data: result.data, error: null };           
+            
+            if(result && result.data !== undefined) response.data = result.data;
         }catch(err){
+            response.error = err as Error | AxiosError;
+        } finally {
             setLoading(false);
-            return { data: null, error: err as Error | AxiosError };
         }
+        return response;
     }
 
     const cancelEndPoint = () => {

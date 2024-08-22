@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +22,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -40,15 +40,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
                                     HttpServletResponse response, 
                                     FilterChain chain) throws ServletException, IOException{
         
-        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        logger.info("Authorization Header: { " + authHeader + " }");
+        String requestUri = request.getRequestURI();
+        String token = null;                        
+        if(requestUri.equals("/api/auth/refresh")){
+            token = getTokenCookie(request, "refreshToken");
+        } else{
+            token = getTokenCookie(request, "accessToken");
+        }
 
-        if(Strings.isNullOrEmpty(authHeader) || !authHeader.startsWith("Bearer ")){
+        
+        if(Strings.isNullOrEmpty(token)){
             chain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.replace("Bearer ", "");
+        logger.info("Access Token: { " + token + " }");
         
         try {
             if(!jwtService.isPublicKeyAvailable()){
@@ -62,6 +68,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
             throw new TokenValidationException(e.getMessage());
         }
         chain.doFilter(request, response);
+    }
+
+    private String getTokenCookie(HttpServletRequest request, String type){
+        if(request.getCookies() != null){
+            for(Cookie cookie : request.getCookies()){
+                if(cookie.getName().equals(type)){
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     private void authenticateUser(String jwt) throws IllegalStateException, SignatureException{

@@ -1,5 +1,7 @@
 package com.david.maman.authenticationserver.models.dto;
 
+import org.springframework.http.HttpCookie;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
 
-    private String accessToken;
+    private HttpCookie accessTokenCookie;
 
-    private String refreshToken;
+    private HttpCookie refreshTokenCookie;
 }

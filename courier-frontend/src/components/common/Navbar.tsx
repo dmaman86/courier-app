@@ -1,9 +1,8 @@
 import React, { useEffect, useReducer, useCallback } from "react";
-import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import { useErrorBoundary } from "react-error-boundary";
+import { NavLink, Link, useLocation } from "react-router-dom";
 
-import { useAsync, useFetchAndLoad, useRouteConfig } from "@/hooks";
-import { Client, FetchResponse, User } from "@/types";
+import { useFetchAndLoad, useRouteConfig } from "@/hooks";
+import { User } from "@/types";
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { AlertDialog } from "@/components/shared";
@@ -42,43 +41,19 @@ const reducer = (state: State, action: Action): State => {
 
 export const Navbar = () => {
 
-    const { userDetails, tokens, saveUser, logout } = useAuth();
+    const { userDetails, logout } = useAuth();
 
-    const { showBoundary } = useErrorBoundary();
-    const navigate = useNavigate();
     const { getLinks } = useRouteConfig();
 
-    const { loading, callEndPoint } = useFetchAndLoad();
+    const { callEndPoint } = useFetchAndLoad();
     const location = useLocation();
     const [ state, dispatch ] = useReducer(reducer, initialState);
 
-    const fetchUserDetails = async () => {
-        if(!userDetails && tokens){
-            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}me`));
-        }
-        return Promise.resolve({ data: null, error: null });
-    }
-
-    const handleUserDetails = (response: FetchResponse<User | Client>) => {
-        if(!userDetails && tokens){
-            const { data, error } = response;
-            if(data && !error) saveUser(data);
-            else if(!data && error) showBoundary(error);
-        }
-    }
-
-    useAsync(fetchUserDetails, handleUserDetails, () => {}, [userDetails, tokens]);
-
-
     useEffect(() => {
-        if(!loading && userDetails && state.isLoggingOut){
+        if(userDetails && state.isLoggingOut){
             initiateLogout();
         }
-        if(!tokens && userDetails){
-            saveUser(null);
-            navigate('/login?message=Error refreshing token. Please login again.', { replace: true });
-        }
-    }, [state.isLoggingOut, loading, tokens, userDetails, navigate]);
+    }, [state.isLoggingOut, userDetails]);
 
     const initiateLogout = async () => {
         const result = await callEndPoint(serviceRequest.postItem(paths.auth.logout));
@@ -89,8 +64,6 @@ export const Navbar = () => {
         dispatch({ type: 'CANCEL_LOGOUT' });
         logout();
     }
-
-    
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

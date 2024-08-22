@@ -3,31 +3,45 @@ import { HomeClient } from "./client/HomeClient";
 import { HomeCourier } from "./courier/HomeCourier";
 import { useAuth } from "@/hooks";
 import { User } from "@/types";
+import { useEffect, useState } from "react";
+import React from "react";
 
 
 export const Home = () => {
 
     const { userDetails } = useAuth();
+    const [ components, setComponents ] = useState<JSX.Element[]>([]);
 
-    const getComponent = (localUser: User) => {
-        const roles = localUser.roles.map(role => role.name);
+    useEffect(() => {
+        console.log(userDetails);
+    }, [userDetails]);
 
-        if(roles.includes('ROLE_ADMIN')) return [<HomeAdmin key='admin'/>];
+    useEffect(() => {
+        if(userDetails){
+            const roles = userDetails.roles.map(role => role.name);
+            const newComponents = [];
 
-        const components = [];
-        if(roles.includes('ROLE_COURIER')) components.push(<HomeCourier key='courier'/>);
-        if(roles.includes('ROLE_CLIENT')) components.push(<HomeClient key='client'/>);
+            if (roles.includes('ROLE_ADMIN')) {
+                newComponents.push(<HomeAdmin key='admin' />);
+            }
+            if (roles.includes('ROLE_COURIER')) {
+                newComponents.push(<HomeCourier key='courier' />);
+            }
+            if (roles.includes('ROLE_CLIENT')) {
+                newComponents.push(<HomeClient key='client' />);
+            }
 
-        return components;
-    }
+            setComponents(newComponents);
+        }
+    }, [userDetails]);
+
+    if(!userDetails) return <div>Loading user data...</div>;
 
     return(
         <>
-            { userDetails ? (
-                <>
-                    { getComponent(userDetails).map(component => component)}
-                </>
-            ) : <div>Loading user data...</div>}
+            { components.map((component, index) => (
+                <React.Fragment key={index}>{component}</React.Fragment>
+            )) }
         </>
     )
 }

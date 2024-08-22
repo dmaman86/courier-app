@@ -4,15 +4,14 @@ import { Navigate } from "react-router-dom";
 import { RouteConfig } from "@/types";
 
 const Home = lazy(() => import('@/components/pages/Home').then(module => ({ default: module.Home })));
-// import { Home } from '@/components/pages/Home';
-import { Login } from '@/components/pages/Login';
-import { SignUp } from '@/components/pages/SignUp';
-import { Profile } from '@/components/common/Profile';
-import { SettingsAdmin } from '@/components/pages/admin/SettingsAdmin';
-import { UsersPage } from '@/components/pages/admin/UsersPage';
-import { ContactsPage } from '@/components/common/ContactsPage';
-import { OfficesPage } from '@/components/common/OfficesPage';
-import { OrdersPage } from '@/components/common/OrdersPage';
+const Login = lazy(() => import('@/components/pages/Login').then(module => ({ default: module.Login })));
+const SignUp = lazy(() => import('@/components/pages/SignUp').then(module => ({ default: module.SignUp })));
+const Profile = lazy(() => import('@/components/common/Profile').then(module => ({ default: module.Profile })));
+const SettingsAdmin = lazy(() => import('@/components/pages/admin/SettingsAdmin').then(module => ({ default: module.SettingsAdmin })));
+const UsersPage = lazy(() => import('@/components/pages/admin/UsersPage').then(module => ({ default: module.UsersPage })));
+const ContactsPage = lazy(() => import('@/components/common/ContactsPage').then(module => ({ default: module.ContactsPage })));
+const OfficesPage = lazy(() => import('@/components/common/OfficesPage').then(module => ({ default: module.OfficesPage })));
+const OrdersPage = lazy(() => import('@/components/common/OrdersPage').then(module => ({ default: module.OrdersPage })));
 
 export const publicRoutes: RouteConfig[] = [
     {

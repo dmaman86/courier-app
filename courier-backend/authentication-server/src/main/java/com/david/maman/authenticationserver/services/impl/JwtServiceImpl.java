@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
+import com.david.maman.authenticationserver.helpers.TokenResponse;
 import com.david.maman.authenticationserver.models.entities.User;
 import com.david.maman.authenticationserver.models.entities.UserCredentials;
 import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
@@ -54,24 +55,22 @@ public class JwtServiceImpl implements JwtService{
     }
 
     @Override
-    public String generateToken(CustomUserDetails credentials) {
+    public TokenResponse generateToken(CustomUserDetails credentials) {
         Map<String, Object> claims = new HashMap<>();
-        return generateToken(claims, credentials);
+        String token = buildToken(claims, credentials, jwtExpiration);
+        return new TokenResponse(token, jwtExpiration);
     }
 
     @Override
-    public String generateRefreshToken(CustomUserDetails credentials){
+    public TokenResponse generateRefreshToken(CustomUserDetails credentials){
         Map<String, Object> claims = new HashMap<>();
-        return buildToken(claims, credentials, jwtRefreshExpiration);
+        String token = buildToken(claims, credentials, jwtRefreshExpiration);
+        return new TokenResponse(token, jwtRefreshExpiration);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
-    }
-
-    private String generateToken(Map<String, Object> extraClaims, CustomUserDetails credentials){
-        return buildToken(extraClaims, credentials, jwtExpiration);
     }
 
     public String buildToken(Map<String, Object> extraClaims, CustomUserDetails credentials, long expirationTime) {
