@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Container, Grid, Paper, Typography, Stack, Button } from "@mui/material";
-import { useErrorBoundary } from "react-error-boundary";
 
 import { useAuth } from "@/hooks";
 import { Branch, Client, Role, User } from "@/types";

@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.TokenType;
 import com.david.maman.authenticationserver.models.dto.AuthResponse;
-import com.david.maman.authenticationserver.models.dto.LoginDto;
 import com.david.maman.authenticationserver.models.dto.UserCredentialsPassword;
 import com.david.maman.authenticationserver.models.entities.Token;
 import com.david.maman.authenticationserver.models.entities.User;
@@ -40,7 +39,7 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     @Transactional
-    public AuthResponse login(CustomUserDetails credentials){
+    public AuthResponse generateAuthTokens(CustomUserDetails credentials){
 
         var user = credentials.getCredentials().getUser();
         var jwtTokenResponse = jwtService.generateToken(credentials);
@@ -55,20 +54,6 @@ public class AuthServiceImpl implements AuthService{
                             .refreshTokenCookie(createCookie("refreshToken", refreshTokenResponse.getToken(), refreshTokenResponse.getExpirationTime()))
                             .build();
     }
-
-    /*@Override
-    @Transactional
-    public AuthResponse refreshToken(CustomUserDetails credentials, String refreshToken){
-        var accessTokenResponse = jwtService.generateToken(credentials);
-        var user = credentials.getCredentials().getUser();
-        revokeAllUserTokens(user.getId(), List.of(TokenType.ACCESS_TOKEN));
-        saveUserToken(user, accessTokenResponse.getToken(), TokenType.ACCESS_TOKEN);
-
-        return AuthResponse.builder()
-                .accessTokenCookie(accessToken)
-                .refreshTokenCookie(refreshToken)
-                .build();
-    }*/
 
     @Override
     @Transactional

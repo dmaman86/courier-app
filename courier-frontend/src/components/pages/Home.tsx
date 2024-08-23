@@ -2,7 +2,6 @@ import { HomeAdmin } from "@/components";
 import { HomeClient } from "./client/HomeClient";
 import { HomeCourier } from "./courier/HomeCourier";
 import { useAuth } from "@/hooks";
-import { User } from "@/types";
 import { useEffect, useState } from "react";
 import React from "react";
 
@@ -11,10 +10,6 @@ export const Home = () => {
 
     const { userDetails } = useAuth();
     const [ components, setComponents ] = useState<JSX.Element[]>([]);
-
-    useEffect(() => {
-        console.log(userDetails);
-    }, [userDetails]);
 
     useEffect(() => {
         if(userDetails){

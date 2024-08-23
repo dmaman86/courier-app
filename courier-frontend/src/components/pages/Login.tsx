@@ -69,7 +69,7 @@ export const Login = () => {
                 }
             }
         }
-    }, [loading, response, userDetails, credentials]);
+    }, [loading, response]);
 
     useEffect(() => {
         if(message) setErrorResponse(message);

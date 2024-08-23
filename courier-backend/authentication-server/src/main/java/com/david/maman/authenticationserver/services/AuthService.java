@@ -8,9 +8,7 @@ import com.david.maman.authenticationserver.models.entities.UserCredentials;
 
 public interface AuthService {
 
-    AuthResponse login(CustomUserDetails credentials);
-
-    // AuthResponse refreshToken(CustomUserDetails credentials, String refreshToken);
+    AuthResponse generateAuthTokens(CustomUserDetails credentials);
 
     void updateUserCredentials(UserCredentialsPassword credentials);
 

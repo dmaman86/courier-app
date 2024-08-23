@@ -12,10 +12,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,50 +44,70 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginDto loginDto, HttpServletResponse response) {
-        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByEmailOrPhone(loginDto.getEmail(), loginDto.getPhone());
+        CustomUserDetails user = loadUser(loginDto.getEmail(), loginDto.getPhone());
 
         if(user.getCredentials().getFirstConnection()){
-            throw new BadCredentialsException("User must set a password");
+            throw new RuntimeException("User must set a password");
         }
 
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(user.getUsername(), loginDto.getPassword())
-        );
-        if(!isAuthenticated(authentication))
-            throw new BadCredentialsException("Error: Invalid username or password");
-
-        AuthResponse res = authService.login(user);
-
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getAccessTokenCookie().toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getRefreshTokenCookie().toString());
+        authenticate(user.getUsername(), loginDto.getPassword());
+        setAuthCookies(response, authService.generateAuthTokens(user));
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> updateUserCredentials(@RequestBody UserCredentialsPassword userCredentialsPassword, HttpServletResponse response){
-        CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByEmailOrPhone(userCredentialsPassword.getEmail(), userCredentialsPassword.getPhone());
+        CustomUserDetails user = loadUser(userCredentialsPassword.getEmail(), userCredentialsPassword.getPhone());
 
-        if(!user.getCredentials().getFirstConnection() || isEmpty(userCredentialsPassword.getPasswordOne()) || isEmpty(userCredentialsPassword.getPasswordTwo())){
+        if(!user.getCredentials().getFirstConnection() ||
+            isEmpty(userCredentialsPassword.getPasswordOne()) ||
+            isEmpty(userCredentialsPassword.getPasswordTwo()) ||
+            !isSameValue(userCredentialsPassword.getPasswordOne(), userCredentialsPassword.getPasswordTwo())){
             throw new RuntimeException("Error: User can't update password");
         }
-        if(!isSameValue(userCredentialsPassword.getPasswordOne(), userCredentialsPassword.getPasswordTwo())){
-            throw new RuntimeException("Error: Passwords don't match");
-        }
+
         authService.updateUserCredentials(user.getCredentials(), userCredentialsPassword);
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(user.getUsername(), userCredentialsPassword.getPasswordOne())
-        );
-
-        if(!isAuthenticated(authentication))
-            throw new RuntimeException("Error: User not authenticated");
-
-        AuthResponse res = authService.login(user);
-
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getAccessTokenCookie().toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getRefreshTokenCookie().toString());
+        authenticate(user.getUsername(), userCredentialsPassword.getPasswordOne());
+        setAuthCookies(response, authService.generateAuthTokens(user));
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(Authentication authentication, HttpServletResponse response){
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+        setAuthCookies(response, authService.generateAuthTokens(user));
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(Authentication authentication, HttpServletResponse response){
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+        setAuthCookies(response, authService.logout(user));
+        SecurityContextHolder.clearContext();
+
+        return ResponseEntity.noContent().build();
+    }
+
+    private CustomUserDetails loadUser(String email, String phone){
+        return (CustomUserDetails) userDetailsService.loadUserByEmailOrPhone(email, phone);
+    }
+
+    private void authenticate(String username, String password){
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(username, password)
+        );
+        if(!isAuthenticated(authentication))
+            throw new BadCredentialsException("Error: Invalid username or password");
+    }
+
+    private void setAuthCookies(HttpServletResponse response, AuthResponse authResponse){
+        response.addHeader(HttpHeaders.SET_COOKIE, authResponse.getAccessTokenCookie().toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, authResponse.getRefreshTokenCookie().toString());
     }
 
     private Boolean isEmpty(String value){
@@ -98,27 +116,6 @@ public class AuthController {
 
     private Boolean isSameValue(String valueOne, String valueTwo){
         return valueOne.equals(valueTwo);
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(Authentication authentication, HttpServletResponse response){
-        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-        AuthResponse res = authService.login(user);
-
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getAccessTokenCookie().toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getRefreshTokenCookie().toString());
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(Authentication authentication, HttpServletResponse response){
-        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-        AuthResponse res = authService.logout(user);
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getAccessTokenCookie().toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, res.getRefreshTokenCookie().toString());
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.noContent().build();
     }
 
     private boolean isAuthenticated(Authentication authentication) {

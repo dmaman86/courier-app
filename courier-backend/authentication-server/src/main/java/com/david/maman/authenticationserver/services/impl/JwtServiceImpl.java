@@ -33,9 +33,10 @@ public class JwtServiceImpl implements JwtService{
 
     private KeyPair jwtKeyPair;
 
-    private long jwtExpiration = 86400000; // 1 day
-
-    private long jwtRefreshExpiration = 604800000; // 7 days
+    // private long jwtExpiration = 86400000; // 1 day
+    private long jwtExpiration = 60000; // 1 minute
+    // private long jwtRefreshExpiration = 604800000; // 7 days
+    private long jwtRefreshExpiration = 300000; // 5 minutes
 
     @Autowired
     private UserCredentialsRepository userCredentialsRepository;
