@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { FetchResponse } from "../types";
+import { FetchResponse } from "../domain";
 
 
 export const useAsync = <T>(

@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, useCallback } from 'react';
 
-import { FormState } from '../types';
+import { FormState } from '../domain';
 import moment from 'moment';
 
 export const useForm = (initialState: FormState | null) => {

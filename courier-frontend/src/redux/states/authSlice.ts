@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User, Client } from '@/types';
+import { User, Client } from '@/domain';
 
 import { RootState } from "../store";
 

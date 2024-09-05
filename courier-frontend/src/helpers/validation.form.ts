@@ -1,5 +1,5 @@
 import moment from "moment";
-import { ValidationRule } from "../types";
+import { ValidationRule } from "../domain";
 
 const isNotEmpty = (value: string): boolean => value.length > 0;
 

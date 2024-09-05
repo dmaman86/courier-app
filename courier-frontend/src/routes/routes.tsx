@@ -1,17 +1,17 @@
 import { lazy } from 'react';
 import { Navigate } from "react-router-dom";
 
-import { RouteConfig } from "@/types";
+import { RouteConfig } from "@/domain";
 
-const Home = lazy(() => import('@/components/pages/Home').then(module => ({ default: module.Home })));
-const Login = lazy(() => import('@/components/pages/Login').then(module => ({ default: module.Login })));
-const SignUp = lazy(() => import('@/components/pages/SignUp').then(module => ({ default: module.SignUp })));
-const Profile = lazy(() => import('@/components/common/Profile').then(module => ({ default: module.Profile })));
-const SettingsAdmin = lazy(() => import('@/components/pages/admin/SettingsAdmin').then(module => ({ default: module.SettingsAdmin })));
-const UsersPage = lazy(() => import('@/components/pages/admin/UsersPage').then(module => ({ default: module.UsersPage })));
-const ContactsPage = lazy(() => import('@/components/common/ContactsPage').then(module => ({ default: module.ContactsPage })));
-const OfficesPage = lazy(() => import('@/components/common/OfficesPage').then(module => ({ default: module.OfficesPage })));
-const OrdersPage = lazy(() => import('@/components/common/OrdersPage').then(module => ({ default: module.OrdersPage })));
+const Home = lazy(() => import('@/ui').then(module => ({ default: module.Home })));
+const Login = lazy(() => import('@/ui').then(module => ({ default: module.Login })));
+const SignUp = lazy(() => import('@/ui').then(module => ({ default: module.SignUp })));
+const Profile = lazy(() => import('@/ui').then(module => ({ default: module.Profile })));
+const SettingsAdmin = lazy(() => import('@/ui').then(module => ({ default: module.SettingsAdmin })));
+const UsersPage = lazy(() => import('@/ui').then(module => ({ default: module.UsersPage })));
+const ContactsPage = lazy(() => import('@/ui').then(module => ({ default: module.ContactsPage })));
+const OfficesPage = lazy(() => import('@/ui').then(module => ({ default: module.OfficesPage })));
+const OrdersPage = lazy(() => import('@/ui').then(module => ({ default: module.OrdersPage })));
 
 export const publicRoutes: RouteConfig[] = [
     {

@@ -1,0 +1,10 @@
+export { ContactsPage } from './ContactsPage';
+export { OfficesPage } from './OfficesPage';
+export { Profile } from './Profile';
+export { OrdersPage } from './OrdersPage';
+export { Login } from './Login';
+export { SignUp } from './SignUp';
+export { ItemsPage } from './ItemsPage';
+export { SettingsAdmin } from './SettingsAdmin';
+export { UsersPage } from './UsersPage';
+export * from './Home';

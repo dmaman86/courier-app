@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 
-import { ErrorFallback, Navbar } from '@/components';
 import { PrivateRoutes, PublicRoutes } from '@/routes';
 import { useAuth } from '@/hooks';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Suspense } from 'react';
+import { ErrorFallback, Navbar } from './ui';
 
 
 export const App = () => {

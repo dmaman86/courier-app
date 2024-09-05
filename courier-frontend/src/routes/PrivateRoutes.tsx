@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
-import { useRouteConfig } from "@/hooks";
-import { Client, User } from "@/types";
+import { Client, User } from "@/domain";
+import { useRouteConfig } from "@/useCases";
 
 interface PrivateRoutesProps {
     userDetails: User | Client | null;

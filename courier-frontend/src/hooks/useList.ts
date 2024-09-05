@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Item } from "../types";
+import { Item } from "../domain";
 
 
 export const useList = <T extends Item>(initialItems: T[]) => {
@@ -18,12 +18,13 @@ export const useList = <T extends Item>(initialItems: T[]) => {
         setItems(prev => prev.map(item => item.id === updateItem.id ? updateItem : item));
     }, []);
 
-    const removeItem = useCallback((id: number) => {
-        setItems(prev => prev.filter(item => item.id !== id));
+    const removeItem = useCallback((itemToRemove: T) => {
+        setItems(prev => prev.filter(item => item.id !== itemToRemove.id));
     }, []);
 
-    const existItem = useCallback((id: number) => {
-        return items.some(item => item.id === id);
+    const existItem = useCallback((itemToSearch: T | null) => {
+        if(itemToSearch === null) return false;
+        return items.some(item => item.id === itemToSearch.id);
     }, [items]);
 
     return { items, setAllItems, addItem, updateItem, removeItem, existItem };

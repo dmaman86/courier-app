@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
-import { useRouteConfig } from "@/hooks";
-import { Client, User } from "@/types";
+import { Client, User } from "@/domain";
+import { useRouteConfig } from "@/useCases";
 
 export const PublicRoutes = ({ userDetails }: { userDetails: User | Client | null }) => {
     const { getRoutes } = useRouteConfig();

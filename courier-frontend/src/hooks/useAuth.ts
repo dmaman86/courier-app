@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectUserDetails, logout as logoutAction, setUser } from "@/redux/states/authSlice";
-import { Client, User } from "@/types";
+import { Client, User } from "@/domain";
 import { AppDispatch } from "@/redux/store";
 import { useEffect } from "react";
 

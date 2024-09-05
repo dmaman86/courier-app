@@ -1,4 +1,4 @@
-import { Token } from "@/types";
+import { Token } from "@/domain";
 
 export const TokenService = (() => {
 
