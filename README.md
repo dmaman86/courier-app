@@ -450,76 +450,34 @@ Clients can place orders, track the status of their deliveries, and update their
 │   ├── App.tsx
 │   ├── assets
 │   │   └── react.svg
-│   ├── components
-│   │   ├── common
-│   │   │   ├── ContactsPage.tsx
-│   │   │   ├── Navbar.tsx
-│   │   │   ├── OfficesPage.tsx
-│   │   │   ├── OrdersPage.tsx
-│   │   │   ├── Profile.tsx
-│   │   │   └── index.ts
+│   ├── domain
+│   │   ├── axios.models.ts
+│   │   ├── form.models.ts
 │   │   ├── index.ts
-│   │   ├── listTables
-│   │   │   ├── BranchList.tsx
-│   │   │   ├── ContactList.tsx
-│   │   │   ├── OfficeList.tsx
-│   │   │   ├── OrderList.tsx
-│   │   │   ├── RoleList.tsx
-│   │   │   ├── StatusOrdersList.tsx
-│   │   │   ├── UserList.tsx
-│   │   │   └── index.ts
-│   │   ├── modal
-│   │   │   ├── BranchForm.tsx
-│   │   │   ├── ContactForm.tsx
-│   │   │   ├── GenericModal.tsx
-│   │   │   ├── OfficeForm.tsx
-│   │   │   ├── OrderForm.tsx
-│   │   │   ├── RoleForm.tsx
-│   │   │   ├── StatusOrderForm.tsx
-│   │   │   ├── UpdatePassword.tsx
-│   │   │   ├── UserForm.tsx
-│   │   │   └── index.ts
-│   │   ├── pages
-│   │   │   ├── ErrorFallback.tsx
-│   │   │   ├── Home.tsx
-│   │   │   ├── Login.tsx
-│   │   │   ├── SignUp.tsx
-│   │   │   ├── admin
-│   │   │   │   ├── HomeAdmin.tsx
-│   │   │   │   ├── SettingsAdmin.tsx
-│   │   │   │   ├── UsersPage.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── client
-│   │   │   │   └── HomeClient.tsx
-│   │   │   └── courier
-│   │   │       └── HomeCourier.tsx
-│   │   ├── partials
-│   │   │   ├── BranchesPartial.tsx
-│   │   │   ├── PasswordRulesList.tsx
-│   │   │   ├── RolePartial.tsx
-│   │   │   ├── StatusOrdersPartial.tsx
-│   │   │   └── index.ts
-│   │   └── shared
-│   │       ├── AlertDialog.tsx
-│   │       ├── ItemsPage.tsx
-│   │       ├── PageHeader.tsx
-│   │       ├── ReusableInput.tsx
-│   │       ├── ReusableSelect.tsx
-│   │       ├── ReusableTable.tsx
-│   │       └── index.ts
+│   │   ├── models.ts
+│   │   ├── props.models.ts
+│   │   └── reducer.models.ts
 │   ├── helpers
 │   │   ├── index.ts
 │   │   ├── load-abort-axios.ts
 │   │   ├── paths.ts
 │   │   └── validation.form.ts
+│   ├── hoc
+│   │   ├── index.ts
+│   │   └── withLoading.tsx
 │   ├── hooks
 │   │   ├── index.ts
 │   │   ├── useAsync.ts
 │   │   ├── useAuth.ts
 │   │   ├── useFetchAndLoad.ts
 │   │   ├── useForm.ts
+│   │   ├── useItemsPageState
+│   │   │   ├── reducer.ts
+│   │   │   └── useItemsPage.ts
 │   │   ├── useList.ts
-│   │   └── useRouteConfig.ts
+│   │   └── useNavbar
+│   │       ├── reducer.ts
+│   │       └── useNavbar.ts
 │   ├── index.css
 │   ├── main.tsx
 │   ├── redux
@@ -537,12 +495,82 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │   ├── index.ts
 │   │   ├── service-request.ts
 │   │   └── token.service.ts
-│   ├── types
-│   │   ├── axios.models.ts
-│   │   ├── form.models.ts
+│   ├── ui
+│   │   ├── components
+│   │   │   ├── dialogs
+│   │   │   │   ├── AlertDialog.tsx
+│   │   │   │   ├── GenericModal.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── entityForm
+│   │   │   │   ├── BranchForm.tsx
+│   │   │   │   ├── ContactForm.tsx
+│   │   │   │   ├── OfficeForm.tsx
+│   │   │   │   ├── OrderForm.tsx
+│   │   │   │   ├── RoleForm.tsx
+│   │   │   │   ├── StatusOrderForm.tsx
+│   │   │   │   ├── UpdatePassword.tsx
+│   │   │   │   ├── UserForm.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── form
+│   │   │   │   ├── ReusableInput.tsx
+│   │   │   │   ├── ReusableSelect.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── index.ts
+│   │   │   ├── layout
+│   │   │   │   ├── BranchesPartial.tsx
+│   │   │   │   ├── ErrorFallback.tsx
+│   │   │   │   ├── Navbar.tsx
+│   │   │   │   ├── NavbarLinks.tsx
+│   │   │   │   ├── PageHeader.tsx
+│   │   │   │   ├── PasswordRulesList.tsx
+│   │   │   │   ├── RolePartial.tsx
+│   │   │   │   ├── StatusOrdersPartial.tsx
+│   │   │   │   ├── UserDetails.tsx
+│   │   │   │   └── index.ts
+│   │   │   └── tables
+│   │   │       ├── ReusableTable.tsx
+│   │   │       ├── index.ts
+│   │   │       └── list
+│   │   │           ├── BranchList.tsx
+│   │   │           ├── ContactList.tsx
+│   │   │           ├── OfficeList.tsx
+│   │   │           ├── OrderList.tsx
+│   │   │           ├── RoleList.tsx
+│   │   │           ├── StatusOrdersList.tsx
+│   │   │           ├── UserList.tsx
+│   │   │           └── index.ts
 │   │   ├── index.ts
-│   │   ├── models.ts
-│   │   └── props.models.ts
+│   │   └── pages
+│   │       ├── ContactsPage.tsx
+│   │       ├── Home
+│   │       │   ├── Home.tsx
+│   │       │   ├── HomeAdmin.tsx
+│   │       │   ├── HomeClient.tsx
+│   │       │   ├── HomeCourier.tsx
+│   │       │   └── index.ts
+│   │       ├── ItemsPage.tsx
+│   │       ├── Login.tsx
+│   │       ├── OfficesPage.tsx
+│   │       ├── OrdersPage.tsx
+│   │       ├── Profile.tsx
+│   │       ├── SettingsAdmin.tsx
+│   │       ├── SignUp.tsx
+│   │       ├── UsersPage.tsx
+│   │       └── index.ts
+│   ├── useCases
+│   │   ├── form
+│   │   │   ├── index.ts
+│   │   │   ├── useBranchForm.ts
+│   │   │   ├── useContactForm.ts
+│   │   │   ├── useOfficeForm.ts
+│   │   │   ├── useOrderForm.ts
+│   │   │   ├── useRoleForm.ts
+│   │   │   ├── useStatusOrderForm.ts
+│   │   │   ├── useUpdatePasswordForm.ts
+│   │   │   └── useUserForm.ts
+│   │   ├── index.ts
+│   │   ├── useRouteConfig.ts
+│   │   └── useUserItemActions.ts
 │   └── vite-env.d.ts
 ├── tsconfig.json
 ├── tsconfig.node.json
