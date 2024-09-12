@@ -1,25 +1,32 @@
 import { ReusableInput } from "../form";
-import { Role } from "@/domain";
-import { useRoleForm } from "@/useCases";
+import { FormState, Role } from "@/domain";
+import { validatorForm } from "@/helpers";
+import { useForm } from "@/hooks";
 
 
 interface RoleFormProps {
-    roleId: number | null;
+    role: Role;
+    setRole: (role: Role) => void;
     onSubmit: (role: Role) => void;
 }
 
-export const RoleForm = ({ roleId, onSubmit }: RoleFormProps) => {
+export const RoleForm = ({ role, setRole, onSubmit }: RoleFormProps) => {
 
-    const { loading,
-            formData,
-            values,
-            handleChange,
-            onFocus,
-            handleSubmit } = useRoleForm(roleId);
+    const initialState: FormState = {
+        name: {
+            value: role.name,
+            validation: [
+                validatorForm.validateNotEmpty
+            ],
+            validateRealTime: false
+        }
+    };
+
+    const { values, state, handleChange, onFocus, validateForm } = useForm(role, initialState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const role = handleSubmit();
+        const role = validateForm();
         if(role)
             onSubmit(role);
     }
@@ -27,7 +34,7 @@ export const RoleForm = ({ roleId, onSubmit }: RoleFormProps) => {
     return (
         <>
             {
-                (!loading && values) && (
+                (values) && (
                     <form onSubmit={handleFormSubmit} className="row g-4">
                         <div className="col-6">
                             <ReusableInput
@@ -35,7 +42,7 @@ export const RoleForm = ({ roleId, onSubmit }: RoleFormProps) => {
                                     label: 'Role Name',
                                     name: 'name',
                                     type: 'text',
-                                    value: values.name.value,
+                                    value: state.name,
                                     placeholder: 'Enter role name'
                                 }}
                                 onChange={handleChange}

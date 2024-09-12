@@ -1,134 +1,98 @@
 import React, { useEffect, useState } from "react";
 import { Stack } from "@mui/material";
-import { useNavigate, useLocation} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useErrorBoundary } from "react-error-boundary";
 
 
-import { useForm, useFetchAndLoad, useAuth, useAsync } from "@/hooks";
-import { Client, FetchResponse, FormState, User } from "@/domain";
-import { paths, validatorForm } from "@/helpers";
-import { LoginCredentials } from "@/domain";
-import { AxiosError } from "axios";
-import { serviceRequest } from "@/services";
+import { useAuth, useAsync } from "@/hooks";
+import { FetchResponse, FormState } from "@/domain";
+import { validatorForm } from "@/helpers";
 import { ReusableInput } from "@/ui";
+import { useAuthForm } from "@/useCases";
+
+interface LoginCredentials {
+    email: string;
+    phone: string;
+    password: string;
+}
 
 export const Login = () => {
 
-    const { userDetails, saveUser } = useAuth();
+    const { userDetails } = useAuth();
     const navigate = useNavigate();
     const { showBoundary } = useErrorBoundary();
 
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const message = queryParams.get('message');
-
     const { isCellularNumber } = validatorForm;
 
-    const [ initialState, setInitialState ] = useState<FormState>({
-        username: {
-            value: '',
+    const initialCredentials: LoginCredentials = {
+        email: '',
+        phone: '',
+        password: ''
+    };
+
+    const initialStateForm: FormState = {
+        email: {
+            value: initialCredentials.email,
             validation: [
-                validatorForm.validateNotEmpty,
                 validatorForm.isEmailOrPhone
             ],
             validateRealTime: false
         },
         password: {
-            value: '',
+            value: initialCredentials.password,
             validation: [
-                validatorForm.validateNotEmpty,
                 validatorForm.validateMinLength
             ],
             validateRealTime: false
         }
-    });
-
-    const [ isValidForm, setIsValidForm ] = useState<boolean>(false);
-
-    const [ credentials, setCredentials ] = useState<LoginCredentials | null>(null);
-
-    const { values, handleChange, onFocus, validateForm } = useForm(initialState);
-
-    const { loading, callEndPoint } = useFetchAndLoad();
-
-    const [ errorResponse, setErrorResponse ] = useState<string>('');
+    };
 
     const [ response, setResponse ] = useState<FetchResponse<void>>({
         data: null,
         error: null
     });
 
-    useEffect(() => {
-        if(!loading){
-            if(response.error){
-                const { error } = response;
-                if(error instanceof AxiosError && error.response){
-                    setErrorResponse(error.response.data);
-                } else {
-                    setErrorResponse('An error occurred. Please try again later');
-                }
-            }
-        }
-    }, [loading, response]);
-
-    useEffect(() => {
-        if(message) setErrorResponse(message);
-    }, [message]);
-
-    const fetchUserDetails = async () => {
-        if(isValidForm && credentials && !userDetails){
-            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}me`));
-        }
-        return Promise.resolve({ data: null, error: null });
-    }
-
-    const handleUserDetails = (result: FetchResponse<User | Client>) => {
-        const { data, error } = result;
-
-        if(isValidForm && credentials && !userDetails){    
-            if(data && !error){
-                saveUser(data);
-                // navigate('/home', { replace: true });
-            } else if(!data && error){
-                showBoundary(error);
-            }
-        }
-    }
-
-    useAsync(fetchUserDetails, handleUserDetails, () => {}, [isValidForm, credentials, userDetails]);
-
-    useEffect(() => {
-        if(userDetails){
-            navigate('/home', { replace: true });
-        }
-    }, [userDetails]);
+    const { 
+        values,
+        state,
+        handleChange,
+        onFocus,
+        validateForm,
+        fetchCredentials,
+        fetchUserDetails,
+        handleUserDetails,
+        credentials,
+        setCredentials,
+        errorResponse,
+        setErrorResponse,
+        loading
+    } = useAuthForm<LoginCredentials>(initialCredentials, initialStateForm);
 
     const removeNonNumeric = (value: string) => value.replace(/\D/g, '');
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        
-        setIsValidForm(validateForm() && errorResponse === '');
-    }
-
-    useEffect(() => {
-        if(isValidForm && values){
+        const userValid = validateForm();
+        if(userValid && errorResponse === ''){
+            const email = userValid.email;
             setCredentials({
-                email: !isCellularNumber.isValid(values.username.value) ? values.username.value : null,
-                phone: isCellularNumber.isValid(values.username.value) ? removeNonNumeric(values.username.value) : null,
-                password: values.password.value
+                // email: isCellularNumber.isValid(email) ? removeNonNumeric(userValid.username) : userValid.username,
+                email: isCellularNumber.isValid(email) ? '' : email,
+                phone: isCellularNumber.isValid(email) ? removeNonNumeric(email) : '',
+                password: userValid.password
             });
         }
-    }, [isValidForm, values]);
-
-    const fetchCredentials = async() => {
-        if(credentials){
-            return await callEndPoint(serviceRequest.postItem<void, LoginCredentials>(paths.auth.login, credentials));
-        }
-        return Promise.resolve({ data: null, error: null });
     }
 
     useAsync(fetchCredentials, setResponse, () => {}, [credentials]);
+
+    useAsync(fetchUserDetails, handleUserDetails, () => {}, [credentials, userDetails]);
+
+    useEffect(() => {
+        if(!loading && userDetails){
+            navigate('/home', { replace: true });
+        }
+    }, [loading, userDetails]);
 
     const handleFirstConnection = () => {
         navigate('/signup', { replace: true });
@@ -139,7 +103,7 @@ export const Login = () => {
         onFocus(name);
     }
 
-    const isButtonDisabled = (values ? (values.username.value.trim() === '' || values.password.value.trim() === '') : false);
+    const isButtonDisabled = (state.email.trim() === '' || state.password.trim() === '');
 
     return(
         <>
@@ -155,14 +119,14 @@ export const Login = () => {
                                                 <ReusableInput 
                                                     inputProps={{
                                                         label: 'Email or Phone Number',
-                                                        name: 'username',
+                                                        name: 'email',
                                                         type: 'text',
-                                                        value: values.username.value,
+                                                        value: values.email.value,
                                                         placeholder: 'Enter your email or phone number',
                                                     }}
                                                 onChange={handleChange}
                                                 onFocus={handleOnFocus}
-                                                errorsMessage={values.username.error}/>
+                                                errorsMessage={values.email.error}/>
                                             </div>
 
                                             <div className="col-12">

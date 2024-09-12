@@ -1,17 +1,17 @@
-export interface ValidationRule{
-    isValid: (value: string, formData?: FormState) => boolean;
+export interface ValidationRule<T = string>{
+    isValid: (value: T, formData?: FormState) => boolean;
     message: string;
 }
 
 export interface FormField<T>{
     value: T;
-    validation: ValidationRule[];
+    validation: ValidationRule<T>[];
     isValid?: boolean;
     error?: string[];
     validateRealTime?: boolean;
 }
 
-export type FormState = Record<string, FormField<string>>;
+export type FormState = Record<string, FormField<any>>;
 
 export interface FormProps<T> {
     onSubmit: (item: Partial<T>) => Promise<void>;

@@ -1,9 +1,9 @@
 import { ActionType, Item, State } from "@/domain";
 
-export const initialState = <T extends Item>(): State<T> => ({
+export const initialState = <T extends Item>(initialItem: T): State<T> => ({
     showModal: false,
     showAlertDialog: false,
-    selectedItem: null,
+    selectedItem: initialItem,
     itemToDelete: null,
     pagination: { page: 0, size: 5, totalItems: 0 },
     responseItem: { data: null, error: null },
@@ -28,7 +28,7 @@ export const reducer = <T extends Item>(state: State<T>, action: ActionType<T>):
         case 'SET_DELETE_RESPONSE':
             return { ...state, responseDelete: action.payload };
         case 'RESET_STATE':
-            return initialState<T>();
+            return initialState(action.payload);
         default:
             return state;
     }

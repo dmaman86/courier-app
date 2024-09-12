@@ -10,6 +10,15 @@ export const ContactsPage = () => {
 
     const { userDetails } = useAuth();
 
+    const initialContact: Contact = {
+        id: 0,
+        name: '',
+        lastName: '',
+        phone: '',
+        office: { id: 0, name: '' },
+        branches: []
+    };
+
     const fetchContacts = (page: number, size: number) => serviceRequest.getItem<PageResponse<Contact[]>>(`${paths.courier.contacts}?page=${page}&size=${size}`);
 
     const createOrUpdateContact = (contact: Contact) => contact.id ? serviceRequest.putItem<Contact, Contact>(paths.courier.contacts, contact) :
@@ -52,11 +61,12 @@ export const ContactsPage = () => {
                         createOrUpdateItem={createOrUpdateContact}
                         deleteItem={deleteContact}
                         searchItem={searchContact}
-                        renderItemForm={(contactId, onSubmit) => <ContactForm contactId={contactId} onSubmit={onSubmit}/>}
+                        renderItemForm={(item, setItem, onSubmit) => <ContactForm contact={item} setContact={setItem} onSubmit={onSubmit}/>}
                         columns={contactColumns}
                         renderItemList={({ data, actions }) => <ContactList data={data} actions={actions}/>}
                         showSearch={true}
                         allowedRoles={contactAllowedRoles}
+                        initialItem={initialContact}
                     />
                 )
             }

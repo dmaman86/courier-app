@@ -1,8 +1,9 @@
+import { useEffect, useState } from "react";
+
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services"
 import { PageResponse, StatusOrder, ValueColumn } from "@/domain";
 import { useAuth } from "@/hooks";
-import { useEffect, useState } from "react";
 import { ItemsPage, StatusOrderForm, StatusOrdersList } from "@/ui";
 
 export const StatusOrdersPartial = () => {
@@ -10,6 +11,12 @@ export const StatusOrdersPartial = () => {
     const { userDetails } = useAuth();
 
     const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+
+    const statusOrder: StatusOrder = {
+        id: 0,
+        name: '',
+        description: ''
+    };
 
     const fetchStatusOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<StatusOrder[]>>(`${paths.courier.statusOrder}?page=${page}&size=${size}`);
 
@@ -59,11 +66,12 @@ export const StatusOrdersPartial = () => {
                         fetchItems={fetchStatusOrders}
                         createOrUpdateItem={createOrUpdateStatusOrder}
                         deleteItem={deleteStatusOrder}
-                        renderItemForm={(statusOrderId, onSubmit) => <StatusOrderForm statusOrderId={statusOrderId} onSubmit={onSubmit}/>}
+                        renderItemForm={(item, setItem, onSubmit) => <StatusOrderForm statusOrder={item} setStatusOrder={setItem} onSubmit={onSubmit}/>}
                         columns={statusOrdersColumns}
                         renderItemList={({ data, actions }) => <StatusOrdersList data={data} actions={actions}/>}
                         showSearch={false}
                         allowedRoles={statusOrderAllowedRoles}
+                        initialItem={statusOrder}
                     />
                 )
             }

@@ -22,19 +22,3 @@ const withLoading = <P extends object>(
 }
 
 export default withLoading;
-
-/*const withLoading = <P extends object>(Component: React.ComponentType<P>) => {
-    const WithLoadingComponent = (props: P & WithLoadingProps) => {
-        const { isLoading, ...restProps } = props;
-
-        if (isLoading) {
-            return <CircularProgress disableShrink />;
-        }
-
-        return <Component {...(restProps as P)} />;
-    };
-
-    return WithLoadingComponent;
-};
-
-export default withLoading;*/

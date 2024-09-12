@@ -1,25 +1,35 @@
 import { ReusableInput } from "../form";
-import { StatusOrder } from "@/domain";
-import { useStatusOrderForm } from "@/useCases";
+import { FormState, StatusOrder } from "@/domain";
+import { validatorForm } from "@/helpers";
+import { useForm } from "@/hooks";
 
 
 interface StatusOrderFormProps {
-    statusOrderId: number | null;
+    statusOrder: StatusOrder;
+    setStatusOrder: (statusOrder: StatusOrder) => void;
     onSubmit: (statusOrder: StatusOrder) => void;
 }
 
-export const StatusOrderForm = ({ statusOrderId, onSubmit }: StatusOrderFormProps) => {
+export const StatusOrderForm = ({ statusOrder, setStatusOrder, onSubmit }: StatusOrderFormProps) => {
 
-    const { loading,
-            formData,
-            values,
-            handleChange,
-            onFocus,
-            handleSubmit } = useStatusOrderForm(statusOrderId);
+    const initialState: FormState = {
+        name: {
+            value: statusOrder.name,
+            validation: [ validatorForm.validateNotEmpty ],
+            validateRealTime: false
+        },
+        description: {
+            value: statusOrder.description,
+            validation: [ validatorForm.validateNotEmpty ],
+            validateRealTime: false
+        }
+    };
+
+    const { values, state, handleChange, onFocus, validateForm } = useForm(statusOrder, initialState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const statusOrder = handleSubmit();
+        const statusOrder = validateForm();
         if(statusOrder)
             onSubmit(statusOrder);
     }
@@ -27,7 +37,7 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit }: StatusOrderFormProp
     return (
         <>
             {
-                (!loading && values) && (
+                (values) && (
                     <form onSubmit={ handleFormSubmit } className="row">
                         <div className="row pt-3">
                             <div className="col-md-4">
@@ -36,7 +46,7 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit }: StatusOrderFormProp
                                         label: 'Status Order Name',
                                         name: 'name',
                                         type: 'text',
-                                        value: values.name.value,
+                                        value: state.name,
                                         placeholder: 'Enter status order name'
                                     }}
                                     onChange={handleChange}
@@ -50,7 +60,7 @@ export const StatusOrderForm = ({ statusOrderId, onSubmit }: StatusOrderFormProp
                                             label: 'Description Order',
                                             name: 'description',
                                             type: 'textarea',
-                                            value: values.description.value,
+                                            value: state.description,
                                             placeholder: 'Enter description order'
                                         }}
                                         onChange={handleChange}

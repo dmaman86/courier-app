@@ -46,11 +46,11 @@ export interface BranchOptionType extends OptionType{
     address: string;
 }
 
-export interface SelectProps<T>{
+export interface SelectProps<T extends OptionType>{
     label: string;
-    value: MultiValue<T> | SingleValue<T>;
+    value: SingleValue<T> | MultiValue<T>;
     options: T[];
-    onChange: (selected: MultiValue<T> | SingleValue<T>) => void;
+    onChange: (selected:SingleValue<T> | MultiValue<T>) => void;
     isMulti?: boolean;
     isDisabled?: boolean;
 }
@@ -113,7 +113,7 @@ export interface ItemsPageProps<T extends {id: number}> {
     createOrUpdateItem: (item: T) => AxiosCall<T>;
     deleteItem: (itemId: number) => AxiosCall<string>;
     searchItem?: (search: string, page: number, size: number) => AxiosCall<PageResponse<T[]>>;
-    renderItemForm: (itemId: number | null, onSubmit: (item: T) => void) => ReactNode;
+    renderItemForm: (item: T, setItem: (item: T) => void, onSubmit: (item: T) => void) => ReactNode;
     columns: ValueColumn[];
     renderItemList: React.ComponentType<{ data: T[], actions?: Action<T>[] }>;
     showSearch?: boolean;
@@ -121,5 +121,6 @@ export interface ItemsPageProps<T extends {id: number}> {
         create: string[];
         update: string[];
         delete: string[];
-    }
+    };
+    initialItem: T;
 }

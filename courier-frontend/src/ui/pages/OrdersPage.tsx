@@ -1,14 +1,32 @@
+import { useEffect, useState } from "react";
+import moment from "moment";
+
 import { paths } from "@/helpers";
 import { useAuth } from "@/hooks"
 import { serviceRequest } from "@/services";
 import { Order, PageResponse, ValueColumn } from "@/domain";
-
-import { useEffect, useState } from "react";
 import { ItemsPage, OrderForm, OrderList } from "@/ui";
 
 export const OrdersPage = () => {
 
     const { userDetails } = useAuth();
+
+    const initialOrder: Order = {
+        id: 0,
+        client: null,
+        // client: { id: 0, name: '', lastName: '', email: '', phone: '', roles: [], isActive: true },
+        originBranch: { id: 0, city: '', address: '', office: { id: 0, name: '' } },
+        // originBranch: null,
+        // destinationBranch: { id: 0, city: '', address: '', office: { id: 0, name: '' } },
+        destinationBranch: null,
+        contacts: [],
+        deliveryDate: moment().format('DD/MM/YYYY'),
+        receiverName: '',
+        receiverPhone: '',
+        destinationAddress: '',
+        couriers: [],
+        currentStatus: { id: 0, name: '', description: '' }
+    };
 
     const fetchOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<Order[]>>(`${paths.courier.orders}?page=${page}&size=${size}`);
 
@@ -56,11 +74,12 @@ export const OrdersPage = () => {
                         fetchItems={fetchOrders}
                         createOrUpdateItem={createOrUpdateOrder}
                         deleteItem={deleteOrder}
-                        renderItemForm={(orderId, onSubmit) => <OrderForm orderId={orderId} onSubmit={onSubmit}/>}
+                        renderItemForm={(item, setItem, onSubmit) => <OrderForm order={item} setOrder={setItem} onSubmit={onSubmit}/>}
                         columns={orderColumns}
                         renderItemList={({ data, actions }) => <OrderList data={data} actions={actions}/> }
                         showSearch={false}
                         allowedRoles={orderAllowedRoles}
+                        initialItem={initialOrder}
                     />
                 )
             }

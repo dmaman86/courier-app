@@ -9,7 +9,11 @@ export const OfficesPage = () => {
 
     const { userDetails } = useAuth();
 
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+    const initialOffice: OfficeResponse = {
+        id: 0,
+        name: '',
+        branches: []
+    }
 
     const fetchOffices = (page: number, size: number) => serviceRequest.getItem<PageResponse<OfficeResponse[]>>(`${paths.courier.offices}?page=${page}&size=${size}`);
 
@@ -52,11 +56,12 @@ export const OfficesPage = () => {
                         createOrUpdateItem={createOrUpdateOffice}
                         deleteItem={deleteOffice}
                         searchItem={searchOffice}
-                        renderItemForm={(officeId, onSubmit) => <OfficeForm officeId={officeId} onSubmit={onSubmit} />}
+                        renderItemForm={(item, setItem, onSubmit) => <OfficeForm office={item} setOffice={setItem} onSubmit={onSubmit} />}
                         columns={officeColumns}
                         renderItemList={({ data, actions }) => <OfficeList data={data} actions={actions}/>}
                         showSearch={true}
                         allowedRoles={officeAllowedRoles}
+                        initialItem={initialOffice}
                     />
                 )
             }

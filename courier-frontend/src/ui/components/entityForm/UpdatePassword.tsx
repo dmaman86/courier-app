@@ -1,8 +1,8 @@
 import { ReusableInput } from "../form";
-import { User } from "@/domain";
-import { useUpdatePasswordForm } from "@/useCases";
+import { FormState, User } from "@/domain";
 import { PasswordRulesList } from "../layout";
-
+import { validatorForm } from "@/helpers";
+import { useForm } from "@/hooks";
 
 
 interface UpdatePasswordProps {
@@ -10,19 +10,46 @@ interface UpdatePasswordProps {
     onClose: () => void;
 }
 
+interface UpdatePasswordForm {
+    password: string;
+    confirmPassword: string;
+}
+
 export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
 
-    const { values,
-        handleChange,
-        onFocus,
-        handleSubmit } = useUpdatePasswordForm();
+    const initUpdatePassword: UpdatePasswordForm = {
+        password: '',
+        confirmPassword: ''
+    }
+    
+    const initialState: FormState = {
+        password: {
+            value: initUpdatePassword.password,
+            validation: [
+                validatorForm.validateNotEmpty,
+                validatorForm.validateMinLength
+            ],
+            validateRealTime: true
+        },
+        confirmPassword: {
+            value: initUpdatePassword.confirmPassword,
+            validation: [
+                validatorForm.validateMinLength,
+                validatorForm.isEqual('password')
+            ],
+            validateRealTime: true
+        }
+    };
+
+    const { values, state, handleChange, onFocus, validateForm } = useForm(initUpdatePassword, initialState);
 
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const user = handleSubmit();
-        if(user){
-            console.log(user);
+
+        const credentials = validateForm();
+        if(credentials){
+            console.log(credentials);
             onClose();
         }
     }
@@ -42,12 +69,12 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
                             label: 'Password',
                             name: 'newPassword',
                             type: 'password',
-                            value: values?.newPassword.value!,
+                            value: state.password,
                             placeholder: 'Enter your password'
                         }}
                         onChange={handleChange}
                         onFocus={onFocus}/>
-                        <PasswordRulesList rules={values?.newPassword.validation!} errors={values?.newPassword.error}/>
+                        <PasswordRulesList rules={values?.password.validation!} errors={values?.password.error}/>
                 </div>
                 <div className="col-12">
                     <ReusableInput 
@@ -55,7 +82,7 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
                             label: 'Confirm password',
                             name: 'confirmPassword',
                             type: 'password',
-                            value: values?.confirmPassword.value!,
+                            value: state.confirmPassword,
                             placeholder: 'Enter your password again'
                         }}
                         onChange={handleChange}

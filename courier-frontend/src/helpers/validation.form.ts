@@ -1,5 +1,5 @@
 import moment from "moment";
-import { ValidationRule } from "../domain";
+import { FormField, FormState, ValidationRule } from "../domain";
 
 const isNotEmpty = (value: string): boolean => value.length > 0;
 
@@ -41,6 +41,16 @@ export const validatorForm = ( () => {
         message: 'Please select a valid date'
     }
 
+    const isEqual = (fieldToCompare: string): ValidationRule => {
+        return {
+            isValid: (value: string, formData?: FormState): boolean => {
+                const field = formData ? formData[fieldToCompare] : null;
+                return field ? value === field.value : false;
+            },
+            message: 'The fields do not match'
+        }
+    }
+
     return {
         validateNotEmpty,
         validateMinLength,
@@ -48,7 +58,8 @@ export const validatorForm = ( () => {
         isEmail,
         isEmailOrPhone,
         isDate,
-        isSelectedDateValid
+        isSelectedDateValid,
+        isEqual
     }
 
 })();

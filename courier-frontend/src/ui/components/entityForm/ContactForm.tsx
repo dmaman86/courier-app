@@ -1,35 +1,73 @@
-import { Branch, BranchOptionType, Contact, OfficeResponse, OptionType } from "@/domain";
-import { useContactForm } from "@/useCases";
-import { ReusableInput, ReusableSelect } from "../form";
+import React, { useState } from "react";
+
+import { Branch, Contact, FormState, Office, OfficeResponse, OptionType } from "@/domain";
+import { ReusableInput } from "../form";
+import { paths, validatorForm } from "@/helpers";
+import { useForm } from "@/hooks";
+import { SelectDetailsForm } from "./SelectDetailsForm";
+import { serviceRequest } from "@/services";
+
 
 
 interface ContactFormProps {
-    contactId: number | null;
+    contact: Contact;
+    setContact: (contact: Contact) => void;
     onSubmit: (contact: Contact) => void;
 }
 
-const tranformOffices = (offices: OfficeResponse[]): OptionType[] => {
-    return offices.map(office => ({ value: office.id, label: office.name }));
+interface BranchOptionType extends OptionType {
+    address: string;
+    office: Office;
 }
 
-export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
+export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps) => {
 
-    const { formData,
-            values,
-            handleSubmit,
-            handleOfficeChange,
-            handleBranchChange,
-            handleChange,
-            onFocus,
-            errorOfficeSelected,
-            errorBranchSelected,
-            loading,
-            offices,
-            selectedOffice } = useContactForm(contactId);
+    const [ branches, setBranches ] = useState<Branch[]>(contact.branches);
+
+    const initialFormState: FormState = {
+        name: {
+            value: contact.name,
+            validation: [ validatorForm.validateNotEmpty ],
+            validateRealTime: false
+        },
+        lastName: {
+            value: contact.lastName,
+            validation: [
+                validatorForm.validateNotEmpty
+            ],
+            validateRealTime: false
+        },
+        phone: {
+            value: contact.phone,
+            validation: [
+                validatorForm.validateNotEmpty,
+                validatorForm.isCellularNumber
+            ],
+            validateRealTime: false
+        },
+        office: {
+            value: contact.office,
+            validation: [{
+                isValid: (value: Office): boolean => value !== null,
+                message: 'Select an office'
+            }],
+            validateRealTime: false
+        },
+        branches: {
+            value: contact.branches,
+            validation: [{
+                isValid: (branches: any[]): boolean => branches.length > 0,
+                message: 'At least one branch must be selected'
+            }],
+            validateRealTime: false
+        }
+    }
+
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm } = useForm(contact, initialFormState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const submittedData = handleSubmit();
+        const submittedData = validateForm();
     
         if (submittedData) {
             onSubmit(submittedData);
@@ -39,7 +77,7 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
     return(
         <>
             {
-                (!loading && values) && (
+                (values) && (
                     <form onSubmit={handleFormSubmit} className='row g-4'>
                         <div className='col-6'>
                             <ReusableInput
@@ -47,7 +85,7 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
                                     label: 'Contact Name',
                                     name: 'name',
                                     type: 'text',
-                                    value: values.name.value,
+                                    value: contact.name,
                                     placeholder: 'Enter contact name'
                                 }}
                                 onChange={handleChange}
@@ -61,7 +99,7 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
                                     label: 'Contact Last Name',
                                     name: 'lastName',
                                     type: 'text',
-                                    value: values.lastName.value,
+                                    value: contact.lastName,
                                     placeholder: 'Enter contact last name'
                                 }}
                                 onChange={handleChange}
@@ -76,7 +114,7 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
                                         label: 'Contact Phone',
                                         name: 'phone',
                                         type: 'tel',
-                                        value: values.phone.value,
+                                        value: contact.phone,
                                         placeholder: 'Enter contact phone'
                                     }}
                                     onChange={handleChange}
@@ -87,40 +125,82 @@ export const ContactForm = ({ contactId, onSubmit }: ContactFormProps) => {
                         </div>
                         <div className='row'>
                             <div className='col-12'>
-                                <ReusableSelect<OptionType> 
+                                <SelectDetailsForm<OptionType, OfficeResponse>
                                     label='Select Office:'
-                                    value={formData.office ? { value: formData.office.id, label: formData.office.name }: null }
-                                    options={tranformOffices(offices)}
-                                    onChange={handleOfficeChange}
+                                    initialData={{
+                                        value: state.office.id,
+                                        label: state.office.name
+                                    }}
+                                    listOptions={null}
+                                    formatLabel={(office: OfficeResponse) => ({
+                                        value: office.id,
+                                        label: office.name,
+                                        branches: office.branches
+                                    })}
+                                    transformData={(selected) => {
+                                        if(!Array.isArray(selected)){
+                                            const office: Office = {
+                                                id: (selected as OptionType).value,
+                                                name: (selected as OptionType).label
+                                            }
+                                            handleStateChange('office', office, office);
+                                            setBranches((selected as OfficeResponse).branches as Branch[]);
+                                        }
+                                        
+                                    }}
                                     isMulti={false}
+                                    fetchItem={() => serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`)}
                                 />
+                                {
+                                    values.office.error && (
+                                        <div className="row">
+                                            <div className="col text-danger">{values.office.error}</div>
+                                        </div>
+                                    )
+                                }
                             </div>
                         </div>
-                        {
-                            errorOfficeSelected !== '' && (
-                                <div className="row">
-                                    <div className="col text-danger">{errorOfficeSelected}</div>
-                                </div>
-                            )
-                        }
                         <div className='row'>
                             <div className='col-12'>
-                                <ReusableSelect<BranchOptionType>
-                                    label='Select Branches:'
-                                    value={formData.branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address }))}
-                                    options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
-                                    onChange={handleBranchChange}
-                                    isMulti
-                                />
+                                {
+                                    branches.length > 0 && (
+                                        <SelectDetailsForm<BranchOptionType> 
+                                            label='Select Branches:'
+                                            initialData={state.branches.map(branch => ({ 
+                                                value: branch.id, 
+                                                label: `${branch.city}\n${branch.address}`, 
+                                                address: branch.address,
+                                                office: state.office
+                                            }))}
+                                            listOptions={branches.map(branch => ({
+                                                value: (branch as Branch).id,
+                                                label: `${branch.city}\n${branch.address}`,
+                                                address: branch.address,
+                                                office: state.office
+                                            }))}
+                                            transformData={(selected) => {
+                                                if(Array.isArray(selected)){
+                                                    const selectedBranches: Branch[] = selected.map(branch => ({
+                                                        id: branch.value,
+                                                        city: branch.label.split('\n')[0],
+                                                        address: branch.address,
+                                                    }));
+                                                    handleStateChange('branches', selectedBranches, selectedBranches);
+                                                }
+                                            }}
+                                            isMulti={true}
+                                        />
+                                    )
+                                }
+                                {
+                                    values.branches.error && (
+                                        <div className="row">
+                                            <div className="col text-danger">{values.branches.error}</div>
+                                        </div>
+                                    )
+                                }
                             </div>
                         </div>
-                        {
-                            errorBranchSelected !== '' && (
-                                <div className="row">
-                                    <div className="col text-danger">{errorBranchSelected}</div>
-                                </div>
-                            )
-                        }
                         <div className="row">
                             <div className='col pt-3 text-center'>
                                 <button className='btn btn-primary' type='submit'>Save</button>

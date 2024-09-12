@@ -1,134 +1,113 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useErrorBoundary } from "react-error-boundary";
-import { AxiosError } from "axios";
 
-import { paths, validatorForm } from "@/helpers";
-import { useAsync, useAuth, useFetchAndLoad, useForm } from "@/hooks";
-import { Client, FetchResponse, FormState, SignUpCredentials, User } from "@/domain";
-import { serviceRequest } from "@/services";
+import { validatorForm } from "@/helpers";
+import { useAsync, useAuth } from "@/hooks";
+import { FetchResponse, FormState } from "@/domain";
 import { PasswordRulesList, ReusableInput } from "@/ui";
+import { useAuthForm } from "@/useCases";
 
-const initialState: FormState = {
-    username: {
-        value: '',
-        validation: [
-            validatorForm.validateNotEmpty,
-            validatorForm.isEmailOrPhone
-        ],
-        validateRealTime: false
-    },
-    newPassword: {
-        value: '',
-        validation: [
-            validatorForm.validateNotEmpty,
-            validatorForm.validateMinLength
-        ],
-        validateRealTime: true
-    },
-    confirmPassword: {
-        value: '',
-        validation: [
-            validatorForm.validateNotEmpty,
-            validatorForm.validateMinLength,
-            {
-                isValid: (value: string, formData?: FormState): boolean => value === formData?.newPassword.value,
-                message: 'Passwords must be equal'
-            }
-        ],
-        validateRealTime: true
-    }
+
+interface SignUpCredentials {
+    email: string;
+    phone: string;
+    password: string;
+    confirmPassword: string;
 }
 
 export const SignUp = () => {
 
-    const { userDetails, saveUser } = useAuth();
+    const { userDetails } = useAuth();
     const navigate = useNavigate();
     const { showBoundary } = useErrorBoundary();
 
     const { isCellularNumber } = validatorForm;
 
-    const { values, handleChange, onFocus, validateForm } = useForm(initialState);
+    const initialCredentials: SignUpCredentials = {
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: ''
+    }
 
-    const { loading, callEndPoint } = useFetchAndLoad();
-
-    const [ errorResponse, setErrorResponse ] = useState('');
-
-    const [ credentials, setCredentials ] = useState<SignUpCredentials | null>(null);
+    const initialStateForm: FormState = {
+        email: {
+            value: initialCredentials.email,
+            validation: [
+                validatorForm.isEmailOrPhone
+            ],
+            validateRealTime: false
+        },
+        password: {
+            value: initialCredentials.password,
+            validation: [
+                validatorForm.validateMinLength
+            ],
+            validateRealTime: true
+        },
+        confirmPassword: {
+            value: initialCredentials.confirmPassword,
+            validation: [
+                validatorForm.validateMinLength,
+                validatorForm.isEqual('password')
+            ],
+            validateRealTime: true
+        }
+    }
+    
 
     const [ response, setResponse ] = useState<FetchResponse<void>>({
         data: null,
         error: null
     });
 
-    const [ isValidateForm, setIsValidateForm ] = useState<boolean>(false);
-
-    useEffect(() => {
-        if(!loading){
-            if(response.error){
-                if(response.error instanceof AxiosError && response.error.response){
-                    setErrorResponse(response.error.response.data);
-                } else{
-                    setErrorResponse('An error occurred. Please try again later');
-                }
-            }
-        }
-    }, [loading, response]);
-
-    const fetchUserDetails = async () => {
-        if(isValidateForm && credentials && !userDetails){
-            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}me`));
-        }
-        return Promise.resolve({ data: null, error: null });
-    }
-
-    const handleUserDetails = (result: FetchResponse<User | Client>) => {
-        if(isValidateForm && credentials && !userDetails){
-            const { data, error } = result;
-            if(data && !error){
-                saveUser(data);
-                navigate('/home', { replace: true });
-            } else if(!data && error){
-                showBoundary(error);
-            }
-        }
-    }
-
-    useAsync(fetchUserDetails, handleUserDetails, () => {}, [isValidateForm, credentials, userDetails]);
-
-    useEffect(() => {
-        if(isValidateForm && values){
-            setCredentials({
-                email: isCellularNumber.isValid(values?.username.value) ? null : values?.username.value,
-                phone: isCellularNumber.isValid(values?.username.value) ? removeNonNumeric(values?.username.value) : null,
-                passwordOne: values.newPassword.value,
-                passwordTwo: values.confirmPassword.value
-            });
-        }
-    }, [values]);
-
-    const fetchCredentials = async() => {
-        if(credentials){
-            return await callEndPoint(serviceRequest.postItem<void, SignUpCredentials>(paths.auth.signUp, credentials));
-        }
-        return Promise.resolve({ data: null, error: null });
-    }
-
-    useAsync(fetchCredentials, setResponse, () => {}, [credentials]);
+    const { values,
+            state,
+            handleChange,
+            onFocus,
+            validateForm,
+            fetchCredentials,
+            fetchUserDetails,
+            handleUserDetails,
+            credentials,
+            setCredentials,
+            errorResponse,
+            setErrorResponse,
+            loading } = useAuthForm<SignUpCredentials>(initialCredentials, initialStateForm, true);
 
     const removeNonNumeric = (value: string) => value.replace(/\D/g, '');
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setIsValidateForm(validateForm());
+        const userValid = validateForm();
+        if(userValid && errorResponse === ''){
+            const email = userValid.email;
+            setCredentials({
+                email: isCellularNumber.isValid(email) ? '' : email,
+                phone: isCellularNumber.isValid(email) ? removeNonNumeric(email) : '',
+                password: userValid.password,
+                confirmPassword: userValid.confirmPassword
+            });
+        }
     }
+
+    useAsync(fetchCredentials, setResponse, () => {}, [credentials]);
+
+    useAsync(fetchUserDetails, handleUserDetails, () => {}, [credentials, userDetails]);
+
+    useEffect(() => {
+        if(!loading && userDetails){
+            navigate('/home', { replace: true });
+        }
+    }, [userDetails]);
 
     const handleOnFocus = (name: string) => {
         setErrorResponse('');
         onFocus(name);
     }
 
-    const isButtonDisabled = (values?.username.value.trim() === '' || values?.newPassword.value.trim() === '' || values?.confirmPassword.value.trim() === '');
+    const isButtonDisabled = (state.email.trim() === '' || state.password.trim() === '' || state.confirmPassword.trim() === '');
 
 
     return(
@@ -145,27 +124,27 @@ export const SignUp = () => {
                                                 <ReusableInput 
                                                     inputProps={{
                                                         label: 'Email or Phone Number',
-                                                        name: 'username',
+                                                        name: 'email',
                                                         type: 'text',
-                                                        value: values.username.value
+                                                        value: state.email
                                                     }}
                                                     onChange={ handleChange }
                                                     onFocus={ handleOnFocus }
-                                                    errorsMessage={ values.username.error }
+                                                    errorsMessage={ values.email.error }
                                                     />
                                             </div>
                                             <div className="col-12">
                                                 <ReusableInput 
                                                     inputProps={{
                                                         label: 'Password',
-                                                        name: 'newPassword',
+                                                        name: 'password',
                                                         type: 'password',
-                                                        value: values.newPassword.value,
+                                                        value: state.password,
                                                         placeholder: 'Enter your password'
                                                     }}
                                                     onChange={handleChange}
                                                     onFocus={onFocus}/>
-                                                    <PasswordRulesList rules={values.newPassword.validation} errors={values.newPassword.error}/>
+                                                    <PasswordRulesList rules={values.password.validation} errors={values.password.error}/>
                                             </div>
                                             <div className="col-12">
                                                 <ReusableInput 
@@ -173,7 +152,7 @@ export const SignUp = () => {
                                                         label: 'Confirm password',
                                                         name: 'confirmPassword',
                                                         type: 'password',
-                                                        value: values.confirmPassword.value,
+                                                        value: state.confirmPassword,
                                                         placeholder: 'Enter your password again'
                                                     }}
                                                     onChange={handleChange}

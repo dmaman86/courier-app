@@ -21,9 +21,9 @@ export interface State<T extends Item> {
 export type ActionType<T extends Item> =
     | { type: 'TOGGLE_MODAL' }
     | { type: 'TOGGLE_ALERT_DIALOG' }
-    | { type: 'SET_SELECTED_ITEM'; payload: T | null }
+    | { type: 'SET_SELECTED_ITEM'; payload: T }
     | { type: 'SET_PAGINATION'; payload: Pagination }
     | { type: 'SET_SEARCH_QUERY'; payload: string }
     | { type: 'SET_RESPONSE_ITEM'; payload: FetchResponse<T> }
     | { type: 'SET_DELETE_RESPONSE'; payload: FetchResponse<string> }
-    | { type: 'RESET_STATE' };
+    | { type: 'RESET_STATE'; payload: T };

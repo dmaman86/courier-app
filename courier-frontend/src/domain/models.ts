@@ -48,17 +48,13 @@ export interface Branch extends BranchInfo{
     id: number;
 }
 
-export interface LoginCredentials {
-    email: string | null;
-    phone: string | null;
+export interface Credentials {
+    username: string;
     password: string;
 }
 
-export interface SignUpCredentials {
-    email: string | null;
-    phone: string | null;
-    passwordOne: string;
-    passwordTwo: string;
+export interface SignUpCredentials extends Credentials {
+    confirmPassword: string;
 }
 
 export interface OfficeResponse{
@@ -92,7 +88,7 @@ export interface ContactOptionType extends OptionType {
 export interface Order{
     id: number;
     client: User | null;
-    originBranch: BranchResponse | null;
+    originBranch: BranchResponse;
     destinationBranch: BranchResponse | null;
     contacts: Contact[];
     deliveryDate: string;
@@ -100,5 +96,5 @@ export interface Order{
     receiverPhone: string;
     destinationAddress: string;
     couriers: User[];
-    currentStatus: StatusOrder | null;
+    currentStatus: StatusOrder;
 }

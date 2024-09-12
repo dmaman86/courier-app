@@ -1,51 +1,186 @@
-import { ReusableInput, ReusableSelect } from "../form";
-import { Branch, BranchOptionType, Client, OfficeResponse, OptionType, Role, User } from "@/domain";
-import { useUserForm } from "@/useCases";
+import { useEffect, useState } from "react";
+
+import { ReusableInput } from "../form";
+import { Branch, BranchOptionType, Client, FetchResponse, FormState, Office, OfficeResponse, OptionType, Role, User } from "@/domain";
+import { paths, validatorForm } from "@/helpers";
+import { useAsync, useAuth, useFetchAndLoad, useForm } from "@/hooks";
+
+import { SelectDetailsForm } from "./SelectDetailsForm";
+import { serviceRequest } from "@/services";
 
 
 interface UserFormProps {
-    userId: number| null;
+    user: User | Client;
+    setUser?: (user: User | Client) => void;
     onSubmit: (user: User | Client) => void;
 }
 
-const tranformRoles = (roles: Role[]): OptionType[] => {
-    return roles.map(role => ({ value: role.id, label: role.name }));
-}
+export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
 
-const tranformOffices = (offices: OfficeResponse[]): OptionType[] => {
-    return offices.map(office => ({ value: office.id, label: office.name }));
-}
+    const { userDetails } = useAuth();
+    const { loading, callEndPoint } = useFetchAndLoad();
 
-export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
+    const [ response, setResponse ] = useState<FetchResponse<User | Client>>({
+        data: null,
+        error: null
+    });
 
-    const { loading,
-            user,
-            roles,
-            offices,
-            selectedOffice,
-            isClient,
-            isAdmin,
-            isCurrentUser,
-            values,
-            handleChange,
-            onFocus,
-            handleSubmit,
-            handleRoleChange,
-            handleOfficeChange,
-            handleBranchChange } = useUserForm(userId);
+    const initialFormState: FormState = {
+        name: {
+            value: user.name,
+            validation: [ validatorForm.validateNotEmpty ],
+            validateRealTime: false
+        },
+        lastName: {
+            value: user.lastName,
+            validation: [
+                validatorForm.validateNotEmpty
+            ],
+            validateRealTime: false
+        },
+        email: {
+            value: user.email,
+            validation: [
+                validatorForm.validateNotEmpty,
+                validatorForm.isEmail
+            ],
+            validateRealTime: false
+        },
+        phone: {
+            value: user.phone,
+            validation: [
+                validatorForm.validateNotEmpty,
+                validatorForm.isCellularNumber
+            ],
+            validateRealTime: false
+        },
+        roles: {
+            value: user.roles,
+            validation: [{
+                isValid: (value: Role[]) => value.length > 0,
+                message: 'Select at least one role'
+            }],
+            validateRealTime: false
+        },
+        office: {
+            value: { id: 0, name: '' },
+            validation: [{
+                isValid: (value: Office): boolean => value.id !== 0,
+                message: 'Select an office'
+            }],
+            validateRealTime: false
+        },
+        branches: {
+            value: [],
+            validation: [{
+                isValid: (branches: Branch[]): boolean => branches.length > 0,
+                message: 'At least one branch must be specified'
+            }],
+            validateRealTime: false
+        }
+    }
+
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+    const [ isClient, setIsClient ] = useState<boolean>(false);
+    const [ isCurrentUser, setIsCurrentUser ] = useState<boolean>(false);
+    const [ branches, setBranches ] = useState<Branch[] | null>(null);
+
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm, setState, setValues } = useForm<Client, FormState>(user as Client, initialFormState);
+
+    const fetchUserDetails = async() => {
+        if(user.id !== 0){
+            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${user.id}`));
+        }
+        return Promise.resolve({ data: null, error: null });
+    }
+
+    useAsync(fetchUserDetails, setResponse, () => {}, [user.id]);
+
+    useEffect(() => {
+        if(!loading && response.data){
+            console.log(response.data);
+            if(response.data.roles.some(role => role.name === 'ROLE_CLIENT')){
+                const client = response.data as Client;
+                setState((prev) => ({
+                    ...prev,
+                    office: client.office,
+                    branches: client.branches
+                }));
+            }
+        }
+    }, [loading, response]);
+
+    useEffect(() => {
+        if(userDetails){
+            const userRoles = userDetails.roles;
+            setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
+            setIsCurrentUser(user.id === userDetails.id);
+        }
+    }, [userDetails]);
+
+    useEffect(() => {
+        setIsClient(state.roles.some(role => role.name === 'ROLE_CLIENT'));
+    }, [state.roles]);
+
+    useEffect(() => {
+        const newValues = { ...values };
+        if(isClient){
+            
+            newValues.office = {
+                value: state.office,
+                validation: [{
+                    isValid: (value: Office): boolean => value.id !== 0,
+                    message: 'Select an office'
+                }],
+                validateRealTime: false
+            };
+            newValues.branches = {
+                value: state.branches,
+                validation: [{
+                    isValid: (branches: Branch[]): boolean => branches.length > 0,
+                    message: 'At least one branch must be specified'
+                }],
+                validateRealTime: false
+            };
+        }else{
+            newValues.office = {
+                value: state.office,
+                validation: [],
+                validateRealTime: false
+            };
+            newValues.branches = {
+                value: state.branches,
+                validation: [],
+                validateRealTime: false
+            };
+        }
+        setValues(newValues);
+    }, [isClient]);
+
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const user = handleSubmit();
-        if(user)
-            onSubmit(user);
+        const newUser = validateForm();
+        if(newUser){
+            if(!newUser.roles.some(role => role.name === 'CLIENT_ROLE')){
+                const { office, branches, ...res } = newUser;
+                onSubmit(res);
+            }
+            onSubmit(newUser);
+        }
     }
+
+    useEffect(() => {
+        console.log(user);
+        console.log(state);
+        console.log(values);
+    }, [user, state, values]);
 
 
     return(
         <>
             {
-                (user && values) && (
+                values && (
                     <form onSubmit={handleFormSubmit} className='row g-4'>
                         <div className='col-6'>
                             <ReusableInput
@@ -53,7 +188,7 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                                     label: 'Name',
                                     name: 'name',
                                     type: 'text',
-                                    value: values.name.value,
+                                    value: state.name,
                                     placeholder: 'Enter user name'
                                 }}
                                 onChange={handleChange}
@@ -67,7 +202,7 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                                     label: 'Last Name',
                                     name: 'lastName',
                                     type: 'text',
-                                    value: values.lastName.value,
+                                    value: state.lastName,
                                     placeholder: 'Enter user last name'
                                 }}
                                 onChange={handleChange}
@@ -82,7 +217,7 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                                         label: 'Email',
                                         name: 'email',
                                         type: 'email',
-                                        value: values.email.value,
+                                        value: state.email,
                                         placeholder: 'Enter user email'
                                     }}
                                     onChange={handleChange}
@@ -96,7 +231,7 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                                         label: 'Phone',
                                         name: 'phone',
                                         type: 'tel',
-                                        value: values.phone.value,
+                                        value: state.phone,
                                         placeholder: 'Enter user phone'
                                     }}
                                     onChange={handleChange}
@@ -109,40 +244,92 @@ export const UserForm = ({ userId, onSubmit }: UserFormProps) => {
                             (isAdmin && !isCurrentUser) && (
                                 <div className='row'>
                                     <div className='col-12'>
-                                        <ReusableSelect<OptionType>
+                                        <SelectDetailsForm<OptionType, Role>
                                             label='Select Roles:'
-                                            value={user.roles.map(role => ({ value: role.id, label: role.name }))}
-                                            options={tranformRoles(roles)}
-                                            onChange={handleRoleChange}
-                                            isMulti
-                                            />
+                                            initialData={state.roles.map(role => ({ value: role.id, label: role.name }))}
+                                            listOptions={null}
+                                            formatLabel={(item: Role) => ({ value: item.id, label: item.name })}
+                                            transformData={(selected) => {
+                                               if(Array.isArray(selected)){
+                                                    const roles = selected.map(role => ({
+                                                        id: role.value,
+                                                        name: role.label
+                                                    }));
+                                                    handleStateChange('roles', roles, roles);
+                                               }
+                                            }}
+                                            isMulti={true}
+                                            fetchItem={() => serviceRequest.getItem<Role[]>(`${paths.courier.roles}all`)}
+                                        />
                                     </div>
                                 </div>
                             )
                         }
                         {
-                            (isAdmin && isClient) && (
+                            (isAdmin && isClient && state.office) && (
                                 <>
                                     <div className='row'>
                                         <div className='col-12'>
-                                            <ReusableSelect<OptionType> 
+                                            <SelectDetailsForm<OptionType, OfficeResponse>
                                                 label='Select Office:'
-                                                value={(user as Client).office ? { value: (user as Client).office.id, label: (user as Client).office.name }: null }
-                                                options={tranformOffices(offices)}
-                                                onChange={handleOfficeChange}
+                                                initialData={{
+                                                    value: state.office.id,
+                                                    label: state.office.name
+                                                }}
+                                                listOptions={null}
+                                                formatLabel={(office: OfficeResponse) => ({
+                                                    value: office.id,
+                                                    label: office.name,
+                                                    branches: office.branches
+                                                })}
+                                                transformData={(selected) => {
+                                                    console.log(selected);
+                                                    if(!Array.isArray(selected)){
+                                                        const office: Office = {
+                                                            id: (selected as OptionType).value,
+                                                            name: (selected as OptionType).label
+                                                        }
+                                                        handleStateChange('office', office, office);
+                                                        setBranches((selected as OfficeResponse).branches as Branch[]);
+                                                    }
+                                                }}
                                                 isMulti={false}
+                                                fetchItem={() => serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`)}
                                             />
                                         </div>
                                     </div>
                                     <div className='row'>
                                         <div className='col-12'>
-                                            <ReusableSelect<BranchOptionType>
-                                                label='Select Branches:'
-                                                value={(user as Client).branches ? (user as Client).branches.map(branch => ({ value: branch.id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
-                                                options={selectedOffice ? selectedOffice.branches.map(branch => ({ value: (branch as Branch).id, label: `${branch.city}\n${branch.address}`, address: branch.address })) : []}
-                                                onChange={handleBranchChange}
-                                                isMulti
-                                            />
+                                            {
+                                                (branches || state.branches.length > 0) && (
+                                                    <SelectDetailsForm<BranchOptionType> 
+                                                        label='Select Branches:'
+                                                        initialData={state.branches.map(branch => ({ 
+                                                            value: branch.id, 
+                                                            label: `${branch.city}\n${branch.address}`, 
+                                                            address: branch.address,
+                                                            // office: state.office
+                                                        }))}
+                                                        listOptions={branches ? branches.map(branch => ({
+                                                            value: (branch as Branch).id,
+                                                            label: `${branch.city}\n${branch.address}`,
+                                                            address: branch.address,
+                                                            // office: state.office
+                                                        })) : []}
+                                                        transformData={(selected) => {
+                                                            if(Array.isArray(selected)){
+                                                                const selectedBranches: Branch[] = selected.map(branch => ({
+                                                                    id: branch.value,
+                                                                    city: branch.label.split('\n')[0],
+                                                                    address: branch.address,
+                                                                }));
+                                                                handleStateChange('branches', selectedBranches, selectedBranches);
+                                                            }
+                                                        }}
+                                                        isMulti={true}
+                                                    />
+                                                )
+                                            }
                                         </div>
                                     </div>
                                 </>

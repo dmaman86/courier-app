@@ -10,7 +10,12 @@ export const BranchesPartial = () => {
 
     const { userDetails } = useAuth();
 
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+    const initialBranch: BranchResponse = {
+        id: 0,
+        city: '',
+        address: '',
+        office: { id: 0, name: '' }
+    }
 
     const fetchBranches = (page: number, size: number) => serviceRequest.getItem<PageResponse<BranchResponse[]>>(`${paths.courier.branches}?page=${page}&size=${size}`);
 
@@ -55,11 +60,12 @@ export const BranchesPartial = () => {
                         createOrUpdateItem={createOrUpdateBranch}
                         deleteItem={deleteBranch}
                         searchItem={searchBranch}
-                        renderItemForm={(itemId, onSubmit) => <BranchForm branchId={itemId} onSubmit={onSubmit} />}
+                        renderItemForm={(item, setItem, onSubmit) => <BranchForm branch={item} setBranch={setItem} onSubmit={onSubmit} />}
                         columns={branchColumns}
                         renderItemList={({ data, actions }) => <BranchList data={data} actions={actions}/>}
                         showSearch={true}
                         allowedRoles={branchAllowedRoles}
+                        initialItem={initialBranch}
                     />
                 )
             }

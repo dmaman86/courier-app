@@ -1,31 +1,44 @@
-import { BranchResponse, OfficeResponse, OptionType } from "@/domain";
-import { useBranchForm } from "@/useCases";
-import { ReusableInput, ReusableSelect } from "../form";
+import { BranchResponse, FormState, OfficeResponse, OptionType } from "@/domain";
+import { ReusableInput } from "../form";
+import { SelectDetailsForm } from "./SelectDetailsForm";
+import { paths, validatorForm } from "@/helpers";
+import { serviceRequest } from "@/services";
+import { useForm } from "@/hooks";
 
 interface BranchFormProps {
-    branchId: number | null;
+    branch: BranchResponse;
+    setBranch: (branch: BranchResponse) => void;
     onSubmit: (branch: BranchResponse) => void;
 }
 
-const tranformOffices = (offices: OfficeResponse[]): OptionType[] => {
-    return offices.map(office => ({ value: office.id, label: office.name }));
-}
+export const BranchForm = ({ branch, setBranch, onSubmit }: BranchFormProps) => {
 
-export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
-    
-    const { formData,
-            values,
-            handleSubmit,
-            handleOfficeChange,
-            handleChange,
-            onFocus,
-            errorOfficeSelected,
-            loading,
-            offices } = useBranchForm(branchId);
+    const initialFormState: FormState = {
+        city: {
+            value: branch.city,
+            validation: [ validatorForm.validateNotEmpty ],
+            validateRealTime: false
+        },
+        address: {
+            value: branch.address,
+            validation: [ validatorForm.validateNotEmpty ],
+            validateRealTime: false
+        },
+        office: {
+            value: branch.office,
+            validation: [{
+                isValid: (value: OfficeResponse) => value.id !== 0,
+                message: 'Please select an office'
+            }],
+            validateRealTime: false
+        }
+    }
+        
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm } = useForm(branch, initialFormState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const submittedData = handleSubmit();
+        const submittedData = validateForm();
     
         if (submittedData) {
             onSubmit(submittedData);
@@ -35,7 +48,7 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
     return (
         <>
             {
-                (!loading && values) && (
+                (values) && (
                     <form onSubmit={handleFormSubmit}>
                         <div className="row g-4">
                             <div className="col-6">
@@ -44,7 +57,7 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
                                         label: 'City',
                                         name: 'city',
                                         type: 'text',
-                                        value: values.city.value,
+                                        value: state.city,
                                         placeholder: 'Enter city name'
                                     }}
                                     onChange={handleChange}
@@ -58,7 +71,7 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
                                         label: 'Address',
                                         name: 'address',
                                         type: 'text',
-                                        value: values.address.value,
+                                        value: state.address,
                                         placeholder: 'Enter address'
                                     }}
                                     onChange={handleChange}
@@ -69,22 +82,33 @@ export const BranchForm = ({ branchId, onSubmit }: BranchFormProps) => {
                         </div>
                         <div className="row pt-3">
                             <div className="col-12">
-                                <ReusableSelect<OptionType> 
+                                <SelectDetailsForm<OptionType, OfficeResponse>
                                     label='Select Office:'
-                                    value={formData.office ? { value: formData.office.id, label: formData.office.name } : null}
-                                    options={tranformOffices(offices)}
-                                    onChange={handleOfficeChange}
+                                    initialData={{
+                                        value: state.office.id,
+                                        label: state.office.name
+                                    }}
+                                    listOptions={null}
+                                    formatLabel={(office) => ({ value: office.id, label: office.name })}
+                                    transformData={(selected) => {
+                                        const office = {
+                                            id: (selected as OptionType).value,
+                                            name: (selected as OptionType).label
+                                        }
+                                        handleStateChange('office', office, office);
+                                    }}
                                     isMulti={false}
+                                    fetchItem={() => serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}all`)}
                                 />
+                                {
+                                    values.office.error && (
+                                        <div className="row">
+                                            <div className="col text-danger">{values.office.error}</div>
+                                        </div>
+                                    )
+                                }
                             </div>
                         </div>
-                        {
-                            errorOfficeSelected !== '' && (
-                                <div className="row">
-                                    <div className="col text-danger">{errorOfficeSelected}</div>
-                                </div>
-                            )
-                        }
                         <div className="row">
                             <div className="col pt-3 text-center">
                                 <button className="btn btn-primary" type="submit">Save</button>

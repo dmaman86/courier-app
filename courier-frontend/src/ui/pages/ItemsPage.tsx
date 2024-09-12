@@ -24,7 +24,8 @@ export const ItemsPage = <T extends Item>({         userDetails,
                                                     renderItemList: ItemList, 
                                                     columns,
                                                     showSearch = true,
-                                                    allowedRoles }: ItemsPageProps<T>) => {
+                                                    allowedRoles,
+                                                    initialItem }: ItemsPageProps<T>) => {
 
 
     const ReusableTableWithLoading = withLoading(ReusableTable);
@@ -36,7 +37,7 @@ export const ItemsPage = <T extends Item>({         userDetails,
         setPagination,
         setSearchQuery,
         setResponseItem,
-        setDeleteResponse } = useItemsPage<T>();
+        setDeleteResponse } = useItemsPage<T>(initialItem);
 
     const [ displayCreateItem, setDisplayCreateItem ] = useState<boolean>(false);
 
@@ -99,14 +100,14 @@ export const ItemsPage = <T extends Item>({         userDetails,
             else updateItem(item as T);
             setResponseItem({ data: null, error: null });
             toggleModal();
-            setSelectedItem(null);
+            setSelectedItem(initialItem);
         }
     }, [addItem, existItem, loading, state.responseItem, updateItem]);
 
     useEffect(() => {
         if(!loading && state.responseDelete.data && !state.responseDelete.error){
             removeItem(state.selectedItem as T);
-            setSelectedItem(null);
+            setSelectedItem(initialItem);
             toggleAlertDialog();
             setDeleteResponse({ data: null, error: null });
         }
@@ -120,7 +121,7 @@ export const ItemsPage = <T extends Item>({         userDetails,
     }, [setSearchQuery, searchApiData]);
 
     const handleCreateItem = () => {
-        setSelectedItem(null);
+        setSelectedItem(initialItem);
         setDisplayCreateItem(true);
     }
 
@@ -162,7 +163,7 @@ export const ItemsPage = <T extends Item>({         userDetails,
                         <div className="container">
                             <div className="card">
                                 <div className="card-body">
-                                    {renderItemForm(null, handleFormSubmit)}
+                                    {state.selectedItem && renderItemForm(state.selectedItem as T, setSelectedItem, handleFormSubmit)}
                                 </div>
                                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" onClick={() => setDisplayCreateItem(false)}>
                                     <i className="fas fa-times"></i>
@@ -187,7 +188,7 @@ export const ItemsPage = <T extends Item>({         userDetails,
                 state.showModal && (
                     <GenericModal
                         title={state.selectedItem ? `Edit ${title}` : `Create ${title}`}
-                        body={renderItemForm(state.selectedItem?.id!, handleFormSubmit)}
+                        body={renderItemForm(state.selectedItem as T, setSelectedItem, handleFormSubmit)}
                         show={state.showModal}
                         onClose={toggleModal}
                     />

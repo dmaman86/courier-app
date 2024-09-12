@@ -9,7 +9,10 @@ export const RolePartial = () => {
 
     const { userDetails } = useAuth();
 
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+    const initialRole: Role = {
+        id: 0,
+        name: ''
+    };
 
     const fetchRoles = (page: number, size: number) => serviceRequest.getItem<PageResponse<Role[]>>(`${paths.courier.roles}?page=${page}&size=${size}`);
 
@@ -46,11 +49,12 @@ export const RolePartial = () => {
                         fetchItems={fetchRoles}
                         createOrUpdateItem={createOrUpdateRole}
                         deleteItem={deleteRole}
-                        renderItemForm={(roleId, onSubmit) => <RoleForm roleId={roleId} onSubmit={onSubmit} />}
+                        renderItemForm={(item, setItem, onSubmit) => <RoleForm role={item} setRole={setItem} onSubmit={onSubmit} />}
                         columns={roleColumns}
                         renderItemList={({ data, actions }) => <RoleList data={data} actions={actions} />}
                         showSearch={false}
                         allowedRoles={roleAllowedRoles}
+                        initialItem={initialRole}
                     />
                 )
             }

@@ -12,6 +12,19 @@ export const UsersPage = () => {
 
     const { userDetails } = useAuth();
 
+    const initialUser: User | Client = {
+        id: 0,
+        email: '',
+        name: '',
+        lastName: '',
+        phone: '',
+        roles: [],
+        office: { id: 0, name: ''},
+        // office: null,
+        branches: [],
+        isActive: true
+    };
+
     const fetchUsers = (page: number, size: number) => serviceRequest.getItem<PageResponse<User[]>>(`${paths.courier.users}?page=${page}&size=${size}`);
 
     const createUser = (user: User) => serviceRequest.postItem<User, User>(paths.courier.createOrUpdateUser, user);
@@ -74,10 +87,11 @@ export const UsersPage = () => {
                         createOrUpdateItem={createOrUpdateItem}
                         deleteItem={deleteUser}
                         searchItem={searchUser}
-                        renderItemForm={(userId, onSubmit) => <UserForm userId={userId} onSubmit={onSubmit} />}
+                        renderItemForm={(item, setItem, onSubmit) => <UserForm user={item} setUser={setItem} onSubmit={onSubmit} />}
                         columns={userColumns}
                         renderItemList={({ data, actions }) => <UserList data={data} actions={actions}/>}
                         allowedRoles={userAllowedRoles}
+                        initialItem={initialUser}
                     />
                 )
             }
