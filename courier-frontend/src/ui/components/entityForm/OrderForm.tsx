@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from "moment";
 
 import { ReusableInput, SelectDetailsForm } from "../form";
-import { Branch, BranchResponse, Client, Contact, ContactOptionType, 
+import { Branch, BranchInfo, BranchResponse, Client, Contact, ContactOptionType, 
         FetchResponse, FormProps, FormState, Office, OfficeResponse, 
         OptionType, Order, StatusOrder, User } from "@/domain";
 
@@ -17,6 +17,22 @@ interface BranchOptionType extends OptionType {
     address: string;
     office: Office;
 }
+
+const useDebounce = (value: string, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+  
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+  
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+  
+    return debouncedValue;
+};
 
 const tranformOffices = (offices: OfficeResponse[]): readonly OptionType[] => {
     return offices.map(office => ({ value: office.id, label: office.name }));
@@ -35,7 +51,7 @@ export const OrderForm = <T extends Order>({ item, onSubmit, onClose }: FormProp
 
     const { userDetails } = useAuth();
 
-    const { loading, callEndPoint } = useFetchAndLoad();
+    const { loading, callEndPoint } = useFetchAndLoad()
 
     const [ isClient, setIsClient ] = useState<boolean>(false);
     const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
@@ -49,6 +65,8 @@ export const OrderForm = <T extends Order>({ item, onSubmit, onClose }: FormProp
     const [ autocompleteValue, setAutocompleteValue ] = useState<OptionType | null>(null);
     const [ query, setQuery ] = useState<string>('');
     const [ found, setFound ] = useState<boolean>(true);
+
+    const debouncedQuery = useDebounce(query, 500);
 
 
     const initialState: FormState = {
@@ -208,20 +226,22 @@ export const OrderForm = <T extends Order>({ item, onSubmit, onClose }: FormProp
     }
 
     // Search Offices
-    const searchOffice = async (): Promise<FetchResponse<OfficeResponse[]>> => {
-        if (query) {
-            return await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}search/name?query=${query}`));
+    const searchOffice = async (debouncedQuery: string): Promise<FetchResponse<OfficeResponse[]>> => {
+        if (debouncedQuery) {
+            return await callEndPoint(serviceRequest.getItem<OfficeResponse[]>(`${paths.courier.offices}search/name?query=${debouncedQuery}`));
         }
         return { data: null, error: null };
     };
 
     const handleSearchSuccess = (response: FetchResponse<OfficeResponse[]>) => {
-        if (query) {
-            if (response.data) setOffices([...response.data, { id: 0, name: 'Not Found', branches: [] }]);
-        } else setOffices([{ id: 0, name: 'Not Found', branches: [] }]);
+        if (response.data) {
+            setOffices([...response.data, { id: 0, name: 'Not Found', branches: [] }]);
+        } else {
+            setOffices([{ id: 0, name: 'Not Found', branches: [] }]);
+        }
     };
 
-    useAsync(searchOffice, handleSearchSuccess, () => {}, [query]);
+    useAsync(() => searchOffice(debouncedQuery), handleSearchSuccess, () => {}, [debouncedQuery]);
 
     // Handle Office AutoComplete
     const handleOfficeAutoComplete = (event: React.SyntheticEvent<Element, Event>, value: OptionType | null) => {
@@ -239,12 +259,17 @@ export const OrderForm = <T extends Order>({ item, onSubmit, onClose }: FormProp
                 office && setOfficeDestination(office);
             }
         } else {
+            setAutocompleteValue(null);
             setFound(true);
             handleStateChange('destinationBranch', null, null);
             setContacts([]);
             setOfficeDestination(null);
         }
     };
+
+    const officeOptions = useMemo(() => {
+        return tranformOffices(offices);
+    }, [offices]);
 
 
     return(
@@ -298,32 +323,28 @@ export const OrderForm = <T extends Order>({ item, onSubmit, onClose }: FormProp
                         </div>
                         <div className="row pt-3">
                             <div className="col-6">
-                                {
-                                    autocompleteValue && (
-                                        <Autocomplete
-                                            value={autocompleteValue}
-                                            onInputChange={handleInputChange}
-                                            onChange={handleOfficeAutoComplete}
-                                            options={tranformOffices(offices)}
-                                            getOptionLabel={(option) => option.label}
-                                            isOptionEqualToValue={(option, value) => {
+                                <Autocomplete
+                                    value={autocompleteValue}
+                                    onInputChange={(event, value) => setQuery(value)}
+                                    onChange={handleOfficeAutoComplete}
+                                    options={officeOptions}
+                                    getOptionLabel={(option) => option.label}
+                                    isOptionEqualToValue={(option, value) => {
                                                 if(option.value === 0) return true;
                                                 return option.value === value.value;
-                                            }}
-                                            renderInput={(params) => (
+                                    }}
+                                    renderInput={(params) => (
                                                                 
-                                                <TextField
-                                                    {...params}
-                                                    label="Search for a destination office"
-                                                    placeholder="Search for a destination office"
-                                                    variant="outlined"
-                                                    fullWidth
-                                                    disabled={!isClient}
-                                                    />
-                                            )}
-                                        />
-                                    )
-                                }
+                                        <TextField
+                                            {...params}
+                                            label="Search for a destination office"
+                                            placeholder="Search for a destination office"
+                                            variant="outlined"
+                                            fullWidth
+                                            disabled={!isClient}
+                                            />
+                                        )}
+                                />
                             </div>
                             <div className="col-6">
                                 <LocalizationProvider dateAdapter={AdapterMoment}>
