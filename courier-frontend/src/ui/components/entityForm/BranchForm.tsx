@@ -9,7 +9,7 @@ import { useForm } from "@/hooks";
     onSubmit: (branch: BranchResponse) => void;
 }*/
 
-export const BranchForm = <T extends BranchResponse>({ item, onSubmit }: FormProps<T>) => {
+export const BranchForm = <T extends BranchResponse>({ item, onSubmit, onClose }: FormProps<T>) => {
 
     const initialFormState: FormState = {
         city: {
@@ -110,6 +110,7 @@ export const BranchForm = <T extends BranchResponse>({ item, onSubmit }: FormPro
                         <div className="row">
                             <div className="col pt-3 text-center">
                                 <button className="btn btn-primary" type="submit">Save</button>
+                                { onClose && (<button className='btn btn-secondary ms-2' onClick={onClose}>Cancel</button>) }
                             </div>
                         </div>
                     </form>

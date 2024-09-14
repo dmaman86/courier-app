@@ -46,6 +46,11 @@ export interface BranchInfo {
     address: string;
 }
 
+export interface UpdatePasswordForm extends User{
+    password: string;
+    confirmPassword: string;
+}
+
 /*export interface Branch extends BranchInfo{
     id: number;
 }*/

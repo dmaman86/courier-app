@@ -61,7 +61,7 @@ export const RolePartial = () => {
                         list={{
                             columns: roleColumns,
                             itemList: (data, actions) => <RoleList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit) => <RoleForm item={item} onSubmit={onSubmit}/>
+                            itemForm: (item, onSubmit, onClose) => <RoleForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                         }}
                         options={{
                             showSearch: false,

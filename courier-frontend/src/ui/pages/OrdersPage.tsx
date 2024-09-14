@@ -88,7 +88,7 @@ export const OrdersPage = () => {
                         list={{
                             columns: orderColumns,
                             itemList: (data, actions) => <OrderList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit) => <OrderForm item={item} onSubmit={onSubmit}/>
+                            itemForm: (item, onSubmit, onClose) => <OrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                         }}
                         options={{
                             showSearch: false,

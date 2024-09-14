@@ -3,7 +3,7 @@ import { FormProps, FormState, StatusOrder } from "@/domain";
 import { validatorForm } from "@/helpers";
 import { useForm } from "@/hooks";
 
-export const StatusOrderForm = <T extends StatusOrder>({ item, onSubmit }: FormProps<T>) => {
+export const StatusOrderForm = <T extends StatusOrder>({ item, onSubmit, onClose }: FormProps<T>) => {
 
     const initialState: FormState = {
         name: {
@@ -65,6 +65,7 @@ export const StatusOrderForm = <T extends StatusOrder>({ item, onSubmit }: FormP
                         <div className="row">
                             <div className="col pt-3 text-center">
                                 <button className="btn btn-primary" type="submit">Save</button>
+                                { onClose && (<button className='btn btn-secondary ms-2' onClick={onClose}>Cancel</button>) }
                             </div>
                         </div>
                     </form>

@@ -75,7 +75,7 @@ export const ContactsPage = () => {
                         list={{
                             columns: contactColumns,
                             itemList: (data, actions) => <ContactList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit) => <ContactForm item={item} onSubmit={onSubmit}/>
+                            itemForm: (item, onSubmit, onClose) => <ContactForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                         }}
                         options={{
                             showSearch: true,

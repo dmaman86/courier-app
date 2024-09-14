@@ -107,7 +107,7 @@ export const UsersPage = () => {
                         list={{
                             columns: userColumns,
                             itemList: (data, actions) => <UserList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit) => <UserForm item={item} onSubmit={onSubmit} />
+                            itemForm: (item, onSubmit, onClose) => <UserForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                         }}
                         options={{
                             allowedRoles: userAllowedRoles

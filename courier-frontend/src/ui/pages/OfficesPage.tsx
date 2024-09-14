@@ -68,7 +68,7 @@ export const OfficesPage = () => {
                         list={{
                             columns: officeColumns,
                             itemList: (data, actions) => <OfficeList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit) => <OfficeForm item={item} onSubmit={onSubmit}/>
+                            itemForm: (item, onSubmit, onClose) => <OfficeForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                         }}
                         options={{
                             showSearch: true,

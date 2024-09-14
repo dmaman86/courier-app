@@ -72,7 +72,7 @@ export const BranchesPartial = () => {
                         list={{
                             columns: branchColumns,
                             itemList: (data, actions) => <BranchList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit) => <BranchForm item={item} onSubmit={onSubmit}/>
+                            itemForm: (item, onSubmit, onClose) => <BranchForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                         }}
                         options={{
                             showSearch: true,

@@ -90,12 +90,18 @@ public class AuthServiceImpl implements AuthService{
     private void revokeAllUserTokens(Long userId, List<TokenType> tokenTypes){
 
         tokenTypes.forEach(tt -> {
-            Optional<Token> token = tokenRepository.findByUserIdAndTokenTypeAndIsRevoked(userId, tt, false);
+            // Optional<Token> token = tokenRepository.findByUserIdAndTokenTypeAndIsRevoked(userId, tt, false);
+            List<Token> tokens = tokenRepository.findByUserIdAndTokenTypeAndIsRevokedFalseAndIsExpiredFalse(userId, tt);
 
-            token.ifPresent(t -> {
+            /*token.ifPresent(t -> {
                 t.setIsRevoked(true);
                 t.setIsExpired(true);
                 tokenRepository.save(t);
+            });*/
+            tokens.forEach(token -> {
+                token.setIsRevoked(true);
+                token.setIsExpired(true);
+                tokenRepository.save(token);
             });
         });
     }

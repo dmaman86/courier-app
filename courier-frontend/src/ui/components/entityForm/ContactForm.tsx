@@ -11,7 +11,7 @@ interface BranchOptionType extends OptionType {
     office: Office;
 }
 
-export const ContactForm = <T extends Contact>({ item, onSubmit }: FormProps<T>) => {
+export const ContactForm = <T extends Contact>({ item, onSubmit, onClose }: FormProps<T>) => {
 
     const [ branches, setBranches ] = useState<Branch[]>(item.branches);
 
@@ -195,6 +195,7 @@ export const ContactForm = <T extends Contact>({ item, onSubmit }: FormProps<T>)
                         <div className="row">
                             <div className='col pt-3 text-center'>
                                 <button className='btn btn-primary' type='submit'>Save</button>
+                                { onClose && (<button className='btn btn-secondary ms-2' onClick={onClose}>Cancel</button>) }
                             </div>
                         </div>
                     </form>

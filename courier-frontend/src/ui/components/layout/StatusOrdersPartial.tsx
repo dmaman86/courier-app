@@ -79,7 +79,7 @@ export const StatusOrdersPartial = () => {
                         list={{
                             columns: statusOrdersColumns,
                             itemList: (data, actions) => <StatusOrdersList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit) => <StatusOrderForm item={item} onSubmit={onSubmit}/>
+                            itemForm: (item, onSubmit, onClose) => <StatusOrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                         }}
                         options={{
                             showSearch: false,

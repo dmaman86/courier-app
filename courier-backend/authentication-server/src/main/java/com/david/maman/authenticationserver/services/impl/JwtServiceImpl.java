@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -15,8 +16,11 @@ import org.springframework.stereotype.Service;
 
 import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.TokenResponse;
+import com.david.maman.authenticationserver.helpers.TokenType;
+import com.david.maman.authenticationserver.models.entities.Token;
 import com.david.maman.authenticationserver.models.entities.User;
 import com.david.maman.authenticationserver.models.entities.UserCredentials;
+import com.david.maman.authenticationserver.repositories.TokenRepository;
 import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
 import com.david.maman.authenticationserver.repositories.UserRepository;
 import com.david.maman.authenticationserver.services.JwtService;
@@ -34,8 +38,8 @@ public class JwtServiceImpl implements JwtService{
     private KeyPair jwtKeyPair;
 
     // private long jwtExpiration = 86400000; // 1 day
-    // private long jwtExpiration = 60000; // 1 minute
-    private long jwtExpiration = 600000; // 10 minutes
+    private long jwtExpiration = 60000; // 1 minute
+    // private long jwtExpiration = 600000; // 10 minutes
     // private long jwtRefreshExpiration = 604800000; // 7 days
     // private long jwtRefreshExpiration = 300000; // 5 minutes
     private long jwtRefreshExpiration = 1800000; // 30 minutes
@@ -45,6 +49,9 @@ public class JwtServiceImpl implements JwtService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
 
     @Override
@@ -105,18 +112,24 @@ public class JwtServiceImpl implements JwtService{
     }
 
     @Override
-    public UserCredentials getUserFromToken(String token){
-        try{
-            Claims claims = extractAllClaims(token);
-            String phone = claims.get("phone", String.class);
-            String email = claims.get("email", String.class);
+    public UserCredentials getUserFromToken(String token, TokenType tokenType){
+        List<Token> tokenEntity = tokenRepository.findByTokenAndTokenTypeAndIsRevokedAndIsExpired(token, tokenType, false, false);
+        if(!tokenEntity.isEmpty()){
+            Token lasToken = tokenEntity.get(tokenEntity.size() - 1);
+            return userCredentialsRepository.findByUserId(lasToken.getUser().getId()).orElse(null);
+        }
+        return null;
+    }
 
-            User user = userRepository.findByEmailAndPhoneAndIsActive(email, phone, true).orElse(null);
-            if(user == null) return null;
-            return userCredentialsRepository.findByUserId(user.getId()).orElse(null);
-        }catch (JwtException | IllegalArgumentException e) {
-            logger.error("Error parsing token claims: " + e.getMessage());
-            return null;
+    @Override
+    public void revokeToken(CustomUserDetails credentials, String token, TokenType tokenType){
+        Optional<Token> tokenEntity = tokenRepository.findByUserIdAndTokenAndTokenType(credentials.getCredentials().getUser().getId() ,token, tokenType);
+
+        if(tokenEntity.isPresent()){
+            Token foundToken = tokenEntity.get();
+            foundToken.setIsExpired(true);
+            foundToken.setIsRevoked(true);
+            tokenRepository.save(foundToken);
         }
     }
 

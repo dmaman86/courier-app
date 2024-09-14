@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 
 import { ReusableInput, SelectDetailsForm } from "../form";
-import { Branch, BranchOptionType, Client, FetchResponse, FormProps, FormState, Office, OfficeResponse, OptionType, Role, User } from "@/domain";
+import { Branch, BranchOptionType, Client, FetchResponse, FormProps, 
+        FormState, Office, OfficeResponse, OptionType, Role, User } from "@/domain";
 import { paths, validatorForm } from "@/helpers";
 import { useAsync, useAuth, useFetchAndLoad, useForm } from "@/hooks";
 import { serviceRequest } from "@/services";
 
-export const UserForm = <T extends User, R extends T = T>({ item, onSubmit }: FormProps<T, R>) => {
+export const UserForm = <T extends User, R extends T = T>({ item, onSubmit, onClose }: FormProps<T, R>) => {
 
     const { userDetails } = useAuth();
     const { loading, callEndPoint } = useFetchAndLoad();
@@ -154,20 +155,9 @@ export const UserForm = <T extends User, R extends T = T>({ item, onSubmit }: Fo
         const newUser = validateForm();
         console.log(state);
         if(newUser){
-            /*if(!newUser.roles.some(role => role.name === 'CLIENT_ROLE')){
-                const { office, branches, ...res } = newUser;
-                onSubmit(res);
-            }
-            onSubmit(newUser);*/
             onSubmit(newUser as T | R);
         }
     }
-
-    useEffect(() => {
-        console.log(item);
-        console.log(state);
-        console.log(values);
-    }, [item, state, values]);
 
 
     return(
@@ -330,6 +320,7 @@ export const UserForm = <T extends User, R extends T = T>({ item, onSubmit }: Fo
                         }
                         <div className='col pt-3 text-center'>
                             <button className='btn btn-primary' type='submit'>Save</button>
+                            { onClose && (<button className='btn btn-secondary ms-2' onClick={onClose}>Cancel</button>) }
                         </div>
                     </form>
                 )

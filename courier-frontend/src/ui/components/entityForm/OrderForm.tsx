@@ -31,7 +31,7 @@ const createBranchResponseFromClient = (client: Client): BranchResponse[] => {
     }));
 }
 
-export const OrderForm = <T extends Order>({ item, onSubmit }: FormProps<T>) => {
+export const OrderForm = <T extends Order>({ item, onSubmit, onClose }: FormProps<T>) => {
 
     const { userDetails } = useAuth();
 
@@ -127,6 +127,20 @@ export const OrderForm = <T extends Order>({ item, onSubmit }: FormProps<T>) => 
     useEffect(() => {
         console.log(item);
     }, [item]);
+
+    useEffect(() => {
+        if(item.destinationBranch){
+            setOfficeDestination({
+                id: item.destinationBranch.office.id,
+                name: item.destinationBranch.office.name,
+                branches: [{
+                    id: item.destinationBranch.id,
+                    city: item.destinationBranch.city,
+                    address: item.destinationBranch.address
+                }]
+            })
+        }
+    }, []);
 
     useEffect(() => {
         if(officeDestination) console.log(officeDestination);
@@ -514,6 +528,7 @@ export const OrderForm = <T extends Order>({ item, onSubmit }: FormProps<T>) => 
                         <div className="row">
                             <div className='col pt-3 text-center'>
                                 <button className='btn btn-primary' type='submit'>Save</button>
+                                { onClose && (<button className='btn btn-secondary ms-2' onClick={onClose}>Cancel</button>) }
                             </div>
                         </div>
                     </form>

@@ -1,30 +1,14 @@
-import { ReusableInput } from "../form";
-import { FormState, User } from "@/domain";
+import { FormProps, FormState, UpdatePasswordForm } from "@/domain";
 import { PasswordRulesList } from "../layout";
 import { validatorForm } from "@/helpers";
 import { useForm } from "@/hooks";
+import { ReusableInput } from "../form";
 
-
-interface UpdatePasswordProps {
-    user: User | null;
-    onClose: () => void;
-}
-
-interface UpdatePasswordForm {
-    password: string;
-    confirmPassword: string;
-}
-
-export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
-
-    const initUpdatePassword: UpdatePasswordForm = {
-        password: '',
-        confirmPassword: ''
-    }
+export const UpdatePassword = <T extends UpdatePasswordForm, R extends T = T>({ item, onSubmit, onClose }: FormProps<T, R>) => {
     
     const initialState: FormState = {
         password: {
-            value: initUpdatePassword.password,
+            value: item.password,
             validation: [
                 validatorForm.validateNotEmpty,
                 validatorForm.validateMinLength
@@ -32,7 +16,7 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
             validateRealTime: true
         },
         confirmPassword: {
-            value: initUpdatePassword.confirmPassword,
+            value: item.confirmPassword,
             validation: [
                 validatorForm.validateMinLength,
                 validatorForm.isEqual('password')
@@ -41,7 +25,7 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
         }
     };
 
-    const { values, state, handleChange, onFocus, validateForm } = useForm(initUpdatePassword, initialState);
+    const { values, state, handleChange, onFocus, validateForm } = useForm(item, initialState);
 
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -50,7 +34,7 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
         const credentials = validateForm();
         if(credentials){
             console.log(credentials);
-            onClose();
+            onSubmit(credentials as T);
         }
     }
 
@@ -59,7 +43,7 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
             <form onSubmit={ handleFormSubmit } className="row g-4">
                 <div className="col-12">
                     <h4>
-                        Username: <span>{ user?.email }</span>
+                        Username: <span>{ state.email }</span>
                     </h4>
                 </div>
 
@@ -67,7 +51,7 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
                     <ReusableInput 
                         inputProps={{
                             label: 'Password',
-                            name: 'newPassword',
+                            name: 'password',
                             type: 'password',
                             value: state.password,
                             placeholder: 'Enter your password'
@@ -91,6 +75,7 @@ export const UpdatePassword = ({ user, onClose }: UpdatePasswordProps) => {
                 </div>
                 <div className="col pt-3 text-center">
                     <button className="btn btn-primary" type="submit">Update</button>
+                    { onClose && (<button className='btn btn-secondary ms-2' onClick={onClose}>Cancel</button>) }
                 </div>
             </form>
         </>

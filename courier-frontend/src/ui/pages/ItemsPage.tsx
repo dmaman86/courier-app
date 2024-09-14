@@ -5,7 +5,7 @@ import { Typography } from "@mui/material";
 import { Action, FetchResponse, Item, ItemsPageProps, PageResponse } from "@/domain";
 import { useAsync, useFetchAndLoad, useItemsPage, useList } from "@/hooks";
 import { withLoading } from "@/hoc";
-import { CustomDialog, GenericModal, PageHeader, ReusableTable } from "@/ui";
+import { CustomDialog, PageHeader, ReusableTable } from "@/ui";
 import { useUserItemActions } from "@/useCases";
 
 
@@ -35,6 +35,9 @@ export const ItemsPage = <T extends Item>({
         setDeleteResponse } = useItemsPage<T>(initialItem);
 
     const [ displayCreateItem, setDisplayCreateItem ] = useState<boolean>(false);
+    const [ title, setTitle ] = useState('');
+    const [ content, setContent ] = useState<React.ReactNode>(null);
+    const [ actionsForm, setActionsForm ] = useState<React.ReactNode>(null);
 
     const { items, setAllItems, addItem, updateItem, removeItem, existItem } = useList<T>([]);
     const { loading, callEndPoint } = useFetchAndLoad();
@@ -133,13 +136,29 @@ export const ItemsPage = <T extends Item>({
         else getApiData();
     }
 
+    const handleClose = () => {
+        setTitle('');
+        setContent(null);
+        setActionsForm(null);
+        toggleAlertDialog();
+    }
+
     const handleEditItem = (item: T) => {
         setSelectedItem(item);
-        toggleModal();
+        setTitle(`Edit item ID: ${item.id}`);
+        setContent(list.itemForm(item, handleFormSubmit, handleClose));
+        // toggleModal();
+        toggleAlertDialog();
     };
 
     const handleDeleteItem = (item: T) => {
         setSelectedItem(item);
+        setTitle(`Delete item ID: ${item.id}`);
+        setContent(<Typography style={{ whiteSpace: 'pre-line' }}>{formatMessage(item)}</Typography>);
+        setActionsForm(<>
+            <button onClick={handleClose} className="btn btn-secondary">Cancel</button>
+            <button onClick={() => deleteHandler(item.id)} className="btn btn-danger">Sure</button>
+        </>);
         toggleAlertDialog();
     };
 
@@ -187,32 +206,13 @@ export const ItemsPage = <T extends Item>({
                     onRowsPerPageChange={handleRowsPerPageChange}
                 />
             </div>
-            {
-                state.showModal && (
-                    <GenericModal
-                        title={`Edit item ID: ${state?.selectedItem?.id}`}
-                        body={list.itemForm(state.selectedItem as T, handleFormSubmit, toggleModal)}
-                        show={state.showModal}
-                        onClose={toggleModal}
-                    />
-                )
-            }
-            {
-                state.selectedItem && (
-                    <CustomDialog
-                        open={state.showAlertDialog}
-                        onClose={toggleAlertDialog}
-                        title="Confirm Delete"
-                        content={<Typography style={{ whiteSpace: 'pre-line' }}>{formatMessage(state.selectedItem as T)}</Typography>}
-                        actions={
-                            <>
-                                <button onClick={toggleAlertDialog} className="btn btn-secondary">Cancel</button>
-                                <button onClick={() => deleteHandler(state.selectedItem?.id!)} className="btn btn-danger">Sure</button>
-                            </>
-                        }
-                    />
-                )
-            }
+            <CustomDialog 
+                open={state.showAlertDialog} 
+                onClose={handleClose} 
+                title={title}
+                content={content}
+                actions={actionsForm}
+            />
         </>
     )
 }

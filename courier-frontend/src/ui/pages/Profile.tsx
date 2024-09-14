@@ -2,23 +2,53 @@ import { useEffect, useState } from "react";
 import { Container, Grid, Paper, Typography, Stack, Button } from "@mui/material";
 
 import { useAuth } from "@/hooks";
-import { Branch, Client, Role, User } from "@/domain";
-
-import { GenericModal, UpdatePassword, UserForm } from "@/ui";
+import { Branch, Client, Role, UpdatePasswordForm, User } from "@/domain";
+import { CustomDialog, UpdatePassword, UserForm } from "@/ui";
 
 
 export const Profile = () => {
 
     const { userDetails } = useAuth();
 
-    const [ showModalPassword, setShowModalPassword ] = useState(false);
-    const [ showModalDetails, setShowModalDetails ] = useState(false);
-
+    const [ dialog, setDialog ] = useState<boolean>(false);
+ 
     const [ isClient, setIsClient ] = useState<boolean>(false);
+    const [ userWithPassword, setUserWithPassword ] = useState<UpdatePasswordForm | null>(null);
 
-    const toogleModalPassword = () => setShowModalPassword(!showModalPassword);
+    const [ title, setTitle ] = useState<string>('');
+    const [ content, setContent ] = useState<React.ReactNode>(null);
 
-    const toogleModalDetails = () => setShowModalDetails(!showModalDetails);
+    useEffect(() => {
+        if (userDetails) {
+          setUserWithPassword({
+            ...userDetails,
+            password: '',
+            confirmPassword: ''
+          });
+        }
+    }, [userDetails]);
+
+    const handleFormSubmit = (user: User | UpdatePasswordForm) => {
+        console.log(user);
+    }
+
+    const handleClose = () => {
+        setDialog(false);
+        setTitle('');
+        setContent(null);
+    }
+
+    const handleEditDetails = () => {
+        setTitle('Update details');
+        setContent(<UserForm item={userDetails!} onSubmit={handleFormSubmit} onClose={handleClose}/>);
+        setDialog(true);
+    }
+
+    const handleEditPassword = () => {
+        setTitle('Update password');
+        setContent(userWithPassword && <UpdatePassword item={userWithPassword} onSubmit={handleFormSubmit} onClose={handleClose} />);
+        setDialog(true);
+    }
 
     useEffect(() => {
         if(userDetails) console.log(userDetails);
@@ -30,10 +60,6 @@ export const Profile = () => {
             setIsClient(userDetails.roles.some(role => role.name === 'ROLE_CLIENT'))
         }
     }, [userDetails]);
-
-    const handleFormSubmit = (user: User) => {
-        console.log(user);
-    }
 
     const extractRoleNames = (user: User | Client) => {
         const formattedRoles = user.roles.map((role: Role) => {
@@ -103,8 +129,8 @@ export const Profile = () => {
                                     }
                                     <Grid item xs={12}>
                                         <Stack spacing={2} direction={'row'} justifyContent='center'>
-                                            <Button variant="contained" color="primary" onClick={toogleModalDetails}>Update details</Button>
-                                            <Button variant="contained" color="primary" onClick={toogleModalPassword}>Update password</Button>
+                                            <Button variant="contained" color="primary" onClick={handleEditDetails}>Update details</Button>
+                                            <Button variant="contained" color="primary" onClick={handleEditPassword}>Update password</Button>
                                         </Stack>
                                     </Grid>
                                 </Grid>
@@ -114,12 +140,12 @@ export const Profile = () => {
                 </Container>
             )
         }
-        {                
-            (userDetails && showModalPassword) && <GenericModal title="Generic modal" body={<UpdatePassword user={userDetails} onClose={toogleModalPassword} />} show={showModalPassword} onClose={toogleModalPassword} />
-        }
-        {
-            (userDetails && showModalDetails) && <GenericModal title="Update details" body={<UserForm item={userDetails} onSubmit={handleFormSubmit}/>} show={showModalDetails} onClose={toogleModalDetails}/>
-        }
+        <CustomDialog
+            open={dialog}
+            title={title}
+            content={content}
+            onClose={handleClose} 
+        />
         </>
     );
 }
