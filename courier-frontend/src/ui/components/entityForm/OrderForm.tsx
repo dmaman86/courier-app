@@ -4,21 +4,14 @@ import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from "moment";
 
-import { ReusableInput } from "../form";
-import { Branch, BranchResponse, Client, Contact, ContactOptionType, FetchResponse, FormState, Office, OfficeResponse, OptionType, Order, StatusOrder, User } from "@/domain";
-
+import { ReusableInput, SelectDetailsForm } from "../form";
+import { Branch, BranchResponse, Client, Contact, ContactOptionType, 
+        FetchResponse, FormProps, FormState, Office, OfficeResponse, 
+        OptionType, Order, StatusOrder, User } from "@/domain";
 
 import { useAsync, useAuth, useFetchAndLoad, useForm } from '@/hooks';
-import { SelectDetailsForm } from './SelectDetailsForm';
-
 import { serviceRequest } from '@/services';
 import { paths, validatorForm } from '@/helpers';
-
-interface OrderFormProps {
-    order: Order;
-    setOrder: (order: Order) => void;
-    onSubmit: (order: Order) => void;
-}
 
 interface BranchOptionType extends OptionType {
     address: string;
@@ -38,7 +31,7 @@ const createBranchResponseFromClient = (client: Client): BranchResponse[] => {
     }));
 }
 
-export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
+export const OrderForm = <T extends Order>({ item, onSubmit }: FormProps<T>) => {
 
     const { userDetails } = useAuth();
 
@@ -60,7 +53,7 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
 
     const initialState: FormState = {
         client: {
-            value: order.client,
+            value: item.client,
             validation: [{
                 isValid: (value: User): boolean => value !== null && value.id !== 0,
                 message: 'Client is required' 
@@ -68,7 +61,7 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
             validateRealTime: false
         },
         originBranch: {
-            value: order.originBranch,
+            value: item.originBranch,
             validation: [{
                 isValid: (value: BranchResponse): boolean => value.id !== 0 && value.office.id !== 0,
                 message: 'Origin Branch is required'
@@ -76,7 +69,7 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
             validateRealTime: false
         },
         destinationBranch: {
-            value: order.destinationBranch,
+            value: item.destinationBranch,
             validation: [{
                 isValid: (value: BranchResponse): boolean => value !== null && value.id !== 0 && value.office.id !== 0,
                 message: 'Destination Branch is required'
@@ -84,7 +77,7 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
             validateRealTime: false
         },
         contacts: {
-            value: order.contacts,
+            value: item.contacts,
             validation: [{
                 isValid: (value: Contact[]): boolean => value.length > 0,
                 message: 'Contact is required'
@@ -92,27 +85,27 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
             validateRealTime: false
         },
         deliveryDate: {
-            value: order.deliveryDate,
+            value: item.deliveryDate,
             validation: [validatorForm.isDate, validatorForm.isSelectedDateValid],
             validateRealTime: false
         },
         receiverName: {
-            value: order.receiverName,
+            value: item.receiverName,
             validation: [validatorForm.validateNotEmpty],
             validateRealTime: false
         },
         receiverPhone: {
-            value: order.receiverPhone,
+            value: item.receiverPhone,
             validation: [validatorForm.validateNotEmpty, validatorForm.isCellularNumber],
             validateRealTime: false
         },
         destinationAddress: {
-            value: order.destinationAddress,
+            value: item.destinationAddress,
             validation: [validatorForm.validateNotEmpty],
             validateRealTime: false
         },
         couriers: {
-            value: order.couriers,
+            value: item.couriers,
             validation: [{
                 isValid: (value: User[]): boolean => value !== null && value.length > 0,
                 message: 'Courier is required'
@@ -120,7 +113,7 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
             validateRealTime: false
         },
         currentStatus: {
-            value: order.currentStatus,
+            value: item.currentStatus,
             validation: [{
                 isValid: (value: StatusOrder): boolean => value.id !== 0,
                 message: 'Status Order is required'
@@ -129,11 +122,11 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
         }
     };
 
-    const { values, state, handleChange, handleStateChange, onFocus, validateForm, setState } = useForm(order, initialState);
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm, setState } = useForm(item, initialState);
 
     useEffect(() => {
-        console.log(order);
-    }, [order]);
+        console.log(item);
+    }, [item]);
 
     useEffect(() => {
         if(officeDestination) console.log(officeDestination);
@@ -159,7 +152,7 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
                 isActive: true
             };
             console.log(client);
-            console.log(order.client);
+            console.log(item.client);
             handleStateChange('client', client, client);
         }
     }, [userDetails, state.client, isClient]);
@@ -291,25 +284,32 @@ export const OrderForm = ({ order, setOrder, onSubmit }: OrderFormProps) => {
                         </div>
                         <div className="row pt-3">
                             <div className="col-6">
-                                <Autocomplete
-                                    value={autocompleteValue}
-                                    onInputChange={handleInputChange}
-                                    onChange={handleOfficeAutoComplete}
-                                    options={tranformOffices(offices)}
-                                    getOptionLabel={(option) => option.label}
-                                    isOptionEqualToValue={(option, value) => option.value === value.value}
-                                    renderInput={(params) => (
-                                                        
-                                        <TextField
-                                            {...params}
-                                            label="Search for a destination office"
-                                            placeholder="Search for a destination office"
-                                            variant="outlined"
-                                            fullWidth
-                                            disabled={!isClient}
-                                            />
-                                    )}
-                                />
+                                {
+                                    autocompleteValue && (
+                                        <Autocomplete
+                                            value={autocompleteValue}
+                                            onInputChange={handleInputChange}
+                                            onChange={handleOfficeAutoComplete}
+                                            options={tranformOffices(offices)}
+                                            getOptionLabel={(option) => option.label}
+                                            isOptionEqualToValue={(option, value) => {
+                                                if(option.value === 0) return true;
+                                                return option.value === value.value;
+                                            }}
+                                            renderInput={(params) => (
+                                                                
+                                                <TextField
+                                                    {...params}
+                                                    label="Search for a destination office"
+                                                    placeholder="Search for a destination office"
+                                                    variant="outlined"
+                                                    fullWidth
+                                                    disabled={!isClient}
+                                                    />
+                                            )}
+                                        />
+                                    )
+                                }
                             </div>
                             <div className="col-6">
                                 <LocalizationProvider dateAdapter={AdapterMoment}>

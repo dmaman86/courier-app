@@ -1,23 +1,24 @@
 import { OptionType } from "./props.models";
 
+interface Item {
+    id: number;
+}
+
 export interface Token {
     accessToken: string;
     refreshToken: string;
 }
 
-export interface Role {
-    id: number;
+export interface Role extends Item{
     name: string;
 }
 
-export interface StatusOrder {
-    id: number;
+export interface StatusOrder extends Item{
     name: string;
     description: string;
 }
 
-export interface UserBase {
-    id: number;
+export interface UserBase extends Item{
     email: string;
     name: string;
     lastName: string;
@@ -27,6 +28,8 @@ export interface UserBase {
 export interface User extends UserBase{
     roles: Role[];
     isActive: boolean;
+    office?: Office;
+    branches?: Branch[];
 }
 
 export interface Client extends User{
@@ -34,8 +37,7 @@ export interface Client extends User{
     branches: Branch[];
 }
 
-export interface Office {
-    id: number;
+export interface Office extends Item{
     name: string;
 }
 
@@ -44,9 +46,10 @@ export interface BranchInfo {
     address: string;
 }
 
-export interface Branch extends BranchInfo{
+/*export interface Branch extends BranchInfo{
     id: number;
-}
+}*/
+export interface Branch extends Item, BranchInfo {}
 
 export interface Credentials {
     username: string;
@@ -57,21 +60,18 @@ export interface SignUpCredentials extends Credentials {
     confirmPassword: string;
 }
 
-export interface OfficeResponse{
-    id: number;
+export interface OfficeResponse extends Item{
     name: string;
     branches: Branch[] | BranchInfo[]
 }
 
-export interface BranchResponse{
-    id: number;
+export interface BranchResponse extends Item{
     city: string;
     address: string;
     office: Office;
 }
 
-export interface Contact{
-    id: number;
+export interface Contact extends Item{
     name: string;
     lastName: string;
     phone: string;
@@ -85,8 +85,7 @@ export interface ContactOptionType extends OptionType {
     branches: Branch[];
 }
 
-export interface Order{
-    id: number;
+export interface Order extends Item{
     client: User | null;
     originBranch: BranchResponse;
     destinationBranch: BranchResponse | null;

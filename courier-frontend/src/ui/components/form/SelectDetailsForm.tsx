@@ -1,7 +1,7 @@
+import { useCallback, useState } from "react";
 import Select, { MultiValue, SingleValue } from "react-select";
 
 import { AxiosCall, FetchResponse, OptionType } from "@/domain";
-import { useCallback, useState } from "react";
 import { useAsync, useFetchAndLoad } from "@/hooks";
 
 

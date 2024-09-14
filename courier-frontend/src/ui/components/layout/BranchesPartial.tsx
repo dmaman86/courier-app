@@ -17,7 +17,7 @@ export const BranchesPartial = () => {
         office: { id: 0, name: '' }
     }
 
-    const fetchBranches = (page: number, size: number) => serviceRequest.getItem<PageResponse<BranchResponse[]>>(`${paths.courier.branches}?page=${page}&size=${size}`);
+    const getBranches = (page: number, size: number) => serviceRequest.getItem<PageResponse<BranchResponse[]>>(`${paths.courier.branches}?page=${page}&size=${size}`);
 
     const createOrUpdateBranch = (branch: BranchResponse) => {
         if(branch.id){
@@ -47,25 +47,39 @@ export const BranchesPartial = () => {
         delete: ['ROLE_ADMIN']
     }
 
+    const formatMessage = (branch: BranchResponse) => {
+        return `Are you sure you want to delete:
+                Branch: ${branch.city} - ${branch.address},`
+    }
+
     return(
         <>
             {
                 userDetails && (
                     <ItemsPage<BranchResponse>
                         userDetails={userDetails}
-                        title="Branches"
-                        placeholder="Search branch..."
-                        buttonName="Create Branch"
-                        fetchItems={fetchBranches}
-                        createOrUpdateItem={createOrUpdateBranch}
-                        deleteItem={deleteBranch}
-                        searchItem={searchBranch}
-                        renderItemForm={(item, setItem, onSubmit) => <BranchForm branch={item} setBranch={setItem} onSubmit={onSubmit} />}
-                        columns={branchColumns}
-                        renderItemList={({ data, actions }) => <BranchList data={data} actions={actions}/>}
-                        showSearch={true}
-                        allowedRoles={branchAllowedRoles}
+                        header={{
+                            title: 'Branches',
+                            placeholder: 'Search branch...',
+                            buttonName: 'Create Branch'
+                        }}
+                        getItems={getBranches}
+                        actions={{
+                            createOrUpdateItem: createOrUpdateBranch,
+                            deleteItem: deleteBranch,
+                            searchItem: searchBranch
+                        }}
+                        list={{
+                            columns: branchColumns,
+                            itemList: (data, actions) => <BranchList data={data} actions={actions}/>,
+                            itemForm: (item, onSubmit) => <BranchForm item={item} onSubmit={onSubmit}/>
+                        }}
+                        options={{
+                            showSearch: true,
+                            allowedRoles: branchAllowedRoles
+                        }}
                         initialItem={initialBranch}
+                        formatMessage={formatMessage}
                     />
                 )
             }

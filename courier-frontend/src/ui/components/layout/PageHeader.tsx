@@ -9,31 +9,40 @@ import { ReusableInput } from "../form";
 
 
 interface PageHeaderProps {
-    title: string;
-    placeholder: string;
-    buttonName: string;
-    onSearch?: (query: string) => void;
+    header: {
+        title: string;
+        placeholder: string;
+        buttonName: string;
+    };
+    search: {
+        onSearch: (query: string) => void;
+        showSearch: boolean;
+        canCreate: boolean;
+        query: string;
+    }
     onCreate: () => void;
     delay?: number;
-    showSearch?: boolean;
-    canCreate: boolean;
 }
 
-const initialState: FormState = {
-    search: {
-        value: '',
-        validation: [],
-        validateRealTime: false
-    }
-}
-
-export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate, delay = 250, showSearch = true, canCreate }: PageHeaderProps) => {
+export const PageHeader = ({ header, search, onCreate, delay = 250 }: PageHeaderProps) => {
 
     const userDetails = useSelector((state: RootState) => state.auth.userDetails);
 
     const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+
+    const initialData = {
+        search: search.query
+    }
+
+    const initialState: FormState = {
+        search: {
+            value: search.query,
+            validation: [],
+            validateRealTime: false
+        }
+    }
     
-    const { values, handleChange } = useForm(initialState);
+    const { values, state, handleChange } = useForm(initialData, initialState);
 
     useEffect(() => {
         if(userDetails){
@@ -43,8 +52,8 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
     }, [userDetails]);
 
     const sendBack = useCallback(() => {
-        onSearch && onSearch(values?.search.value!);
-    }, [onSearch, values?.search.value]);
+        search.onSearch(state.search);
+    }, [search.onSearch, state.search]);
 
     const debouncedRequest = useMemo(() => {
         return _.debounce(sendBack, delay);
@@ -60,19 +69,19 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
             <div className="container">
                 <div className="row align-items-center mb-4">
                     <div className="col-12 col-md-4">
-                        <h1>{title}</h1>
+                        <h1>{header.title}</h1>
                     </div>
                     <div className="col-12 col-md-8 mt-3 mt-md-0">
                         <div className="row d-flex justify-content-end">
                             {
-                                showSearch && onSearch && (
+                                search.showSearch && values && (
                                     <div className="col-6">
                                         <ReusableInput
                                             inputProps={{
                                                 name: 'search',
                                                 type: 'text',
-                                                value: values?.search.value!,
-                                                placeholder: placeholder
+                                                value: values.search.value,
+                                                placeholder: header.placeholder
                                             }}
                                             onChange={handleSearchChange}
                                             onFocus={() => {}}
@@ -81,9 +90,9 @@ export const PageHeader = ({ title, placeholder, buttonName, onSearch, onCreate,
                                 )
                             }
                             {
-                                canCreate && (
-                                    <div className={`col-${onSearch ? '6' : '12'} d-flex justify-content-center`}>
-                                        <button onClick={onCreate} className="btn btn-primary">{buttonName}</button>
+                                search.canCreate && (
+                                    <div className={`col-${search.canCreate ? '6' : '12'} d-flex justify-content-center`}>
+                                        <button onClick={onCreate} className="btn btn-primary">{header.buttonName}</button>
                                     </div>
                                 )
                             }

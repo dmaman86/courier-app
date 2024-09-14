@@ -1,44 +1,35 @@
 import React, { useState } from "react";
 
-import { Branch, Contact, FormState, Office, OfficeResponse, OptionType } from "@/domain";
-import { ReusableInput } from "../form";
+import { Branch, Contact, FormProps, FormState, Office, OfficeResponse, OptionType } from "@/domain";
+import { ReusableInput, SelectDetailsForm } from "../form";
 import { paths, validatorForm } from "@/helpers";
 import { useForm } from "@/hooks";
-import { SelectDetailsForm } from "./SelectDetailsForm";
 import { serviceRequest } from "@/services";
-
-
-
-interface ContactFormProps {
-    contact: Contact;
-    setContact: (contact: Contact) => void;
-    onSubmit: (contact: Contact) => void;
-}
 
 interface BranchOptionType extends OptionType {
     address: string;
     office: Office;
 }
 
-export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps) => {
+export const ContactForm = <T extends Contact>({ item, onSubmit }: FormProps<T>) => {
 
-    const [ branches, setBranches ] = useState<Branch[]>(contact.branches);
+    const [ branches, setBranches ] = useState<Branch[]>(item.branches);
 
     const initialFormState: FormState = {
         name: {
-            value: contact.name,
+            value: item.name,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
         },
         lastName: {
-            value: contact.lastName,
+            value: item.lastName,
             validation: [
                 validatorForm.validateNotEmpty
             ],
             validateRealTime: false
         },
         phone: {
-            value: contact.phone,
+            value: item.phone,
             validation: [
                 validatorForm.validateNotEmpty,
                 validatorForm.isCellularNumber
@@ -46,7 +37,7 @@ export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps)
             validateRealTime: false
         },
         office: {
-            value: contact.office,
+            value: item.office,
             validation: [{
                 isValid: (value: Office): boolean => value !== null,
                 message: 'Select an office'
@@ -54,7 +45,7 @@ export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps)
             validateRealTime: false
         },
         branches: {
-            value: contact.branches,
+            value: item.branches,
             validation: [{
                 isValid: (branches: any[]): boolean => branches.length > 0,
                 message: 'At least one branch must be selected'
@@ -63,7 +54,7 @@ export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps)
         }
     }
 
-    const { values, state, handleChange, handleStateChange, onFocus, validateForm } = useForm(contact, initialFormState);
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm } = useForm(item, initialFormState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -85,7 +76,7 @@ export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps)
                                     label: 'Contact Name',
                                     name: 'name',
                                     type: 'text',
-                                    value: contact.name,
+                                    value: state.name,
                                     placeholder: 'Enter contact name'
                                 }}
                                 onChange={handleChange}
@@ -99,7 +90,7 @@ export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps)
                                     label: 'Contact Last Name',
                                     name: 'lastName',
                                     type: 'text',
-                                    value: contact.lastName,
+                                    value: state.lastName,
                                     placeholder: 'Enter contact last name'
                                 }}
                                 onChange={handleChange}
@@ -114,7 +105,7 @@ export const ContactForm = ({ contact, setContact, onSubmit }: ContactFormProps)
                                         label: 'Contact Phone',
                                         name: 'phone',
                                         type: 'tel',
-                                        value: contact.phone,
+                                        value: state.phone,
                                         placeholder: 'Enter contact phone'
                                     }}
                                     onChange={handleChange}

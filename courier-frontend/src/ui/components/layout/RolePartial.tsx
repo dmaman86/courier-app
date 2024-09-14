@@ -14,7 +14,7 @@ export const RolePartial = () => {
         name: ''
     };
 
-    const fetchRoles = (page: number, size: number) => serviceRequest.getItem<PageResponse<Role[]>>(`${paths.courier.roles}?page=${page}&size=${size}`);
+    const getRoles = (page: number, size: number) => serviceRequest.getItem<PageResponse<Role[]>>(`${paths.courier.roles}?page=${page}&size=${size}`);
 
     const createOrUpdateRole = (role: Role) => role.id ? serviceRequest.putItem<Role>(paths.courier.roles, role) : 
                                     serviceRequest.postItem<Role>(paths.courier.roles, role);
@@ -37,24 +37,38 @@ export const RolePartial = () => {
         delete: ['ROLE_ADMIN']
     }
 
+    const formatMessage = (role: Role) => {
+        return `Are you sure you want to delete:
+                Role: ${role.name}`
+    }
+
     return (
         <>
             {
                 userDetails && (
                     <ItemsPage<Role>
                         userDetails={userDetails}
-                        title="Roles"
-                        placeholder="Search role..."
-                        buttonName="Create Role"
-                        fetchItems={fetchRoles}
-                        createOrUpdateItem={createOrUpdateRole}
-                        deleteItem={deleteRole}
-                        renderItemForm={(item, setItem, onSubmit) => <RoleForm role={item} setRole={setItem} onSubmit={onSubmit} />}
-                        columns={roleColumns}
-                        renderItemList={({ data, actions }) => <RoleList data={data} actions={actions} />}
-                        showSearch={false}
-                        allowedRoles={roleAllowedRoles}
+                        header={{
+                            title: 'Roles',
+                            placeholder: 'Search role...',
+                            buttonName: 'Create Role'
+                        }}
+                        getItems={getRoles}
+                        actions={{
+                            createOrUpdateItem: createOrUpdateRole,
+                            deleteItem: deleteRole,
+                        }}
+                        list={{
+                            columns: roleColumns,
+                            itemList: (data, actions) => <RoleList data={data} actions={actions}/>,
+                            itemForm: (item, onSubmit) => <RoleForm item={item} onSubmit={onSubmit}/>
+                        }}
+                        options={{
+                            showSearch: false,
+                            allowedRoles: roleAllowedRoles
+                        }}
                         initialItem={initialRole}
+                        formatMessage={formatMessage}
                     />
                 )
             }

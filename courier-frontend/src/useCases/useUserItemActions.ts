@@ -7,13 +7,13 @@ export const useUserItemActions = <T extends { id: number }>(
     allowedRoles: { create: string[], update: string[], delete: string[] },
     handleEditItem: (item: T) => void,
     handleDeleteItem: (item: T) => void
-): { userHasRole: (roles: string[]) => boolean, actions: Action<T>[] } => {
+): { userHasRole: (roles: string[]) => boolean, actionsItem: Action<T>[] } => {
 
     const userHasRole = useCallback((roles: string[]) => {
         return userDetails.roles.some(userRole => roles.includes(userRole.name));
     }, [userDetails]);
 
-    const actions: Action<T>[] = useMemo(() => {
+    const actionsItem: Action<T>[] = useMemo(() => {
         const itemActions: Action<T>[] = [];
 
         if (userHasRole(allowedRoles.update)) {
@@ -26,5 +26,5 @@ export const useUserItemActions = <T extends { id: number }>(
         return itemActions;
     }, [userHasRole, allowedRoles, handleEditItem, handleDeleteItem]);
     
-    return { userHasRole, actions };
+    return { userHasRole, actionsItem };
 }

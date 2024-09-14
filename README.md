@@ -106,7 +106,7 @@ Clients can place orders, track the status of their deliveries, and update their
 
 ## Backend Structure:
 
-```plaintext
+```bash
 .
 ├── authentication-server
 │   ├── Dockerfile
@@ -437,7 +437,7 @@ Clients can place orders, track the status of their deliveries, and update their
 
 ## Frontend Structure:
 
-```plaintext
+```bash
 .
 ├── README.md
 ├── index.html
@@ -498,7 +498,7 @@ Clients can place orders, track the status of their deliveries, and update their
 │   ├── ui
 │   │   ├── components
 │   │   │   ├── dialogs
-│   │   │   │   ├── AlertDialog.tsx
+│   │   │   │   ├── CustomDialog.tsx
 │   │   │   │   ├── GenericModal.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── entityForm
@@ -514,6 +514,7 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │   │   ├── form
 │   │   │   │   ├── ReusableInput.tsx
 │   │   │   │   ├── ReusableSelect.tsx
+│   │   │   │   ├── SelectDetailsForm.tsx
 │   │   │   │   └── index.ts
 │   │   │   ├── index.ts
 │   │   │   ├── layout
@@ -560,14 +561,7 @@ Clients can place orders, track the status of their deliveries, and update their
 │   ├── useCases
 │   │   ├── form
 │   │   │   ├── index.ts
-│   │   │   ├── useBranchForm.ts
-│   │   │   ├── useContactForm.ts
-│   │   │   ├── useOfficeForm.ts
-│   │   │   ├── useOrderForm.ts
-│   │   │   ├── useRoleForm.ts
-│   │   │   ├── useStatusOrderForm.ts
-│   │   │   ├── useUpdatePasswordForm.ts
-│   │   │   └── useUserForm.ts
+│   │   │   └── useAuthForm.ts
 │   │   ├── index.ts
 │   │   ├── useRouteConfig.ts
 │   │   └── useUserItemActions.ts

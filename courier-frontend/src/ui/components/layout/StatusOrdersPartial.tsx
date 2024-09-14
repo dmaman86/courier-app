@@ -18,7 +18,7 @@ export const StatusOrdersPartial = () => {
         description: ''
     };
 
-    const fetchStatusOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<StatusOrder[]>>(`${paths.courier.statusOrder}?page=${page}&size=${size}`);
+    const getStatusOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<StatusOrder[]>>(`${paths.courier.statusOrder}?page=${page}&size=${size}`);
 
     const createOrUpdateStatusOrder = (statusOrder: StatusOrder) => statusOrder.id ? serviceRequest.putItem<StatusOrder>(paths.courier.statusOrder, statusOrder) :
                                                     serviceRequest.postItem<StatusOrder>(paths.courier.statusOrder, statusOrder);
@@ -54,24 +54,39 @@ export const StatusOrdersPartial = () => {
         delete: ['ROLE_ADMIN']
     }
 
+    const formatMessage = (statusOrder: StatusOrder) => {
+        return `Are you sure you want to delete:
+                Status Order: ${statusOrder.name},
+                Description: ${statusOrder.description}`
+    }
+
     return(
         <>
             {
                 userDetails && (
                     <ItemsPage<StatusOrder>
                         userDetails={userDetails}
-                        title="Status Order"
-                        placeholder="Search status order..."
-                        buttonName="Create Status Order"
-                        fetchItems={fetchStatusOrders}
-                        createOrUpdateItem={createOrUpdateStatusOrder}
-                        deleteItem={deleteStatusOrder}
-                        renderItemForm={(item, setItem, onSubmit) => <StatusOrderForm statusOrder={item} setStatusOrder={setItem} onSubmit={onSubmit}/>}
-                        columns={statusOrdersColumns}
-                        renderItemList={({ data, actions }) => <StatusOrdersList data={data} actions={actions}/>}
-                        showSearch={false}
-                        allowedRoles={statusOrderAllowedRoles}
+                        header={{
+                            title: 'Status Order',
+                            placeholder: 'Search status order...',
+                            buttonName: 'Create Status Order'
+                        }}
+                        getItems={getStatusOrders}
+                        actions={{
+                            createOrUpdateItem: createOrUpdateStatusOrder,
+                            deleteItem: deleteStatusOrder,
+                        }}
+                        list={{
+                            columns: statusOrdersColumns,
+                            itemList: (data, actions) => <StatusOrdersList data={data} actions={actions}/>,
+                            itemForm: (item, onSubmit) => <StatusOrderForm item={item} onSubmit={onSubmit}/>
+                        }}
+                        options={{
+                            showSearch: false,
+                            allowedRoles: statusOrderAllowedRoles
+                        }}
                         initialItem={statusOrder}
+                        formatMessage={formatMessage}
                     />
                 )
             }

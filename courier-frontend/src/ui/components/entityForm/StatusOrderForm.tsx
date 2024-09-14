@@ -1,31 +1,24 @@
 import { ReusableInput } from "../form";
-import { FormState, StatusOrder } from "@/domain";
+import { FormProps, FormState, StatusOrder } from "@/domain";
 import { validatorForm } from "@/helpers";
 import { useForm } from "@/hooks";
 
-
-interface StatusOrderFormProps {
-    statusOrder: StatusOrder;
-    setStatusOrder: (statusOrder: StatusOrder) => void;
-    onSubmit: (statusOrder: StatusOrder) => void;
-}
-
-export const StatusOrderForm = ({ statusOrder, setStatusOrder, onSubmit }: StatusOrderFormProps) => {
+export const StatusOrderForm = <T extends StatusOrder>({ item, onSubmit }: FormProps<T>) => {
 
     const initialState: FormState = {
         name: {
-            value: statusOrder.name,
+            value: item.name,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
         },
         description: {
-            value: statusOrder.description,
+            value: item.description,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
         }
     };
 
-    const { values, state, handleChange, onFocus, validateForm } = useForm(statusOrder, initialState);
+    const { values, state, handleChange, onFocus, validateForm } = useForm(item, initialState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

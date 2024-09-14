@@ -28,7 +28,7 @@ export const OrdersPage = () => {
         currentStatus: { id: 0, name: '', description: '' }
     };
 
-    const fetchOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<Order[]>>(`${paths.courier.orders}?page=${page}&size=${size}`);
+    const getOrders = (page: number, size: number) => serviceRequest.getItem<PageResponse<Order[]>>(`${paths.courier.orders}?page=${page}&size=${size}`);
 
     const createOrUpdateOrder = (order: Order) => order?.id ? serviceRequest.putItem<Order, Order>(`${paths.courier.orders}${order.id}`, order) : serviceRequest.postItem<Order, Order>(paths.courier.orders, order);
 
@@ -62,24 +62,40 @@ export const OrdersPage = () => {
         }
     }, [userDetails]);
 
+    const formatMessage = (order: Order) => {
+        return `Are you sure you want to delete:
+                Order ID: ${order.id}
+                Origin: ${order.originBranch.city} - ${order.originBranch.address}
+                Destination: ${order.destinationBranch?.city} - ${order.destinationBranch?.address}`;
+    }
+
     return(
         <>
             {
                 userDetails && (
                     <ItemsPage<Order>
                         userDetails={userDetails}
-                        title="Orders"
-                        placeholder="Search order..."
-                        buttonName="Create Order"
-                        fetchItems={fetchOrders}
-                        createOrUpdateItem={createOrUpdateOrder}
-                        deleteItem={deleteOrder}
-                        renderItemForm={(item, setItem, onSubmit) => <OrderForm order={item} setOrder={setItem} onSubmit={onSubmit}/>}
-                        columns={orderColumns}
-                        renderItemList={({ data, actions }) => <OrderList data={data} actions={actions}/> }
-                        showSearch={false}
-                        allowedRoles={orderAllowedRoles}
+                        header={{
+                            title: 'Orders',
+                            placeholder: 'Search order...',
+                            buttonName: 'Create Order'
+                        }}
+                        getItems={getOrders}
+                        actions={{
+                            createOrUpdateItem: createOrUpdateOrder,
+                            deleteItem: deleteOrder
+                        }}
+                        list={{
+                            columns: orderColumns,
+                            itemList: (data, actions) => <OrderList data={data} actions={actions}/>,
+                            itemForm: (item, onSubmit) => <OrderForm item={item} onSubmit={onSubmit}/>
+                        }}
+                        options={{
+                            showSearch: false,
+                            allowedRoles: orderAllowedRoles
+                        }}
                         initialItem={initialOrder}
+                        formatMessage={formatMessage}
                     />
                 )
             }

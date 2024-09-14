@@ -15,7 +15,7 @@ export const OfficesPage = () => {
         branches: []
     }
 
-    const fetchOffices = (page: number, size: number) => serviceRequest.getItem<PageResponse<OfficeResponse[]>>(`${paths.courier.offices}?page=${page}&size=${size}`);
+    const getOffices = (page: number, size: number) => serviceRequest.getItem<PageResponse<OfficeResponse[]>>(`${paths.courier.offices}?page=${page}&size=${size}`);
 
     const createOrUpdateOffice = (office: OfficeResponse) => office.id ? serviceRequest.putItem<OfficeResponse>(`${paths.courier.offices}${office.id}`, office) :
                                                             serviceRequest.postItem<OfficeResponse>(paths.courier.offices, office);
@@ -43,25 +43,39 @@ export const OfficesPage = () => {
         delete: ['ROLE_ADMIN']
     }
 
+    const formatMessage = (office: OfficeResponse) => {
+        return `Are you sure you want to delete:
+                Office Name: ${office.name}`
+    }
+
     return(
         <>
             {
                 userDetails && (
                     <ItemsPage<OfficeResponse>
                         userDetails={userDetails}
-                        title="Offices"
-                        placeholder="Search office..."
-                        buttonName="Create Office"
-                        fetchItems={fetchOffices}
-                        createOrUpdateItem={createOrUpdateOffice}
-                        deleteItem={deleteOffice}
-                        searchItem={searchOffice}
-                        renderItemForm={(item, setItem, onSubmit) => <OfficeForm office={item} setOffice={setItem} onSubmit={onSubmit} />}
-                        columns={officeColumns}
-                        renderItemList={({ data, actions }) => <OfficeList data={data} actions={actions}/>}
-                        showSearch={true}
-                        allowedRoles={officeAllowedRoles}
+                        header={{
+                            title: 'Offices',
+                            placeholder: 'Search office...',
+                            buttonName: 'Create Office'
+                        }}
+                        getItems={getOffices}
+                        actions={{
+                            createOrUpdateItem: createOrUpdateOffice,
+                            deleteItem: deleteOffice,
+                            searchItem: searchOffice
+                        }}
+                        list={{
+                            columns: officeColumns,
+                            itemList: (data, actions) => <OfficeList data={data} actions={actions}/>,
+                            itemForm: (item, onSubmit) => <OfficeForm item={item} onSubmit={onSubmit}/>
+                        }}
+                        options={{
+                            showSearch: true,
+                            allowedRoles: officeAllowedRoles
+                        }}
                         initialItem={initialOffice}
+                        formatMessage={formatMessage}
                     />
                 )
             }

@@ -1,31 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
 import { useErrorBoundary } from "react-error-boundary";
-
+import { Typography } from "@mui/material";
 
 import { Action, FetchResponse, Item, ItemsPageProps, PageResponse } from "@/domain";
 import { useAsync, useFetchAndLoad, useItemsPage, useList } from "@/hooks";
 import { withLoading } from "@/hoc";
-import { AlertDialog, GenericModal, PageHeader, ReusableTable } from "@/ui";
+import { CustomDialog, GenericModal, PageHeader, ReusableTable } from "@/ui";
 import { useUserItemActions } from "@/useCases";
 
 
 
 
 
-export const ItemsPage = <T extends Item>({         userDetails,
-                                                    title, 
-                                                    placeholder, 
-                                                    buttonName, 
-                                                    fetchItems, 
-                                                    createOrUpdateItem, 
-                                                    deleteItem,
-                                                    searchItem, 
-                                                    renderItemForm, 
-                                                    renderItemList: ItemList, 
-                                                    columns,
-                                                    showSearch = true,
-                                                    allowedRoles,
-                                                    initialItem }: ItemsPageProps<T>) => {
+export const ItemsPage = <T extends Item>({ 
+    userDetails,
+    header,
+    getItems,
+    actions,
+    list,
+    options,
+    initialItem,
+    formatMessage }: ItemsPageProps<T>) => {
 
 
     const ReusableTableWithLoading = withLoading(ReusableTable);
@@ -45,7 +40,7 @@ export const ItemsPage = <T extends Item>({         userDetails,
     const { loading, callEndPoint } = useFetchAndLoad();
     const { showBoundary } = useErrorBoundary();
 
-    const getApiData = async() => await callEndPoint(fetchItems(state.pagination.page, state.pagination.size));
+    const getApiData = async() => await callEndPoint(getItems(state.pagination.page, state.pagination.size));
 
     const handleSuccess = (response: FetchResponse<PageResponse<T[]>>) => {
         console.log(response);
@@ -63,8 +58,8 @@ export const ItemsPage = <T extends Item>({         userDetails,
     useAsync(getApiData, handleSuccess, () => {}, [state.pagination.page, state.pagination.size] )
 
     const searchApiData = async (): Promise<FetchResponse<PageResponse<T[]>>> => {
-        if (searchItem && state.searchQuery) {
-            return await callEndPoint(searchItem(state.searchQuery, state.pagination.page, state.pagination.size));
+        if (actions.searchItem && state.searchQuery) {
+            return await callEndPoint(actions.searchItem(state.searchQuery, state.pagination.page, state.pagination.size));
         }
         return { data: null, error: null };
     };
@@ -84,14 +79,14 @@ export const ItemsPage = <T extends Item>({         userDetails,
     useAsync(searchApiData, handleSearchSuccess, () => {}, [state.searchQuery, state.pagination.page, state.pagination.size])
 
     const createOrUpdate = useCallback(async (item: T) => {
-        const result = await callEndPoint(createOrUpdateItem(item));
+        const result = await callEndPoint(actions.createOrUpdateItem(item));
         setResponseItem(result);
-    }, [callEndPoint, createOrUpdateItem, setResponseItem]);
+    }, [callEndPoint, actions.createOrUpdateItem, setResponseItem]);
 
     const deleteHandler = useCallback(async (itemId: number) => {
-        const result = await callEndPoint(deleteItem(itemId));
+        const result = await callEndPoint(actions.deleteItem(itemId));
         setDeleteResponse(result);
-    }, [callEndPoint, deleteItem, setDeleteResponse]);
+    }, [callEndPoint, actions.deleteItem, setDeleteResponse]);
 
     useEffect(() => {
         if(!loading && state.responseItem.data && !state.responseItem.error){
@@ -148,7 +143,7 @@ export const ItemsPage = <T extends Item>({         userDetails,
         toggleAlertDialog();
     };
 
-    const { userHasRole, actions } = useUserItemActions<T>(userDetails, allowedRoles, handleEditItem, handleDeleteItem);
+    const { userHasRole, actionsItem } = useUserItemActions<T>(userDetails, options.allowedRoles, handleEditItem, handleDeleteItem);
     
     const handleFormSubmit = async (item: T) => {
         await createOrUpdate(item);
@@ -156,14 +151,22 @@ export const ItemsPage = <T extends Item>({         userDetails,
     
     return (
         <>
-            <PageHeader title={title} placeholder={placeholder} buttonName={buttonName} onSearch={handleSearch} 
-                            onCreate={handleCreateItem} showSearch={showSearch} canCreate={userHasRole(allowedRoles.create)}/>
+            <PageHeader header={header} 
+                        onCreate={handleCreateItem} 
+                        search={{
+                            onSearch: handleSearch,
+                            showSearch: options.showSearch ?? true,
+                            canCreate: userHasRole(options.allowedRoles.create),
+                            query: state.searchQuery
+                            
+                        }}
+                        />
             {
                     displayCreateItem && (
                         <div className="container">
                             <div className="card">
                                 <div className="card-body">
-                                    {state.selectedItem && renderItemForm(state.selectedItem as T, setSelectedItem, handleFormSubmit)}
+                                    {state.selectedItem && list.itemForm(state.selectedItem as T, handleFormSubmit)}
                                 </div>
                                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" onClick={() => setDisplayCreateItem(false)}>
                                     <i className="fas fa-times"></i>
@@ -176,9 +179,9 @@ export const ItemsPage = <T extends Item>({         userDetails,
                 <ReusableTableWithLoading 
                     isLoading={loading}
                     data={items}
-                    columns={columns}
-                    actions={actions as Action<{ id: number; }>[]}
-                    BodyComponent={ItemList as React.ComponentType<{ data: { id: number; }[]; actions?: Action<{ id: number; }>[] | undefined; }>}
+                    columns={list.columns}
+                    actions={actionsItem as Action<{ id: number; }>[]}
+                    BodyComponent={() => list.itemList(items, actionsItem)}
                     pagination={state.pagination}
                     onPageChange={handlePageChange}
                     onRowsPerPageChange={handleRowsPerPageChange}
@@ -187,19 +190,29 @@ export const ItemsPage = <T extends Item>({         userDetails,
             {
                 state.showModal && (
                     <GenericModal
-                        title={state.selectedItem ? `Edit ${title}` : `Create ${title}`}
-                        body={renderItemForm(state.selectedItem as T, setSelectedItem, handleFormSubmit)}
+                        title={`Edit item ID: ${state?.selectedItem?.id}`}
+                        body={list.itemForm(state.selectedItem as T, handleFormSubmit, toggleModal)}
                         show={state.showModal}
                         onClose={toggleModal}
                     />
                 )
             }
-            <AlertDialog
+            {
+                state.selectedItem && (
+                    <CustomDialog
                         open={state.showAlertDialog}
                         onClose={toggleAlertDialog}
-                        onConfirm={() => deleteHandler(state.selectedItem?.id!)}
-                        title={`Are you sure you want to delete this ${title?.toLowerCase()}?`}
+                        title="Confirm Delete"
+                        content={<Typography style={{ whiteSpace: 'pre-line' }}>{formatMessage(state.selectedItem as T)}</Typography>}
+                        actions={
+                            <>
+                                <button onClick={toggleAlertDialog} className="btn btn-secondary">Cancel</button>
+                                <button onClick={() => deleteHandler(state.selectedItem?.id!)} className="btn btn-danger">Sure</button>
+                            </>
+                        }
                     />
+                )
+            }
         </>
     )
 }

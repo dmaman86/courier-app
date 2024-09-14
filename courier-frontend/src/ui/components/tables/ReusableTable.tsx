@@ -31,7 +31,7 @@ export const ReusableTable = <T extends { id: number }>({
                             ))}
                         </TableRow> 
                     </TableHead>
-                    <BodyComponent data={data} actions={actions}/>
+                    { BodyComponent(data, actions) }
                 </Table>
             </TableContainer>
             <TablePagination

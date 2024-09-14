@@ -1,31 +1,29 @@
-import { BranchResponse, FormState, OfficeResponse, OptionType } from "@/domain";
-import { ReusableInput } from "../form";
-import { SelectDetailsForm } from "./SelectDetailsForm";
+import { BranchResponse, FormProps, FormState, OfficeResponse, OptionType } from "@/domain";
+import { ReusableInput, SelectDetailsForm } from "../form";
 import { paths, validatorForm } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { useForm } from "@/hooks";
 
-interface BranchFormProps {
+/*interface BranchFormProps {
     branch: BranchResponse;
-    setBranch: (branch: BranchResponse) => void;
     onSubmit: (branch: BranchResponse) => void;
-}
+}*/
 
-export const BranchForm = ({ branch, setBranch, onSubmit }: BranchFormProps) => {
+export const BranchForm = <T extends BranchResponse>({ item, onSubmit }: FormProps<T>) => {
 
     const initialFormState: FormState = {
         city: {
-            value: branch.city,
+            value: item.city,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
         },
         address: {
-            value: branch.address,
+            value: item.address,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
         },
         office: {
-            value: branch.office,
+            value: item.office,
             validation: [{
                 isValid: (value: OfficeResponse) => value.id !== 0,
                 message: 'Please select an office'
@@ -34,7 +32,7 @@ export const BranchForm = ({ branch, setBranch, onSubmit }: BranchFormProps) => 
         }
     }
         
-    const { values, state, handleChange, handleStateChange, onFocus, validateForm } = useForm(branch, initialFormState);
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm } = useForm(item, initialFormState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

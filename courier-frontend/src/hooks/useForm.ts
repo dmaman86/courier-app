@@ -80,7 +80,7 @@ export const useForm = <T extends Record<string, any>, K extends FormState | nul
     const handleChange = useCallback((event: any) => {
         if(values && state) {
             const { name: fieldName, value } = extractNameAndValue(event, values);
-            if(fieldName !== '' && value !== ''){
+            if(fieldName !== ''){
                 const updatedValues = updateFormValues(fieldName, value, values, validateField);
                 setValues(updatedValues);
 

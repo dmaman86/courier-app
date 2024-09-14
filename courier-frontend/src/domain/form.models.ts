@@ -13,9 +13,9 @@ export interface FormField<T>{
 
 export type FormState = Record<string, FormField<any>>;
 
-export interface FormProps<T> {
-    onSubmit: (item: Partial<T>) => Promise<void>;
-    itemId?: number;
+export interface FormProps<T extends {id: number}, R extends T = T> {
+    item: T;
+    onSubmit: (item: T | R) => void;
 }
 
 

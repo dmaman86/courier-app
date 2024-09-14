@@ -19,7 +19,7 @@ export const ContactsPage = () => {
         branches: []
     };
 
-    const fetchContacts = (page: number, size: number) => serviceRequest.getItem<PageResponse<Contact[]>>(`${paths.courier.contacts}?page=${page}&size=${size}`);
+    const getContacts = (page: number, size: number) => serviceRequest.getItem<PageResponse<Contact[]>>(`${paths.courier.contacts}?page=${page}&size=${size}`);
 
     const createOrUpdateContact = (contact: Contact) => contact.id ? serviceRequest.putItem<Contact, Contact>(paths.courier.contacts, contact) :
                                                         serviceRequest.postItem<Contact, Contact>(paths.courier.contacts, contact);
@@ -48,25 +48,41 @@ export const ContactsPage = () => {
         }
     }, [userDetails]);
 
+    const formatMessage = (contact: Contact) => {
+        return `Are you sure you want to delete:
+                Fullname: ${contact.name} ${contact.lastName},
+                Phone: ${contact.phone},
+                Office: ${contact.office.name}`
+    }
+
     return(
         <>
             {
                 userDetails && (
                     <ItemsPage<Contact>
                         userDetails={userDetails}
-                        title="Contacts"
-                        placeholder="Search contact..."
-                        buttonName="Create Contact"
-                        fetchItems={fetchContacts}
-                        createOrUpdateItem={createOrUpdateContact}
-                        deleteItem={deleteContact}
-                        searchItem={searchContact}
-                        renderItemForm={(item, setItem, onSubmit) => <ContactForm contact={item} setContact={setItem} onSubmit={onSubmit}/>}
-                        columns={contactColumns}
-                        renderItemList={({ data, actions }) => <ContactList data={data} actions={actions}/>}
-                        showSearch={true}
-                        allowedRoles={contactAllowedRoles}
+                        header={{
+                            title: 'Contacts',
+                            placeholder: 'Search contact...',
+                            buttonName: 'Create Contact'
+                        }}
+                        getItems={getContacts}
+                        actions={{
+                            createOrUpdateItem: createOrUpdateContact,
+                            deleteItem: deleteContact,
+                            searchItem: searchContact
+                        }}
+                        list={{
+                            columns: contactColumns,
+                            itemList: (data, actions) => <ContactList data={data} actions={actions}/>,
+                            itemForm: (item, onSubmit) => <ContactForm item={item} onSubmit={onSubmit}/>
+                        }}
+                        options={{
+                            showSearch: true,
+                            allowedRoles: contactAllowedRoles
+                        }}
                         initialItem={initialContact}
+                        formatMessage={formatMessage}
                     />
                 )
             }

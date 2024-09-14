@@ -4,27 +4,20 @@ import { Divider, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from '@mui/icons-material/Add';
 
-import { Branch, BranchInfo, FormState, Office, OfficeResponse, OptionType } from "@/domain";
-import { ReusableInput } from "../form";
+import { Branch, BranchInfo, FormProps, FormState, Office, OfficeResponse, OptionType } from "@/domain";
+import { ReusableInput, SelectDetailsForm } from "../form";
 import { validatorForm } from "@/helpers";
 import { useForm } from "@/hooks";
-import { SelectDetailsForm } from "./SelectDetailsForm";
 
-
-interface OfficeFormProps {
-    office: OfficeResponse;
-    setOffice: (office: OfficeResponse) => void;
-    onSubmit: (office: OfficeResponse) => void;
-}
 
 interface BranchOptionType extends OptionType {
     address: string;
     office: Office;
 }
 
-export const OfficeForm = ({ office, setOffice, onSubmit }: OfficeFormProps) => {
+export const OfficeForm = <T extends OfficeResponse>({ item, onSubmit }: FormProps<T>) => {
 
-    const [ selectedBranches, setSelectedBranches ] = useState<Branch[]>(office.branches as Branch[]);
+    const [ selectedBranches, setSelectedBranches ] = useState<Branch[]>(item.branches as Branch[]);
     const [ branches, setBranches ] = useState<BranchInfo[]>([{ city: '', address: ''}]);
 
     const generateBranchInitialState = (branches: BranchInfo[]): FormState => {
@@ -62,18 +55,18 @@ export const OfficeForm = ({ office, setOffice, onSubmit }: OfficeFormProps) => 
 
     const initialFormState: FormState = {
         name: {
-            value: office.name,
+            value: item.name,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
         },
         ...(
-            office.branches.length > 0 
+            item.branches.length > 0 
                 ? generateExistBranch(selectedBranches) 
                 : generateBranchInitialState(branches)
         )
     }
 
-    const { values, state, handleChange, handleStateChange, onFocus, validateForm, setValues, setState } = useForm(office, initialFormState);
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm, setValues, setState } = useForm(item, initialFormState);
 
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -156,7 +149,7 @@ export const OfficeForm = ({ office, setOffice, onSubmit }: OfficeFormProps) => 
                             </div>
                         </div>
                         {
-                            (office.id === 0 && branches.length > 0) && (
+                            (item.id === 0 && branches.length > 0) && (
                                 branches.map((branch, index) => (
                                     <div key={`branch_${index}`}>
                                         <Divider textAlign="right">
@@ -218,13 +211,13 @@ export const OfficeForm = ({ office, setOffice, onSubmit }: OfficeFormProps) => 
                                                     value: branch.value,
                                                     label: `${branch.city}\n${branch.address}`,
                                                     address: branch.address,
-                                                    office: {id: office.id, name: state.name }
+                                                    office: {id: item.id, name: state.name }
                                                 }))}
                                                 listOptions={selectedBranches.map(branch => ({
                                                     value: branch.id,
                                                     label: `${branch.city}\n${branch.address}`,
                                                     address: branch.address,
-                                                    office: {id: office.id, name: state.name}
+                                                    office: {id: item.id, name: state.name}
                                                 }))}
                                                 transformData={(selected) => {
                                                     if(Array.isArray(selected)){

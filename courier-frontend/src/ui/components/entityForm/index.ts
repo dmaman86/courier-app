@@ -6,4 +6,3 @@ export { RoleForm } from './RoleForm';
 export { StatusOrderForm } from './StatusOrderForm';
 export { UserForm } from './UserForm';
 export { UpdatePassword } from './UpdatePassword';
-export { SelectDetailsForm } from './SelectDetailsForm';

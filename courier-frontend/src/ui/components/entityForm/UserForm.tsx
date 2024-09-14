@@ -1,21 +1,12 @@
 import { useEffect, useState } from "react";
 
-import { ReusableInput } from "../form";
-import { Branch, BranchOptionType, Client, FetchResponse, FormState, Office, OfficeResponse, OptionType, Role, User } from "@/domain";
+import { ReusableInput, SelectDetailsForm } from "../form";
+import { Branch, BranchOptionType, Client, FetchResponse, FormProps, FormState, Office, OfficeResponse, OptionType, Role, User } from "@/domain";
 import { paths, validatorForm } from "@/helpers";
 import { useAsync, useAuth, useFetchAndLoad, useForm } from "@/hooks";
-
-import { SelectDetailsForm } from "./SelectDetailsForm";
 import { serviceRequest } from "@/services";
 
-
-interface UserFormProps {
-    user: User | Client;
-    setUser?: (user: User | Client) => void;
-    onSubmit: (user: User | Client) => void;
-}
-
-export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
+export const UserForm = <T extends User, R extends T = T>({ item, onSubmit }: FormProps<T, R>) => {
 
     const { userDetails } = useAuth();
     const { loading, callEndPoint } = useFetchAndLoad();
@@ -27,19 +18,19 @@ export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
 
     const initialFormState: FormState = {
         name: {
-            value: user.name,
+            value: item.name,
             validation: [ validatorForm.validateNotEmpty ],
             validateRealTime: false
         },
         lastName: {
-            value: user.lastName,
+            value: item.lastName,
             validation: [
                 validatorForm.validateNotEmpty
             ],
             validateRealTime: false
         },
         email: {
-            value: user.email,
+            value: item.email,
             validation: [
                 validatorForm.validateNotEmpty,
                 validatorForm.isEmail
@@ -47,7 +38,7 @@ export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
             validateRealTime: false
         },
         phone: {
-            value: user.phone,
+            value: item.phone,
             validation: [
                 validatorForm.validateNotEmpty,
                 validatorForm.isCellularNumber
@@ -55,7 +46,7 @@ export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
             validateRealTime: false
         },
         roles: {
-            value: user.roles,
+            value: item.roles,
             validation: [{
                 isValid: (value: Role[]) => value.length > 0,
                 message: 'Select at least one role'
@@ -85,16 +76,16 @@ export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
     const [ isCurrentUser, setIsCurrentUser ] = useState<boolean>(false);
     const [ branches, setBranches ] = useState<Branch[] | null>(null);
 
-    const { values, state, handleChange, handleStateChange, onFocus, validateForm, setState, setValues } = useForm<Client, FormState>(user as Client, initialFormState);
+    const { values, state, handleChange, handleStateChange, onFocus, validateForm, setState, setValues } = useForm<Client, FormState>(item as Client, initialFormState);
 
     const fetchUserDetails = async() => {
-        if(user.id !== 0){
-            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${user.id}`));
+        if(item.id !== 0){
+            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}id/${item.id}`));
         }
         return Promise.resolve({ data: null, error: null });
     }
 
-    useAsync(fetchUserDetails, setResponse, () => {}, [user.id]);
+    useAsync(fetchUserDetails, setResponse, () => {}, [item.id]);
 
     useEffect(() => {
         if(!loading && response.data){
@@ -114,7 +105,7 @@ export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
         if(userDetails){
             const userRoles = userDetails.roles;
             setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
-            setIsCurrentUser(user.id === userDetails.id);
+            setIsCurrentUser(item.id === userDetails.id);
         }
     }, [userDetails]);
 
@@ -161,20 +152,22 @@ export const UserForm = ({ user, setUser, onSubmit }: UserFormProps) => {
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const newUser = validateForm();
+        console.log(state);
         if(newUser){
-            if(!newUser.roles.some(role => role.name === 'CLIENT_ROLE')){
+            /*if(!newUser.roles.some(role => role.name === 'CLIENT_ROLE')){
                 const { office, branches, ...res } = newUser;
                 onSubmit(res);
             }
-            onSubmit(newUser);
+            onSubmit(newUser);*/
+            onSubmit(newUser as T | R);
         }
     }
 
     useEffect(() => {
-        console.log(user);
+        console.log(item);
         console.log(state);
         console.log(values);
-    }, [user, state, values]);
+    }, [item, state, values]);
 
 
     return(

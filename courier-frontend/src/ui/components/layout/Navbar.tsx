@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 
 import { useFetchAndLoad, useNavbar, useAuth } from "@/hooks";
-import { AlertDialog, NavbarLinks, UserDetails } from "@/ui";
+import { CustomDialog, NavbarLinks, UserDetails } from "@/ui";
 import { useRouteConfig } from "@/useCases";
 
 export const Navbar = () => {
@@ -52,15 +52,18 @@ export const Navbar = () => {
                     }
                 </div>
             </nav>
-            {
-                state.showAlertDialog && (
-                    <AlertDialog 
-                        open={state.showAlertDialog} 
-                        onClose={() => dispatch({ type: 'CANCEL_LOGOUT' })} 
-                        onConfirm={() => dispatch({ type: 'START_LOGOUT' })} 
-                        title="Are your sure you want to logout?"/>
-                )
-            }
+            <CustomDialog 
+                open={state.showAlertDialog} 
+                onClose={() => dispatch({ type: 'CANCEL_LOGOUT' })} 
+                            // onConfirm={() => dispatch({ type: 'START_LOGOUT' })} 
+                title="Are your sure you want to logout?"
+                actions={
+                    <>
+                        <button onClick={() => dispatch({ type: 'CANCEL_LOGOUT' })} className="btn btn-secondary">Cancel</button>
+                        <button onClick={() => dispatch({ type: 'START_LOGOUT' })} className="btn btn-danger">Sure</button>
+                    </>
+                }
+            />
         </>
     );
 }

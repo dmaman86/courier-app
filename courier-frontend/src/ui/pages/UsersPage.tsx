@@ -1,9 +1,9 @@
+import { useEffect, useState } from "react";
 
 import { Client, PageResponse, User, ValueColumn } from "@/domain";
 import { serviceRequest } from "@/services";
 import { paths } from "@/helpers";
 import { useAuth } from "@/hooks";
-import { useEffect, useState } from "react";
 import { ItemsPage, UserForm, UserList } from "@/ui";
 
 
@@ -12,7 +12,7 @@ export const UsersPage = () => {
 
     const { userDetails } = useAuth();
 
-    const initialUser: User | Client = {
+    /*const initialUser: User | Client = {
         id: 0,
         email: '',
         name: '',
@@ -23,9 +23,21 @@ export const UsersPage = () => {
         // office: null,
         branches: [],
         isActive: true
+    };*/
+
+    const initialUser: User = {
+        id: 0,
+        email: '',
+        name: '',
+        lastName: '',
+        phone: '',
+        roles: [],
+        office: { id: 0, name: ''},
+        branches: [],
+        isActive: true
     };
 
-    const fetchUsers = (page: number, size: number) => serviceRequest.getItem<PageResponse<User[]>>(`${paths.courier.users}?page=${page}&size=${size}`);
+    const getUsers = (page: number, size: number) => serviceRequest.getItem<PageResponse<User[]>>(`${paths.courier.users}?page=${page}&size=${size}`);
 
     const createUser = (user: User) => serviceRequest.postItem<User, User>(paths.courier.createOrUpdateUser, user);
 
@@ -57,15 +69,13 @@ export const UsersPage = () => {
 
 
     const createOrUpdateItem = (item: User | Client) => {
-        if(isClient(item)){
-            return item.id ? updateClient(item) : createClient(item);
-        }else{
-            const userItem: User = { ...item };
-            delete (userItem as Partial<Client>).office;
-            delete (userItem as Partial<Client>).branches;
-
-            return userItem.id ? updateUser(userItem) : createUser(userItem);
+        console.log(item);
+        const user: User | Client = isClient(item) ? item : (({ office, branches, ...rest }) => rest)(item);
+        console.log(user);
+        if(user.id === 0){
+            return isClient(item) ? createClient(item) : createUser(item);
         }
+        return isClient(item) ? updateClient(item) : updateUser(item);
     }
 
     const isClient = (item: User | Client): item is Client => {
@@ -74,24 +84,36 @@ export const UsersPage = () => {
                 (item as Client).office !== undefined && (item as Client).branches !== undefined;
     };
 
+    const formatMessage = (user: User) => {
+        return `Are you sure you want to delete: 
+                Fullname: ${user.name} ${user.lastName},
+                Email: ${user.email},
+                Phone: ${user.phone}`;
+    }
+
     return(
         <>
             {
                 userDetails && (
                     <ItemsPage<User>
                         userDetails={userDetails}
-                        title="Users"
-                        placeholder="Search user..."
-                        buttonName="Create User"
-                        fetchItems={fetchUsers}
-                        createOrUpdateItem={createOrUpdateItem}
-                        deleteItem={deleteUser}
-                        searchItem={searchUser}
-                        renderItemForm={(item, setItem, onSubmit) => <UserForm user={item} setUser={setItem} onSubmit={onSubmit} />}
-                        columns={userColumns}
-                        renderItemList={({ data, actions }) => <UserList data={data} actions={actions}/>}
-                        allowedRoles={userAllowedRoles}
+                        header={{ title: 'Users', placeholder: 'Search user...', buttonName: 'Create User' }}
+                        getItems={getUsers}
+                        actions={{
+                            createOrUpdateItem,
+                            deleteItem: deleteUser,
+                            searchItem: searchUser
+                        }}
+                        list={{
+                            columns: userColumns,
+                            itemList: (data, actions) => <UserList data={data} actions={actions}/>,
+                            itemForm: (item, onSubmit) => <UserForm item={item} onSubmit={onSubmit} />
+                        }}
+                        options={{
+                            allowedRoles: userAllowedRoles
+                        }}
                         initialItem={initialUser}
+                        formatMessage={formatMessage}
                     />
                 )
             }

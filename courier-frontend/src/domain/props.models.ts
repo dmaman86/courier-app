@@ -70,18 +70,18 @@ export interface Item {
     id: number;
 }
 
-export interface Action<T extends { id: number }> {
+export interface Action<T extends { id: number }, R = T> {
     label: string;
     classNameButton?: string;
     classNameIcon?: string;
-    method: (item: T) => void;
+    method: (item: T | R) => void;
 }
 
 export interface GenericTableProps<T extends { id: number }>{
     data: T[];
     columns: ValueColumn[];
     actions?: Action<T>[];
-    BodyComponent: React.ComponentType<{ data: T[], actions?: Action<T>[], userDetails?: User }>;
+    BodyComponent: (data: T[], actions?: Action<T>[]) => ReactNode;
     pagination: { page: number, size: number, totalItems: number };
     onPageChange: (event: unknown, page: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -90,6 +90,36 @@ export interface GenericTableProps<T extends { id: number }>{
 export interface ListProps<T extends { id: number }>{
     data: T[];
     actions?: Action<T>[];
+}
+
+export interface ItemsPageProps<T extends {id: number}> {
+    userDetails: User;
+    header: {
+        title: string;
+        placeholder: string;
+        buttonName: string;
+    };
+    getItems: (page: number, size: number) => AxiosCall<PageResponse<T[]>>;
+    actions: {
+        createOrUpdateItem: (item: T) => AxiosCall<T>;
+        deleteItem: (itemId: number) => AxiosCall<string>;
+        searchItem?: (search: string, page: number, size: number) => AxiosCall<PageResponse<T[]>>;
+    };
+    list: {
+        columns: ValueColumn[];
+        itemList: (data: T[], actions?: Action<T>[]) => ReactNode;
+        itemForm: (item: T, onSubmit: (item: T) => void, onClose?: () => void) => ReactNode;
+    };
+    options: {
+        showSearch?: boolean;
+        allowedRoles: {
+            create: string[];
+            update: string[];
+            delete: string[];
+        };
+    };
+    initialItem: T;
+    formatMessage: (item: T) => string;
 }
 
 /*export interface State<T> {
@@ -104,7 +134,8 @@ export interface ListProps<T extends { id: number }>{
     pagination: { page: number, size: number, totalItems: number }
 }*/
 
-export interface ItemsPageProps<T extends {id: number}> {
+
+/*export interface ItemsPageProps<T extends {id: number}> {
     userDetails: User;
     title: string;
     placeholder: string;
@@ -123,4 +154,5 @@ export interface ItemsPageProps<T extends {id: number}> {
         delete: string[];
     };
     initialItem: T;
-}
+    formatMessage: (item: T) => string;
+}*/

@@ -1,20 +1,14 @@
 import { ReusableInput } from "../form";
-import { FormState, Role } from "@/domain";
+import { FormProps, FormState, Role } from "@/domain";
 import { validatorForm } from "@/helpers";
 import { useForm } from "@/hooks";
 
 
-interface RoleFormProps {
-    role: Role;
-    setRole: (role: Role) => void;
-    onSubmit: (role: Role) => void;
-}
-
-export const RoleForm = ({ role, setRole, onSubmit }: RoleFormProps) => {
+export const RoleForm = <T extends Role>({ item, onSubmit }: FormProps<T>) => {
 
     const initialState: FormState = {
         name: {
-            value: role.name,
+            value: item.name,
             validation: [
                 validatorForm.validateNotEmpty
             ],
@@ -22,7 +16,7 @@ export const RoleForm = ({ role, setRole, onSubmit }: RoleFormProps) => {
         }
     };
 
-    const { values, state, handleChange, onFocus, validateForm } = useForm(role, initialState);
+    const { values, state, handleChange, onFocus, validateForm } = useForm(item, initialState);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
