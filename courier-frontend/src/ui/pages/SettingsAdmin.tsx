@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 import { BranchesPartial, RolePartial, StatusOrdersPartial } from "@/ui";
+import { PageProps } from "./interface";
+import { withLoading } from "@/hoc";
 
 
-export const SettingsAdmin = () => {
+const SettingsAdmin = ({ userDetails }: PageProps) => {
 
     const [ expanded, setExpanded ] = useState<string | false>(false);
 
@@ -24,7 +27,7 @@ export const SettingsAdmin = () => {
                         {expanded !== 'panel1' && <Typography>Roles</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel1' && <RolePartial />}
+                        {expanded === 'panel1' && <RolePartial userDetails={userDetails}/>}
                     </AccordionDetails>
                 </Accordion>
                 <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
@@ -36,7 +39,7 @@ export const SettingsAdmin = () => {
                         {expanded !== 'panel2' && <Typography>Branches</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel2' && <BranchesPartial />}
+                        {expanded === 'panel2' && <BranchesPartial userDetails={userDetails}/>}
                     </AccordionDetails>
                 </Accordion>
                 <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
@@ -48,10 +51,12 @@ export const SettingsAdmin = () => {
                         {expanded !== 'panel3' && <Typography>Status Orders</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel3' && <StatusOrdersPartial />}
+                        {expanded === 'panel3' && <StatusOrdersPartial userDetails={userDetails}/>}
                     </AccordionDetails>
                 </Accordion>
             </div>
         </>
     );
 }
+
+export default withLoading(SettingsAdmin);

@@ -1,13 +1,12 @@
+import { useEffect, useState } from "react";
+
 import { PageResponse, Role, ValueColumn } from "@/domain";
 import { serviceRequest } from "@/services";
 import { paths } from "@/helpers";
-import { useAuth } from "@/hooks";
-import { useEffect, useState } from "react";
 import { ItemsPage, RoleForm, RoleList } from "@/ui";
+import { PartialProps } from "./interface";
 
-export const RolePartial = () => {
-
-    const { userDetails } = useAuth();
+export const RolePartial = ({ userDetails }: PartialProps) => {
 
     const initialRole: Role = {
         id: 0,

@@ -74,11 +74,11 @@ Admins have access to a wide range of features including user management, office
 ![Admin Dashboard](./images/admin-dashboard.png)
 *Admin Dashboard*
 
-| ![Admin Manage User](./images/admin-manage-users.png) | ![Admin Create User](./images/admin-create-user.png) |
+| ![Admin Update User](./images/admin-update-user.png) | ![Admin Create User](./images/admin-create-user.png) |
 |:---:|:---:|
 | *Admin Manage Users* | *Admin Create User* |
 
-| ![Admin Manage Branches](./images/admin-manage-offices-branches.png) | ![Admin Manage Orders](./images/admin-manage-orders.png) |
+| ![Admin Settings Page](./images/admin-settings-page.png) | ![Admin Update Orders](./images/admin-update-order.png) |
 |:---:|:---:|
 | *Admin Manage Branches* | *Admin Manage Orders* |
 
@@ -89,7 +89,7 @@ Couriers can view and manage their assigned deliveries, update delivery statuses
 ![Courier Dashboard](./images/courier-dashboard.png)
 *Courier Dashboard*
 
-| ![Courier Manage Order](./images/courier-manage-order.png) | ![Courier Update Status Order](./images/courier-update-status-order.png) |
+| ![Courier Update Order](./images/courier-update-order.png) | ![Courier Update Status Order](./images/courier-update-status-order.png) |
 |:---:|:---:|
 | *Courier Manage Order* | *Courier Update Status Order* |
 

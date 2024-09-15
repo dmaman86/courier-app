@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import moment from "moment";
 
 import { paths } from "@/helpers";
-import { useAuth } from "@/hooks"
 import { serviceRequest } from "@/services";
 import { Order, PageResponse, ValueColumn } from "@/domain";
 import { ItemsPage, OrderForm, OrderList } from "@/ui";
+import { PageProps } from "./interface";
+import { withLoading } from "@/hoc";
 
-export const OrdersPage = () => {
-
-    const { userDetails } = useAuth();
+const OrdersPage = ({ userDetails }: PageProps) => {
 
     const initialOrder: Order = {
         id: 0,
@@ -71,34 +70,32 @@ export const OrdersPage = () => {
 
     return(
         <>
-            {
-                userDetails && (
-                    <ItemsPage<Order>
-                        userDetails={userDetails}
-                        header={{
-                            title: 'Orders',
-                            placeholder: 'Search order...',
-                            buttonName: 'Create Order'
-                        }}
-                        getItems={getOrders}
-                        actions={{
-                            createOrUpdateItem: createOrUpdateOrder,
-                            deleteItem: deleteOrder
-                        }}
-                        list={{
-                            columns: orderColumns,
-                            itemList: (data, actions) => <OrderList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit, onClose) => <OrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
-                        }}
-                        options={{
-                            showSearch: false,
-                            allowedRoles: orderAllowedRoles
-                        }}
-                        initialItem={initialOrder}
-                        formatMessage={formatMessage}
-                    />
-                )
-            }
+            <ItemsPage<Order>
+                userDetails={userDetails}
+                header={{
+                    title: 'Orders',
+                    placeholder: 'Search order...',
+                    buttonName: 'Create Order'
+                }}
+                getItems={getOrders}
+                actions={{
+                    createOrUpdateItem: createOrUpdateOrder,
+                    deleteItem: deleteOrder
+                }}
+                list={{
+                    columns: orderColumns,
+                    itemList: (data, actions) => <OrderList data={data} actions={actions}/>,
+                    itemForm: (item, onSubmit, onClose) => <OrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
+                }}
+                options={{
+                    showSearch: false,
+                    allowedRoles: orderAllowedRoles
+                }}
+                initialItem={initialOrder}
+                formatMessage={formatMessage}
+            />
         </>
     )
 }
+
+export default withLoading(OrdersPage);

@@ -1,14 +1,13 @@
 
-import { useAuth } from "@/hooks";
+import { User } from "@/domain";
 
 
-export const HomeAdmin = () => {
 
-    const { userDetails } = useAuth();
+export const HomeAdmin = ({ userDetails }: { userDetails: User }) => {
 
     return(
         <>
-            <h1>Home Admin {userDetails?.name}</h1>
+            <h1>Home Admin {userDetails.name}</h1>
         </>
     )
 }

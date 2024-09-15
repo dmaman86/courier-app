@@ -1,13 +1,14 @@
+import { useEffect, useState } from "react";
+
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { OfficeResponse, PageResponse, ValueColumn } from "@/domain";
-import { useAuth } from "@/hooks";
-import { useEffect, useState } from "react";
+
 import { ItemsPage, OfficeForm, OfficeList } from "@/ui";
+import { PageProps } from "./interface";
+import { withLoading } from "@/hoc";
 
-export const OfficesPage = () => {
-
-    const { userDetails } = useAuth();
+const OfficesPage = ({ userDetails }: PageProps) => {
 
     const initialOffice: OfficeResponse = {
         id: 0,
@@ -32,7 +33,7 @@ export const OfficesPage = () => {
     
 
     useEffect(() => {
-        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+        if(userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
             setOfficeColumns([...officeColumns, { key: 'actions', label: '' }]);
         }
     }, [userDetails]);
@@ -50,35 +51,33 @@ export const OfficesPage = () => {
 
     return(
         <>
-            {
-                userDetails && (
-                    <ItemsPage<OfficeResponse>
-                        userDetails={userDetails}
-                        header={{
-                            title: 'Offices',
-                            placeholder: 'Search office...',
-                            buttonName: 'Create Office'
-                        }}
-                        getItems={getOffices}
-                        actions={{
-                            createOrUpdateItem: createOrUpdateOffice,
-                            deleteItem: deleteOffice,
-                            searchItem: searchOffice
-                        }}
-                        list={{
-                            columns: officeColumns,
-                            itemList: (data, actions) => <OfficeList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit, onClose) => <OfficeForm item={item} onSubmit={onSubmit} onClose={onClose}/>
-                        }}
-                        options={{
-                            showSearch: true,
-                            allowedRoles: officeAllowedRoles
-                        }}
-                        initialItem={initialOffice}
-                        formatMessage={formatMessage}
-                    />
-                )
-            }
+            <ItemsPage<OfficeResponse>
+                userDetails={userDetails}
+                header={{
+                    title: 'Offices',
+                    placeholder: 'Search office...',
+                    buttonName: 'Create Office'
+                }}
+                getItems={getOffices}
+                actions={{
+                    createOrUpdateItem: createOrUpdateOffice,
+                    deleteItem: deleteOffice,
+                    searchItem: searchOffice
+                }}
+                list={{
+                    columns: officeColumns,
+                    itemList: (data, actions) => <OfficeList data={data} actions={actions}/>,
+                    itemForm: (item, onSubmit, onClose) => <OfficeForm item={item} onSubmit={onSubmit} onClose={onClose}/>
+                }}
+                options={{
+                    showSearch: true,
+                    allowedRoles: officeAllowedRoles
+                }}
+                initialItem={initialOffice}
+                formatMessage={formatMessage}
+            />
         </>
     )
 }
+
+export default withLoading(OfficesPage);

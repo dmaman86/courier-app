@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { Container, Grid, Paper, Typography, Stack, Button } from "@mui/material";
 
-import { useAuth } from "@/hooks";
 import { Branch, Client, Role, UpdatePasswordForm, User } from "@/domain";
 import { CustomDialog, UpdatePassword, UserForm } from "@/ui";
+import { PageProps } from "./interface";
+import { withLoading } from "@/hoc";
 
 
-export const Profile = () => {
-
-    const { userDetails } = useAuth();
+const Profile = ({ userDetails }: PageProps) => {
 
     const [ dialog, setDialog ] = useState<boolean>(false);
  
@@ -81,71 +80,69 @@ export const Profile = () => {
 
     return(
         <>
-        {
-            userDetails && (
-                <Container sx={{ pt: 5}}>
-                    <Grid container justifyContent='center'>
-                        <Grid item lg={10}>
-                            <Paper elevation={3} sx={{ p: 3 }}>
-                                <Typography variant="h4" align="center" gutterBottom>
-                                    Account Overview
-                                </Typography>
-                                <Grid container spacing={2} justifyContent="center" textAlign="center">
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6">
-                                            Email: {userDetails.email}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6">
-                                            Full name: {capitalizeFirstLetter(userDetails.name) + ' ' + capitalizeFirstLetter(userDetails.lastName)}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6">
-                                            Phone: {userDetails.phone}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6">
-                                            Roles: {extractRoleNames(userDetails)}
-                                        </Typography>
-                                    </Grid>
-                                    {
-                                        isClient && (
-                                            <>
-                                                <Grid item xs={12}>
-                                                    <Typography variant="h6">
-                                                        Office: {(userDetails as Client).office.name}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                    <Typography variant="h6" component="pre">
-                                                        Branch: {extractBranchDetails((userDetails as Client))}
-                                                    </Typography>
-                                                </Grid>
-                                            </>
-                                        )
-                                    }
-                                    <Grid item xs={12}>
-                                        <Stack spacing={2} direction={'row'} justifyContent='center'>
-                                            <Button variant="contained" color="primary" onClick={handleEditDetails}>Update details</Button>
-                                            <Button variant="contained" color="primary" onClick={handleEditPassword}>Update password</Button>
-                                        </Stack>
-                                    </Grid>
+            <Container sx={{ pt: 5}}>
+                <Grid container justifyContent='center'>
+                    <Grid item lg={10}>
+                        <Paper elevation={3} sx={{ p: 3 }}>
+                            <Typography variant="h4" align="center" gutterBottom>
+                                Account Overview
+                            </Typography>
+                            <Grid container spacing={2} justifyContent="center" textAlign="center">
+                                <Grid item xs={12}>
+                                    <Typography variant="h6">
+                                        Email: {userDetails.email}
+                                    </Typography>
                                 </Grid>
-                            </Paper>
-                        </Grid>
+                                <Grid item xs={12}>
+                                    <Typography variant="h6">
+                                        Full name: {capitalizeFirstLetter(userDetails.name) + ' ' + capitalizeFirstLetter(userDetails.lastName)}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Typography variant="h6">
+                                        Phone: {userDetails.phone}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Typography variant="h6">
+                                        Roles: {extractRoleNames(userDetails)}
+                                    </Typography>
+                                </Grid>
+                                {
+                                    isClient && (
+                                        <>
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6">
+                                                    Office: {(userDetails as Client).office.name}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6" component="pre">
+                                                    Branch: {extractBranchDetails((userDetails as Client))}
+                                                </Typography>
+                                            </Grid>
+                                        </>
+                                    )
+                                }
+                                <Grid item xs={12}>
+                                    <Stack spacing={2} direction={'row'} justifyContent='center'>
+                                        <Button variant="contained" color="primary" onClick={handleEditDetails}>Update details</Button>
+                                        <Button variant="contained" color="primary" onClick={handleEditPassword}>Update password</Button>
+                                    </Stack>
+                                </Grid>
+                            </Grid>
+                        </Paper>
                     </Grid>
-                </Container>
-            )
-        }
-        <CustomDialog
-            open={dialog}
-            title={title}
-            content={content}
-            onClose={handleClose} 
-        />
+                </Grid>
+            </Container>
+            <CustomDialog
+                open={dialog}
+                title={title}
+                content={content}
+                onClose={handleClose} 
+            />
         </>
     );
 }
+
+export default withLoading(Profile);

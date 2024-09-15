@@ -1,20 +1,20 @@
 import { lazy } from 'react';
 import { Navigate } from "react-router-dom";
 
-import { RouteConfig } from "@/domain";
+import { RouteConfig, User } from "@/domain";
 import { withLoading } from "@/hoc";
 
 
 const Login = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.Login }))));
 const SignUp = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.SignUp }))));
 
-const Home = lazy(() => import('@/ui').then(module => ({ default: module.Home })));
-const Profile = lazy(() => import('@/ui').then(module => ({ default: module.Profile })));
-const SettingsAdmin = lazy(() => import('@/ui').then(module => ({ default: module.SettingsAdmin })));
-const UsersPage = lazy(() => import('@/ui').then(module => ({ default: module.UsersPage })));
-const ContactsPage = lazy(() => import('@/ui').then(module => ({ default: module.ContactsPage })));
-const OfficesPage = lazy(() => import('@/ui').then(module => ({ default: module.OfficesPage })));
-const OrdersPage = lazy(() => import('@/ui').then(module => ({ default: module.OrdersPage })));
+const Home = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.Home }))));
+const Profile = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.Profile }))));
+const SettingsAdmin = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.SettingsAdmin }))));
+const UsersPage = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.UsersPage }))));
+const ContactsPage = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.ContactsPage }))));
+const OfficesPage = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.OfficesPage }))));
+const OrdersPage = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.OrdersPage }))));
 
 export const publicRoutes = (isLoading: boolean): RouteConfig[] => [
     {
@@ -37,47 +37,47 @@ export const publicRoutes = (isLoading: boolean): RouteConfig[] => [
     }
 ]
 
-export const privateRoutes: RouteConfig[] = [
+export const privateRoutes = (isLoading: boolean, userDetails: User): RouteConfig[] => [
     {
         path: '/home',
         label: 'Home',
-        element: <Home />,
+        element: <Home isLoading={isLoading} userDetails={userDetails}/>,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER', 'ROLE_CLIENT']
     },
     {
         path: '/orders',
         label: 'Orders',
-        element: <OrdersPage />,
+        element: <OrdersPage isLoading={isLoading} userDetails={userDetails}/>,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER', 'ROLE_CLIENT']
     },
     {
         path: '/users',
         label: 'Users',
-        element: <UsersPage />,
+        element: <UsersPage isLoading={isLoading} userDetails={userDetails}/>,
         allowedRoles: ['ROLE_ADMIN']
     },
     {
         path: '/contacts',
         label: 'Contacts',
-        element: <ContactsPage />,
+        element: <ContactsPage isLoading={isLoading} userDetails={userDetails}/>,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER']
     },
     {
         path: '/offices',
         label: 'Offices',
-        element: <OfficesPage />,
+        element: <OfficesPage isLoading={isLoading} userDetails={userDetails}/>,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER']
     },
     {
         path: '/profile',
         label: 'Profile',
-        element: <Profile />,
+        element: <Profile isLoading={isLoading} userDetails={userDetails}/>,
         allowedRoles: ['ROLE_ADMIN', 'ROLE_COURIER', 'ROLE_CLIENT']
     },
     {
         path: '/settings',
         label: 'Settings',
-        element: <SettingsAdmin />,
+        element: <SettingsAdmin isLoading={isLoading} userDetails={userDetails}/>,
         allowedRoles: ['ROLE_ADMIN']
     },
     {

@@ -80,7 +80,7 @@ export const PageHeader = ({ header, search, onCreate, delay = 250 }: PageHeader
                                             inputProps={{
                                                 name: 'search',
                                                 type: 'text',
-                                                value: values.search.value,
+                                                value: state.search,
                                                 placeholder: header.placeholder
                                             }}
                                             onChange={handleSearchChange}

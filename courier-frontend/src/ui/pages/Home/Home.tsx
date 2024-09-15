@@ -4,34 +4,39 @@ import { useEffect, useState } from "react";
 import { HomeAdmin } from "./HomeAdmin";
 import { HomeClient } from "./HomeClient";
 import { HomeCourier } from "./HomeCourier";
-import { useAuth } from "@/hooks";
+import { PageProps } from "../interface";
+import { withLoading } from "@/hoc";
 
 
-export const Home = () => {
+const Home = ({ userDetails }: PageProps) => {
 
-    const { userDetails } = useAuth();
+    const roles = userDetails.roles.map(role => role.name);
+
     const [ components, setComponents ] = useState<JSX.Element[]>([]);
 
+
     useEffect(() => {
-        if(userDetails){
-            const roles = userDetails.roles.map(role => role.name);
+        const buildComponents = () => {
             const newComponents = [];
 
             if (roles.includes('ROLE_ADMIN')) {
-                newComponents.push(<HomeAdmin key='admin' />);
+                newComponents.push(<HomeAdmin key='admin' userDetails={userDetails}/>);
             }
             if (roles.includes('ROLE_COURIER')) {
-                newComponents.push(<HomeCourier key='courier' />);
+                newComponents.push(<HomeCourier key='courier' userDetails={userDetails}/>);
             }
             if (roles.includes('ROLE_CLIENT')) {
-                newComponents.push(<HomeClient key='client' />);
+                newComponents.push(<HomeClient key='client' userDetails={userDetails}/>);
             }
 
             setComponents(newComponents);
         }
-    }, [userDetails]);
 
-    if(!userDetails) return <div>Loading user data...</div>;
+        if(!components.length) buildComponents();
+    }, [components]);
+
+    if(!components.length) return <div>Loading data...</div>;
+    
 
     return(
         <>
@@ -41,3 +46,5 @@ export const Home = () => {
         </>
     )
 }
+
+export default withLoading(Home);

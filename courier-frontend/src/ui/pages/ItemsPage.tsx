@@ -8,10 +8,6 @@ import { withLoading } from "@/hoc";
 import { CustomDialog, PageHeader, ReusableTable } from "@/ui";
 import { useUserItemActions } from "@/useCases";
 
-
-
-
-
 export const ItemsPage = <T extends Item>({ 
     userDetails,
     header,
@@ -43,43 +39,25 @@ export const ItemsPage = <T extends Item>({
     const { loading, callEndPoint } = useFetchAndLoad();
     const { showBoundary } = useErrorBoundary();
 
-    const getApiData = async() => await callEndPoint(getItems(state.pagination.page, state.pagination.size));
 
-    const handleSuccess = (response: FetchResponse<PageResponse<T[]>>) => {
-        console.log(response);
-        if(response.data && response.data.content.length && !response.error){
+    const fetchData = async (): Promise<FetchResponse<PageResponse<T[]>>> => {
+        if(actions.searchItem && state.searchQuery){
+            return await callEndPoint(actions.searchItem(state.searchQuery, state.pagination.page, state.pagination.size));
+        }
+        return await callEndPoint(getItems(state.pagination.page, state.pagination.size));
+    }
+
+    const handleApiResponse = (response: FetchResponse<PageResponse<T[]>>) => {
+        if(response.data && !response.error){
             const { data } = response;
-            console.log(response.data);
             setAllItems(data.content);
             setPagination(data.pageable.pageNumber, state.pagination.size, data.totalElements);
         }else{
             showBoundary(response.error);
         }
-
     }
 
-    useAsync(getApiData, handleSuccess, () => {}, [state.pagination.page, state.pagination.size] )
-
-    const searchApiData = async (): Promise<FetchResponse<PageResponse<T[]>>> => {
-        if (actions.searchItem && state.searchQuery) {
-            return await callEndPoint(actions.searchItem(state.searchQuery, state.pagination.page, state.pagination.size));
-        }
-        return { data: null, error: null };
-    };
-
-    const handleSearchSuccess = (response: FetchResponse<PageResponse<T[]>>) => {
-        if(state.searchQuery){
-            if(response.data && !response.error){
-                const { data } = response;
-                setAllItems(data.content);
-                setPagination(data.pageable.pageNumber, state.pagination.size, data.totalElements);
-            }else{
-                showBoundary(response.error);
-            }
-        }
-    }
-    
-    useAsync(searchApiData, handleSearchSuccess, () => {}, [state.searchQuery, state.pagination.page, state.pagination.size])
+    useAsync(fetchData, handleApiResponse, () => {}, [state.searchQuery, state.pagination.page, state.pagination.size]);
 
     const createOrUpdate = useCallback(async (item: T) => {
         const result = await callEndPoint(actions.createOrUpdateItem(item));
@@ -111,12 +89,9 @@ export const ItemsPage = <T extends Item>({
         }
     }, [state.responseDelete, state.selectedItem, loading, removeItem]);
 
-    const handleSearch = useCallback(async (query: string) => {
-        if(query){
-            setSearchQuery(query);
-            await searchApiData();
-        }
-    }, [setSearchQuery, searchApiData]);
+    const handleSearch = useCallback((query: string) => {
+        setSearchQuery(query || '');
+    }, [setSearchQuery]);
 
     const handleCreateItem = () => {
         setSelectedItem(initialItem);
@@ -126,14 +101,16 @@ export const ItemsPage = <T extends Item>({
     const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newSize = parseInt(event.target.value, 10);
         setPagination(0, newSize, state.pagination.totalItems);
-        if(state.searchQuery) searchApiData();
-        else getApiData();
+        fetchData();
+        // if(state.searchQuery) searchApiData();
+        // else getApiData();
     }
 
     const handlePageChange = (event: unknown, page: number) => {
         setPagination(page, state.pagination.size, state.pagination.totalItems);
-        if(state.searchQuery) searchApiData();
-        else getApiData();
+        fetchData();
+        // if(state.searchQuery) searchApiData();
+        // else getApiData();
     }
 
     const handleClose = () => {

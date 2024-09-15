@@ -7,17 +7,19 @@ import { useEffect, useState } from "react";
 
 export const ProtectedRoutes = () => {
 
-    const { userDetails } = useAuth();
-    const { getRoutesPublic, getRoutesPrivate } = useRouteConfig();
-    const [ allowedRoutes, setAllowedRoutes ] = useState(getRoutesPublic());
+    // const { userDetails } = useAuth();
+    // const { getRoutesPublic, getRoutesPrivate } = useRouteConfig();
+    // const [ allowedRoutes, setAllowedRoutes ] = useState(getRoutesPublic());
     
-    useEffect(() => {
+    /*useEffect(() => {
         if(userDetails){
             setAllowedRoutes(getRoutesPrivate());
         }else{
             setAllowedRoutes(getRoutesPublic());
         }
-    }, [userDetails]);
+    }, [userDetails]);*/
+
+    const { routes: allowedRoutes } = useRouteConfig();
 
     return (
         <Routes>

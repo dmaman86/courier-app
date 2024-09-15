@@ -1,6 +1,7 @@
+import { User } from "@/domain"
 
 
-export const HomeCourier = () => {
+export const HomeCourier = ({ userDetails }: { userDetails: User }) => {
 
     return (
         <>

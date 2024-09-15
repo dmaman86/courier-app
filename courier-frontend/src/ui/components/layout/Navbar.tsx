@@ -9,19 +9,19 @@ export const Navbar = () => {
 
     const { userDetails, logout } = useAuth();
 
-    const { getLinks } = useRouteConfig();
+    const { links } = useRouteConfig();
 
     const { callEndPoint } = useFetchAndLoad();
     const location = useLocation();
 
-    const [ allowedLinks, setAllowedLinks ] = useState(getLinks());
+    // const [ allowedLinks, setAllowedLinks ] = useState(getLinks());
 
 
     const { state, dispatch } = useNavbar(userDetails, logout, callEndPoint);
 
-    useEffect(() => {
+    /*useEffect(() => {
         setAllowedLinks(getLinks());
-    }, [userDetails]);
+    }, [userDetails]);*/
 
 
     return(
@@ -43,7 +43,7 @@ export const Navbar = () => {
                                 </button>
                                 <div className={"collapse navbar-collapse" + (state.show ? " show" : "")}>
                                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                                        <NavbarLinks links={allowedLinks} />
+                                        <NavbarLinks links={links} />
                                     </ul>
                                     <div className="d-flex logout">
                                         <UserDetails userDetails={userDetails} dispatch={dispatch}/>

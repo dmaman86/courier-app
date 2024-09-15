@@ -1,14 +1,14 @@
+import { useEffect, useState } from "react";
+
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { Contact, PageResponse, ValueColumn } from "@/domain";
-import { useAuth } from "@/hooks";
-import { useEffect, useState } from "react";
 import { ContactForm, ContactList, ItemsPage } from "@/ui";
+import { PageProps } from "./interface";
+import { withLoading } from "@/hoc";
 
 
-export const ContactsPage = () => {
-
-    const { userDetails } = useAuth();
+const ContactsPage = ({ userDetails }: PageProps) => {
 
     const initialContact: Contact = {
         id: 0,
@@ -43,7 +43,7 @@ export const ContactsPage = () => {
 
     
     useEffect(() => {
-        if(userDetails && userDetails.roles.some(role => contactAllowedRoles.update.includes(role.name) || contactAllowedRoles.delete.includes(role.name))){
+        if(userDetails.roles.some(role => contactAllowedRoles.update.includes(role.name) || contactAllowedRoles.delete.includes(role.name))){
             setContactColumns([...contactColumns, { key: 'actions', label: '' }]);
         }
     }, [userDetails]);
@@ -57,35 +57,33 @@ export const ContactsPage = () => {
 
     return(
         <>
-            {
-                userDetails && (
-                    <ItemsPage<Contact>
-                        userDetails={userDetails}
-                        header={{
-                            title: 'Contacts',
-                            placeholder: 'Search contact...',
-                            buttonName: 'Create Contact'
-                        }}
-                        getItems={getContacts}
-                        actions={{
-                            createOrUpdateItem: createOrUpdateContact,
-                            deleteItem: deleteContact,
-                            searchItem: searchContact
-                        }}
-                        list={{
-                            columns: contactColumns,
-                            itemList: (data, actions) => <ContactList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit, onClose) => <ContactForm item={item} onSubmit={onSubmit} onClose={onClose}/>
-                        }}
-                        options={{
-                            showSearch: true,
-                            allowedRoles: contactAllowedRoles
-                        }}
-                        initialItem={initialContact}
-                        formatMessage={formatMessage}
-                    />
-                )
-            }
+            <ItemsPage<Contact>
+                userDetails={userDetails}
+                header={{
+                    title: 'Contacts',
+                    placeholder: 'Search contact...',
+                    buttonName: 'Create Contact'
+                }}
+                getItems={getContacts}
+                actions={{
+                    createOrUpdateItem: createOrUpdateContact,
+                    deleteItem: deleteContact,
+                    searchItem: searchContact
+                }}
+                list={{
+                    columns: contactColumns,
+                    itemList: (data, actions) => <ContactList data={data} actions={actions}/>,
+                    itemForm: (item, onSubmit, onClose) => <ContactForm item={item} onSubmit={onSubmit} onClose={onClose}/>
+                }}
+                options={{
+                    showSearch: true,
+                    allowedRoles: contactAllowedRoles
+                }}
+                initialItem={initialContact}
+                formatMessage={formatMessage}
+            />
         </>
     )
 }
+
+export default withLoading(ContactsPage);

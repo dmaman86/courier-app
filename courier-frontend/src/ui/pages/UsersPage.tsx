@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import { Client, PageResponse, User, ValueColumn } from "@/domain";
 import { serviceRequest } from "@/services";
 import { paths } from "@/helpers";
-import { useAuth } from "@/hooks";
 import { ItemsPage, UserForm, UserList } from "@/ui";
+import { PageProps } from "./interface";
+import { withLoading } from "@/hoc";
 
 
 
-export const UsersPage = () => {
-
-    const { userDetails } = useAuth();
+const UsersPage = ({ userDetails }: PageProps) => {
 
     /*const initialUser: User | Client = {
         id: 0,
@@ -93,30 +92,28 @@ export const UsersPage = () => {
 
     return(
         <>
-            {
-                userDetails && (
-                    <ItemsPage<User>
-                        userDetails={userDetails}
-                        header={{ title: 'Users', placeholder: 'Search user...', buttonName: 'Create User' }}
-                        getItems={getUsers}
-                        actions={{
+            <ItemsPage<User>
+                userDetails={userDetails}
+                header={{ title: 'Users', placeholder: 'Search user...', buttonName: 'Create User' }}
+                getItems={getUsers}
+                actions={{
                             createOrUpdateItem,
                             deleteItem: deleteUser,
                             searchItem: searchUser
-                        }}
-                        list={{
-                            columns: userColumns,
-                            itemList: (data, actions) => <UserList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit, onClose) => <UserForm item={item} onSubmit={onSubmit} onClose={onClose}/>
-                        }}
-                        options={{
-                            allowedRoles: userAllowedRoles
-                        }}
-                        initialItem={initialUser}
-                        formatMessage={formatMessage}
-                    />
-                )
-            }
+                }}
+                list={{
+                    columns: userColumns,
+                    itemList: (data, actions) => <UserList data={data} actions={actions}/>,
+                    itemForm: (item, onSubmit, onClose) => <UserForm item={item} onSubmit={onSubmit} onClose={onClose}/>
+                }}
+                options={{
+                    allowedRoles: userAllowedRoles
+                }}
+                initialItem={initialUser}
+                formatMessage={formatMessage}
+            />
         </>
     )
 }
+
+export default withLoading(UsersPage);

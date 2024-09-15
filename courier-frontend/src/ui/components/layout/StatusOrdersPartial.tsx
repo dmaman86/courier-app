@@ -3,12 +3,10 @@ import { useEffect, useState } from "react";
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services"
 import { PageResponse, StatusOrder, ValueColumn } from "@/domain";
-import { useAuth } from "@/hooks";
 import { ItemsPage, StatusOrderForm, StatusOrdersList } from "@/ui";
+import { PartialProps } from "./interface";
 
-export const StatusOrdersPartial = () => {
-
-    const { userDetails } = useAuth();
+export const StatusOrdersPartial = ({ userDetails }: PartialProps) => {
 
     const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
 

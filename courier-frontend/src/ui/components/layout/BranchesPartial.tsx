@@ -3,12 +3,10 @@ import { useEffect, useState } from "react";
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { BranchResponse, PageResponse, ValueColumn } from "@/domain"
-import { useAuth } from "@/hooks";
 import { BranchForm, BranchList, ItemsPage } from "@/ui";
+import { PartialProps } from "./interface";
 
-export const BranchesPartial = () => {
-
-    const { userDetails } = useAuth();
+export const BranchesPartial = ({ userDetails }: PartialProps) => {
 
     const initialBranch: BranchResponse = {
         id: 0,
@@ -36,7 +34,7 @@ export const BranchesPartial = () => {
     ]);
 
     useEffect(() => {
-        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+        if(userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
             setBranchColumns([...branchColumns, { key: 'actions', label: '' }]);
         }
     }, [userDetails]);
@@ -54,35 +52,31 @@ export const BranchesPartial = () => {
 
     return(
         <>
-            {
-                userDetails && (
-                    <ItemsPage<BranchResponse>
-                        userDetails={userDetails}
-                        header={{
-                            title: 'Branches',
-                            placeholder: 'Search branch...',
-                            buttonName: 'Create Branch'
-                        }}
-                        getItems={getBranches}
-                        actions={{
-                            createOrUpdateItem: createOrUpdateBranch,
-                            deleteItem: deleteBranch,
-                            searchItem: searchBranch
-                        }}
-                        list={{
-                            columns: branchColumns,
-                            itemList: (data, actions) => <BranchList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit, onClose) => <BranchForm item={item} onSubmit={onSubmit} onClose={onClose}/>
-                        }}
-                        options={{
-                            showSearch: true,
-                            allowedRoles: branchAllowedRoles
-                        }}
-                        initialItem={initialBranch}
-                        formatMessage={formatMessage}
-                    />
-                )
-            }
+            <ItemsPage<BranchResponse>
+                userDetails={userDetails}
+                header={{
+                    title: 'Branches',
+                    placeholder: 'Search branch...',
+                    buttonName: 'Create Branch'
+                }}
+                getItems={getBranches}
+                actions={{
+                    createOrUpdateItem: createOrUpdateBranch,
+                    deleteItem: deleteBranch,
+                    searchItem: searchBranch
+                }}
+                list={{
+                    columns: branchColumns,
+                    itemList: (data, actions) => <BranchList data={data} actions={actions}/>,
+                    itemForm: (item, onSubmit, onClose) => <BranchForm item={item} onSubmit={onSubmit} onClose={onClose}/>
+                }}
+                options={{
+                    showSearch: true,
+                    allowedRoles: branchAllowedRoles
+                }}
+                initialItem={initialBranch}
+                formatMessage={formatMessage}
+            />
         </>
     )
 }

@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { privateRoutes, publicRoutes } from "@/routes";
 import { useAuth } from "@/hooks";
-import { RouteConfig } from "@/domain";
+import { RouteConfig, User } from "@/domain";
 
 export const useRouteConfig = () => {
 
     const { userDetails, isLoading } = useAuth();
+    const [ routes, setRoutes ] = useState<RouteConfig[]>([]);
+    const [ links, setLinks ] = useState<{ path: string, label: string }[]>([]);
 
     const checkPermission = (allowedRoles: string[]): boolean => {
         if(!userDetails || !userDetails.roles.length) return false;
@@ -29,41 +31,32 @@ export const useRouteConfig = () => {
         }));
     }
 
-    const getRoutesPrivate = () => {
-        return privateRoutes.filter(route => checkPermission(route.allowedRoles))
+    const getRoutesPrivate = (userDetails: User) => {
+        return privateRoutes(isLoading, userDetails).filter(route => checkPermission(route.allowedRoles))
                         .map(route => ({
                             ...route,
                             element: createRouteElement(route)
                         }));
     }
 
-    const getRoutes = () => {
-        if(!userDetails){
-            return publicRoutes(isLoading).map(route => ({
-                ...route,
-                element: createRouteElement(route)
-            }));
-        }
-        return privateRoutes.filter(route => checkPermission(route.allowedRoles))
-                        .map(route => ({
-                            ...route,
-                            element: createRouteElement(route)
-                        }));
-    }
-
-    const getLinks = () => {
-        const routes = userDetails ? privateRoutes : [];
-        return routes.filter(route => route.path !== '/home' && route.path !== '*' && checkPermission(route.allowedRoles))
+    const getPrivateLinks = (userDetails: User) => {
+        return privateRoutes(isLoading, userDetails).filter(route => route.path !== '/home' && route.path !== '*' && checkPermission(route.allowedRoles))
                             .map(route => ({
                                 path: route.path,
                                 label: route.label
                             }));
     }
 
+    useEffect(() => {
+        const availableRoutes = userDetails ? getRoutesPrivate(userDetails) : getRoutesPublic();
+        setRoutes(availableRoutes);
+
+        const availableLinks = userDetails ? getPrivateLinks(userDetails) : [];
+        setLinks(availableLinks);
+    }, [userDetails]);
+
     return { 
-        getRoutes,
-        getRoutesPublic,
-        getRoutesPrivate, 
-        getLinks
+        routes, 
+        links
     };
 }
