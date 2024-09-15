@@ -5,10 +5,12 @@ import { RootState } from "../store";
 
 interface AuthState {
     userDetails: User | Client | null;
+    isLoading: boolean;
 }
 
 const initialState: AuthState = {
-    userDetails: null
+    userDetails: null,
+    isLoading: false,
 };
 
 const authSlice = createSlice({
@@ -18,13 +20,18 @@ const authSlice = createSlice({
         setUser: (state, action: PayloadAction<User | Client | null>) => {
             state.userDetails = action.payload;
         },
+        setLoading: (state, action: PayloadAction<boolean>) => {
+            state.isLoading = action.payload;
+        },
         logout: (state) => {
             state.userDetails = null;
+            state.isLoading = false;
         },
     },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const { setUser, setLoading, logout } = authSlice.actions;
 export const selectUserDetails = (state: RootState) => state.auth.userDetails;
+export const selectIsLoading = (state: RootState) => state.auth.isLoading;
 
 export default authSlice.reducer;

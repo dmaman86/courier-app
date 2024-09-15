@@ -10,7 +10,7 @@ export const useAuthForm = <T extends Record<string, any>>
     (initialCredentials: T, 
     initialForm: FormState) => {
 
-    const { saveUser } = useAuth();
+    const { saveUser, updateIsLoading } = useAuth();
     const { loading, callEndPoint } = useFetchAndLoad();
     
     const [ errorResponse, setErrorResponse ] = useState<string>('');
@@ -38,7 +38,8 @@ export const useAuthForm = <T extends Record<string, any>>
         }
     }
 
-    const authenticate = async (credentials: T, isSignUp: boolean) => {
+    const authenticate = async (credentials: T, isSignUp: boolean = false) => {
+        updateIsLoading(true);
         try {
             const url = isSignUp ? paths.auth.signUp : paths.auth.login;
             const responseCredentials = await fetchData(() => serviceRequest.postItem(url, credentials));
@@ -51,6 +52,9 @@ export const useAuthForm = <T extends Record<string, any>>
             saveUser((data && !error) ? data : null);
         } catch (error: any) {
             handleError(error);
+            setCredentials(null);
+        } finally {
+            updateIsLoading(false);
         }
     }
     
@@ -61,6 +65,7 @@ export const useAuthForm = <T extends Record<string, any>>
     }, [location.search]);
 
     return {
+        loading,
         values,
         state,
         handleChange,

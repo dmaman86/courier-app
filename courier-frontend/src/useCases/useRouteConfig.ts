@@ -2,10 +2,11 @@ import React from "react";
 
 import { privateRoutes, publicRoutes } from "@/routes";
 import { useAuth } from "@/hooks";
+import { RouteConfig } from "@/domain";
 
 export const useRouteConfig = () => {
 
-    const { userDetails } = useAuth();
+    const { userDetails, isLoading } = useAuth();
 
     const checkPermission = (allowedRoles: string[]): boolean => {
         if(!userDetails || !userDetails.roles.length) return false;
@@ -15,17 +16,38 @@ export const useRouteConfig = () => {
                                     allowedRoles.some(allowedRole => userRole.name === allowedRole));
     }
 
+    const createRouteElement = (route: RouteConfig) => {
+        return typeof route.element === 'function' ?
+                React.createElement(route.element) :
+                route.element;
+    }
+
+    const getRoutesPublic = () => {
+        return publicRoutes(isLoading).map(route => ({
+            ...route,
+            element: createRouteElement(route)
+        }));
+    }
+
+    const getRoutesPrivate = () => {
+        return privateRoutes.filter(route => checkPermission(route.allowedRoles))
+                        .map(route => ({
+                            ...route,
+                            element: createRouteElement(route)
+                        }));
+    }
+
     const getRoutes = () => {
         if(!userDetails){
-            return publicRoutes.map(route => ({
+            return publicRoutes(isLoading).map(route => ({
                 ...route,
-                element: typeof route.element === 'function' ? React.createElement(route.element) : route.element
+                element: createRouteElement(route)
             }));
         }
         return privateRoutes.filter(route => checkPermission(route.allowedRoles))
                         .map(route => ({
                             ...route,
-                            element: typeof route.element === 'function' ? React.createElement(route.element) : route.element
+                            element: createRouteElement(route)
                         }));
     }
 
@@ -39,7 +61,9 @@ export const useRouteConfig = () => {
     }
 
     return { 
-        getRoutes, 
+        getRoutes,
+        getRoutesPublic,
+        getRoutesPrivate, 
         getLinks
     };
 }

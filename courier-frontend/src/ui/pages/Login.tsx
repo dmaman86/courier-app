@@ -8,6 +8,7 @@ import { FormState } from "@/domain";
 import { validatorForm } from "@/helpers";
 import { ReusableInput } from "@/ui";
 import { useAuthForm } from "@/useCases";
+import { withLoading } from '@/hoc';
 
 interface LoginCredentials {
     email: string;
@@ -15,7 +16,7 @@ interface LoginCredentials {
     password: string;
 }
 
-export const Login = () => {
+const Login = () => {
 
     const { userDetails } = useAuth();
     const navigate = useNavigate();
@@ -63,7 +64,7 @@ export const Login = () => {
     useEffect(() => {
         const login = async () => {
             if (credentials) {
-                await authenticate(credentials, false);
+                await authenticate(credentials);
             }
         };
     
@@ -160,3 +161,5 @@ export const Login = () => {
     );
 
 }
+
+export default withLoading(Login);

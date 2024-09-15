@@ -2,10 +2,13 @@ import { lazy } from 'react';
 import { Navigate } from "react-router-dom";
 
 import { RouteConfig } from "@/domain";
+import { withLoading } from "@/hoc";
+
+
+const Login = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.Login }))));
+const SignUp = withLoading(lazy(() => import('@/ui').then(module => ({ default: module.SignUp }))));
 
 const Home = lazy(() => import('@/ui').then(module => ({ default: module.Home })));
-const Login = lazy(() => import('@/ui').then(module => ({ default: module.Login })));
-const SignUp = lazy(() => import('@/ui').then(module => ({ default: module.SignUp })));
 const Profile = lazy(() => import('@/ui').then(module => ({ default: module.Profile })));
 const SettingsAdmin = lazy(() => import('@/ui').then(module => ({ default: module.SettingsAdmin })));
 const UsersPage = lazy(() => import('@/ui').then(module => ({ default: module.UsersPage })));
@@ -13,17 +16,17 @@ const ContactsPage = lazy(() => import('@/ui').then(module => ({ default: module
 const OfficesPage = lazy(() => import('@/ui').then(module => ({ default: module.OfficesPage })));
 const OrdersPage = lazy(() => import('@/ui').then(module => ({ default: module.OrdersPage })));
 
-export const publicRoutes: RouteConfig[] = [
+export const publicRoutes = (isLoading: boolean): RouteConfig[] => [
     {
         path: '/login',
         label: 'Login',
-        element: <Login />,
+        element: <Login isLoading={isLoading}/>,
         allowedRoles: []
     },
     {
         path: '/signup',
         label: 'Sign Up',
-        element: <SignUp />,
+        element: <SignUp isLoading={isLoading}/>,
         allowedRoles: []
     },
     {

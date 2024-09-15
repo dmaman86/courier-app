@@ -12,7 +12,7 @@ const root = createRoot(divRoot!);
 root.render(
   <StrictMode>
     <Provider store={store}>
-      <Router>
+      <Router basename='/courier-app'>
         <App />
       </Router>
     </Provider>

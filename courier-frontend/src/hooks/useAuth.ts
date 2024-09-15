@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectUserDetails, logout as logoutAction, setUser } from "@/redux/states/authSlice";
+import { selectUserDetails, selectIsLoading, logout as logoutAction, setUser, setLoading } from "@/redux/states/authSlice";
 import { Client, User } from "@/domain";
 import { AppDispatch } from "@/redux/store";
 import { useEffect } from "react";
@@ -8,6 +8,7 @@ import { useEffect } from "react";
 export const useAuth = () => {
     const dispatch: AppDispatch = useDispatch();
     const userDetails = useSelector(selectUserDetails);
+    const isLoading = useSelector(selectIsLoading);
 
     useEffect(() => {
         const storedUserDetails = localStorage.getItem("userDetails");
@@ -25,10 +26,14 @@ export const useAuth = () => {
         }
     }
 
+    const updateIsLoading = (loading: boolean) => {
+        dispatch(setLoading(loading));
+    }
+
     const logout = () => {
         dispatch(logoutAction());
         localStorage.removeItem("userDetails");
     }
 
-    return { userDetails, saveUser, logout };
+    return { userDetails, saveUser, logout, updateIsLoading, isLoading };
 }

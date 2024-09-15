@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useFetchAndLoad, useNavbar, useAuth } from "@/hooks";
 import { CustomDialog, NavbarLinks, UserDetails } from "@/ui";
 import { useRouteConfig } from "@/useCases";
+import { useEffect, useState } from "react";
 
 export const Navbar = () => {
 
@@ -13,8 +14,14 @@ export const Navbar = () => {
     const { callEndPoint } = useFetchAndLoad();
     const location = useLocation();
 
+    const [ allowedLinks, setAllowedLinks ] = useState(getLinks());
+
 
     const { state, dispatch } = useNavbar(userDetails, logout, callEndPoint);
+
+    useEffect(() => {
+        setAllowedLinks(getLinks());
+    }, [userDetails]);
 
 
     return(
@@ -36,7 +43,7 @@ export const Navbar = () => {
                                 </button>
                                 <div className={"collapse navbar-collapse" + (state.show ? " show" : "")}>
                                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                                        <NavbarLinks links={getLinks()} />
+                                        <NavbarLinks links={allowedLinks} />
                                     </ul>
                                     <div className="d-flex logout">
                                         <UserDetails userDetails={userDetails} dispatch={dispatch}/>

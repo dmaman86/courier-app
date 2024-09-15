@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks";
 import { FormState } from "@/domain";
 import { PasswordRulesList, ReusableInput } from "@/ui";
 import { useAuthForm } from "@/useCases";
+import { withLoading } from '@/hoc';
 
 interface SignUpCredentials {
     email: string;
@@ -14,7 +15,7 @@ interface SignUpCredentials {
     confirmPassword: string;
 }
 
-export const SignUp = () => {
+const SignUp = () => {
 
     const { userDetails } = useAuth();
     const navigate = useNavigate();
@@ -169,3 +170,5 @@ export const SignUp = () => {
         </>
     )
 }
+
+export default withLoading(SignUp);
