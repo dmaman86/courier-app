@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 
-import { Client, FetchResponse, FormState, User } from "@/domain";
+import { FetchResponse, FormState, User, AxiosCall } from "@/domain";
 import { useAuth, useFetchAndLoad, useForm } from "@/hooks";
-import { serviceRequest } from "@/services";
+import { AxiosError } from "axios";
 import { paths } from "@/helpers";
+import { serviceRequest } from "@/services";
 
-export const useAuthForm = <T extends Record<string, any>>(initialCredentials: T, initialForm: FormState, isSignUp: boolean = false) => {
+export const useAuthForm = <T extends Record<string, any>>
+    (initialCredentials: T, 
+    initialForm: FormState) => {
 
-    const { userDetails, saveUser } = useAuth();
+    const { saveUser } = useAuth();
     const { loading, callEndPoint } = useFetchAndLoad();
     
     const [ errorResponse, setErrorResponse ] = useState<string>('');
@@ -15,32 +18,41 @@ export const useAuthForm = <T extends Record<string, any>>(initialCredentials: T
 
     const { values, state, handleChange, onFocus, validateForm } = useForm(initialCredentials, initialForm);
 
-    const fetchUserDetails = async () => {
-        if(credentials && !userDetails){
-            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}me`));
-        }
-        return Promise.resolve({ data: null, error: null });
+    const fetchData = async<R>(service: () => AxiosCall<R>): Promise<FetchResponse<R>> => {
+        const axiosCall = service();
+        return await callEndPoint(axiosCall);
     }
 
-    const handleUserDetails = (result: FetchResponse<User | Client>) => {
-        const { data, error } = result;
-
-        saveUser((data && !error) ? data : null);
+    const handleError = (error: any) => {
+        if (error.isAxiosError) {
+            const axiosError = error as AxiosError;
+            const errorMessage = axiosError.message;
+            const errorData = axiosError.response?.data || '';
+            const statusText = axiosError.response?.statusText || '';
+            const fullErrorMessage = `${errorMessage}: ${errorData}. ${statusText}`;
+            setErrorResponse(fullErrorMessage);
+        } else if (error instanceof Error) {
+            setErrorResponse(error.message || 'An unexpected error occurred.');
+        } else {
+            setErrorResponse('An unknown error occurred.');
+        }
     }
 
-    const fetchCredentials = async () => {
-        if (credentials) {
-          const url = isSignUp ? paths.auth.signUp : paths.auth.login;
-          return await callEndPoint(serviceRequest.postItem<void, T>(url, credentials));
-        }
-        return Promise.resolve({ data: null, error: null });
-    };
+    const authenticate = async (credentials: T, isSignUp: boolean) => {
+        try {
+            const url = isSignUp ? paths.auth.signUp : paths.auth.login;
+            const responseCredentials = await fetchData(() => serviceRequest.postItem(url, credentials));
 
-    useEffect(() => {
-        if (!loading && errorResponse) {
-          setErrorResponse('An error occurred. Please try again later');
+            if (responseCredentials.error) {
+                throw responseCredentials.error;
+            }
+
+            const { data, error }: FetchResponse<User> = await fetchData(() => serviceRequest.getItem<User>(`${paths.courier.users}me`));
+            saveUser((data && !error) ? data : null);
+        } catch (error: any) {
+            handleError(error);
         }
-    }, [loading]);
+    }
     
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
@@ -54,79 +66,10 @@ export const useAuthForm = <T extends Record<string, any>>(initialCredentials: T
         handleChange,
         onFocus,
         validateForm,
-        fetchCredentials,
-        fetchUserDetails,
-        handleUserDetails,
         credentials,
         setCredentials,
         errorResponse,
-        setErrorResponse,
-        loading
+        authenticate,
+        setErrorResponse
     }
 }
-
-/*export const useAuthForm = (initialForm: FormState, isSignUp: boolean = false) => {
-
-    const { userDetails, saveUser } = useAuth();
-    const { loading, callEndPoint } = useFetchAndLoad();
-    
-    const [errorResponse, setErrorResponse] = useState<string>('');
-    const [isValidForm, setIsValidForm] = useState<boolean>(false);
-    const [credentials, setCredentials] = useState<any>(null);
-
-    const { values, handleChange, onFocus, validateForm } = useForm(initialForm);
-
-    const fetchUserDetails = async () => {
-        if(isValidForm && credentials && !userDetails){
-            return await callEndPoint(serviceRequest.getItem<User | Client>(`${paths.courier.users}me`));
-        }
-        return Promise.resolve({ data: null, error: null });
-    }
-
-    const handleUserDetails = (result: FetchResponse<User | Client>) => {
-        const { data, error } = result;
-
-        if(isValidForm && credentials && !userDetails){    
-            saveUser((data && !error) ? data : null);
-        }
-    }
-
-    const fetchCredentials = async () => {
-        if (credentials) {
-          const url = isSignUp ? paths.auth.signUp : paths.auth.login;
-          return await callEndPoint(serviceRequest.postItem<void, typeof credentials>(url, credentials));
-        }
-        return Promise.resolve({ data: null, error: null });
-    };
-    
-    useEffect(() => {
-        if (!loading && errorResponse) {
-          setErrorResponse('An error occurred. Please try again later');
-        }
-    }, [loading]);
-    
-    useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const message = queryParams.get('message');
-        if (message) setErrorResponse(message);
-    }, [location.search]);
-
-
-    return {
-        values,
-        handleChange,
-        onFocus,
-        validateForm,
-        isValidForm,
-        setIsValidForm,
-        fetchCredentials,
-        fetchUserDetails,
-        handleUserDetails,
-        credentials,
-        setCredentials,
-        errorResponse,
-        setErrorResponse,
-        loading
-    }
-
-}*/

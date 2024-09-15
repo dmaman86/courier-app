@@ -4,11 +4,6 @@ import { paths, validatorForm } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { useForm } from "@/hooks";
 
-/*interface BranchFormProps {
-    branch: BranchResponse;
-    onSubmit: (branch: BranchResponse) => void;
-}*/
-
 export const BranchForm = <T extends BranchResponse>({ item, onSubmit, onClose }: FormProps<T>) => {
 
     const initialFormState: FormState = {

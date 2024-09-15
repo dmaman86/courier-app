@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useErrorBoundary } from "react-error-boundary";
 
 import { validatorForm } from "@/helpers";
-import { useAsync, useAuth } from "@/hooks";
-import { FetchResponse, FormState } from "@/domain";
+import { useAuth } from "@/hooks";
+import { FormState } from "@/domain";
 import { PasswordRulesList, ReusableInput } from "@/ui";
 import { useAuthForm } from "@/useCases";
-
 
 interface SignUpCredentials {
     email: string;
@@ -20,7 +18,6 @@ export const SignUp = () => {
 
     const { userDetails } = useAuth();
     const navigate = useNavigate();
-    const { showBoundary } = useErrorBoundary();
 
     const { isCellularNumber } = validatorForm;
 
@@ -55,28 +52,28 @@ export const SignUp = () => {
             validateRealTime: true
         }
     }
-    
-
-    const [ response, setResponse ] = useState<FetchResponse<void>>({
-        data: null,
-        error: null
-    });
 
     const { values,
             state,
             handleChange,
             onFocus,
             validateForm,
-            fetchCredentials,
-            fetchUserDetails,
-            handleUserDetails,
             credentials,
             setCredentials,
             errorResponse,
-            setErrorResponse,
-            loading } = useAuthForm<SignUpCredentials>(initialCredentials, initialStateForm, true);
+            authenticate,
+            setErrorResponse } = useAuthForm<SignUpCredentials>(initialCredentials, initialStateForm);
 
     const removeNonNumeric = (value: string) => value.replace(/\D/g, '');
+
+    useEffect(() => {
+        const signUp = async () => {
+            if(credentials){
+                await authenticate(credentials, true);
+            }
+        }
+        signUp();
+    }, [credentials]);
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -92,12 +89,8 @@ export const SignUp = () => {
         }
     }
 
-    useAsync(fetchCredentials, setResponse, () => {}, [credentials]);
-
-    useAsync(fetchUserDetails, handleUserDetails, () => {}, [credentials, userDetails]);
-
     useEffect(() => {
-        if(!loading && userDetails){
+        if(userDetails){
             navigate('/home', { replace: true });
         }
     }, [userDetails]);

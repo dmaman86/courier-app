@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useErrorBoundary } from "react-error-boundary";
 
 
-import { useAuth, useAsync } from "@/hooks";
-import { FetchResponse, FormState } from "@/domain";
+import { useAuth } from "@/hooks";
+import { FormState } from "@/domain";
 import { validatorForm } from "@/helpers";
 import { ReusableInput } from "@/ui";
 import { useAuthForm } from "@/useCases";
@@ -20,7 +19,6 @@ export const Login = () => {
 
     const { userDetails } = useAuth();
     const navigate = useNavigate();
-    const { showBoundary } = useErrorBoundary();
 
     const { isCellularNumber } = validatorForm;
 
@@ -47,28 +45,30 @@ export const Login = () => {
         }
     };
 
-    const [ response, setResponse ] = useState<FetchResponse<void>>({
-        data: null,
-        error: null
-    });
-
     const { 
         values,
         state,
         handleChange,
         onFocus,
         validateForm,
-        fetchCredentials,
-        fetchUserDetails,
-        handleUserDetails,
         credentials,
         setCredentials,
         errorResponse,
-        setErrorResponse,
-        loading
+        authenticate,
+        setErrorResponse
     } = useAuthForm<LoginCredentials>(initialCredentials, initialStateForm);
 
     const removeNonNumeric = (value: string) => value.replace(/\D/g, '');
+
+    useEffect(() => {
+        const login = async () => {
+            if (credentials) {
+                await authenticate(credentials, false);
+            }
+        };
+    
+        login();
+    }, [credentials]);
 
     const onSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -76,7 +76,6 @@ export const Login = () => {
         if(userValid && errorResponse === ''){
             const email = userValid.email;
             setCredentials({
-                // email: isCellularNumber.isValid(email) ? removeNonNumeric(userValid.username) : userValid.username,
                 email: isCellularNumber.isValid(email) ? '' : email,
                 phone: isCellularNumber.isValid(email) ? removeNonNumeric(email) : '',
                 password: userValid.password
@@ -84,15 +83,11 @@ export const Login = () => {
         }
     }
 
-    useAsync(fetchCredentials, setResponse, () => {}, [credentials]);
-
-    useAsync(fetchUserDetails, handleUserDetails, () => {}, [credentials, userDetails]);
-
     useEffect(() => {
-        if(!loading && userDetails){
+        if(userDetails){
             navigate('/home', { replace: true });
         }
-    }, [loading, userDetails]);
+    }, [userDetails]);
 
     const handleFirstConnection = () => {
         navigate('/signup', { replace: true });
@@ -143,7 +138,7 @@ export const Login = () => {
                                                 errorsMessage={values.password.error}/>
                                             </div>
                                             {
-                                                errorResponse && <div className="text-danger text-center">{errorResponse}</div>
+                                                errorResponse !== '' && <div className="text-danger text-center">{errorResponse}</div>
                                             }
 
                                             <div className="col pt-3 text-center">
