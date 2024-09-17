@@ -1,4 +1,4 @@
-import { TableContainer, Table, TableHead, TableRow, TableCell, Paper, TablePagination } from "@mui/material";
+import { TableContainer, Table, TableHead, TableRow, TableCell, Paper, TablePagination, TableBody, Stack } from "@mui/material";
 
 import { GenericTableProps } from "@/domain";
 
@@ -7,7 +7,7 @@ export const ReusableTable = <T extends { id: number }>({
     data, 
     columns, 
     actions, 
-    BodyComponent, 
+    renderItemColumns,
     pagination, 
     onPageChange, 
     onRowsPerPageChange }: GenericTableProps<T>) => {
@@ -31,7 +31,28 @@ export const ReusableTable = <T extends { id: number }>({
                             ))}
                         </TableRow> 
                     </TableHead>
-                    { BodyComponent(data, actions) }
+                    <TableBody>
+                        {
+                            data.map(item => (
+                                <TableRow key={item.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                    {
+                                        renderItemColumns(item).map((col) => (
+                                            <TableCell key={`${item.id}-${col.key}`}>{col.content}</TableCell>
+                                        ))
+                                    }
+                                    <TableCell>
+                                        <Stack spacing={2} direction='row'>
+                                            {actions?.map(action => (
+                                                <button key={action.label} className={action.classNameButton} onClick={() => action.method(item)}>
+                                                    <i className={action.classNameIcon}></i>
+                                                </button>
+                                            ))}
+                                        </Stack>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
                 </Table>
             </TableContainer>
             <TablePagination

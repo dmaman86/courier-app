@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
-import { OfficeResponse, PageResponse, ValueColumn } from "@/domain";
+import { Branch, OfficeResponse, PageResponse, ValueColumn } from "@/domain";
 
-import { ItemsPage, OfficeForm, OfficeList } from "@/ui";
+import { ItemsPage, OfficeForm } from "@/ui";
 import { PageProps } from "./interface";
 import { withLoading } from "@/hoc";
+import { Box, Divider } from "@mui/material";
 
 const OfficesPage = ({ userDetails }: PageProps) => {
 
@@ -29,6 +30,17 @@ const OfficesPage = ({ userDetails }: PageProps) => {
         { key: 'name', label: 'Office Name' },
         { key: 'branches', label: 'Branches' }
     ]);
+
+    const renderOfficeInfo = (office: OfficeResponse) => [
+        { key: 'name', content: office.name },
+        { key: 'branches', content: office.branches.map((branch, index) => (
+            <Box key={(branch as Branch).id}>
+                <div>{branch.address}</div>
+                <div>{branch.city}</div>
+                {index < office.branches.length - 1 && <Divider />}
+            </Box>
+        ))}
+    ]
 
     
 
@@ -66,7 +78,8 @@ const OfficesPage = ({ userDetails }: PageProps) => {
                 }}
                 list={{
                     columns: officeColumns,
-                    itemList: (data, actions) => <OfficeList data={data} actions={actions}/>,
+                    // itemList: (data, actions) => <OfficeList data={data} actions={actions}/>,
+                    renderItemColumns: renderOfficeInfo,
                     itemForm: (item, onSubmit, onClose) => <OfficeForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                 }}
                 options={{

@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
-import { Contact, PageResponse, ValueColumn } from "@/domain";
-import { ContactForm, ContactList, ItemsPage } from "@/ui";
+import { Contact, InfoColumn, PageResponse, ValueColumn } from "@/domain";
+import { ContactForm, ItemsPage } from "@/ui";
 import { PageProps } from "./interface";
 import { withLoading } from "@/hoc";
+import { Box, Divider } from "@mui/material";
 
 
 const ContactsPage = ({ userDetails }: PageProps) => {
@@ -34,6 +35,31 @@ const ContactsPage = ({ userDetails }: PageProps) => {
         { key: 'name', label: 'Office Name' },
         { key: 'branches', label: 'Branches' }
     ]);
+
+    const renderContactInfo = (contact: Contact): InfoColumn[] => [
+        {
+            key: 'fullname',
+            content: `${contact.name} ${contact.lastName}`
+        },
+        {
+            key: 'contactInfo',
+            content: contact.phone
+        },
+        {
+            key: 'name',
+            content: contact.office.name
+        },
+        {
+            key: 'branches',
+            content: contact.branches.map((branch, index) => (
+                <Box key={branch.id}>
+                    <div>{branch.address}</div>
+                    <div>{branch.city}</div>
+                    {index < contact.branches.length - 1 && <Divider />}
+                </Box>
+            ))
+        }
+    ]
 
     const contactAllowedRoles = {
         create: ['ROLE_ADMIN'],
@@ -72,7 +98,8 @@ const ContactsPage = ({ userDetails }: PageProps) => {
                 }}
                 list={{
                     columns: contactColumns,
-                    itemList: (data, actions) => <ContactList data={data} actions={actions}/>,
+                    // itemList: (data, actions) => <ContactList data={data} actions={actions}/>,
+                    renderItemColumns: renderContactInfo,
                     itemForm: (item, onSubmit, onClose) => <ContactForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                 }}
                 options={{

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Client, PageResponse, User, ValueColumn } from "@/domain";
 import { serviceRequest } from "@/services";
 import { paths } from "@/helpers";
-import { ItemsPage, UserForm, UserList } from "@/ui";
+import { ItemsPage, UserForm } from "@/ui";
 import { PageProps } from "./interface";
 import { withLoading } from "@/hoc";
 
@@ -83,6 +83,33 @@ const UsersPage = ({ userDetails }: PageProps) => {
                 (item as Client).office !== undefined && (item as Client).branches !== undefined;
     };
 
+    const extractRoleNames = (item: User) => {
+        const formattedRoles = item.roles.map((role) => {
+            return role.name.replace(/^ROLE_/, '');
+        });
+        return `[${formattedRoles.join(', ')}]`;
+    }
+
+    const renderUserInfo = (user: User) => [
+        {
+            key: 'fullname',
+            content: `${user.name} ${user.lastName}`
+        },
+        {
+            key: 'contactInfo',
+            content: (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span>{user.email}</span>
+                    <span>{user.phone}</span>
+                </div>
+            )
+        },
+        {
+            key: 'roles',
+            content: extractRoleNames(user)
+        }
+    ]
+
     const formatMessage = (user: User) => {
         return `Are you sure you want to delete: 
                 Fullname: ${user.name} ${user.lastName},
@@ -103,7 +130,8 @@ const UsersPage = ({ userDetails }: PageProps) => {
                 }}
                 list={{
                     columns: userColumns,
-                    itemList: (data, actions) => <UserList data={data} actions={actions}/>,
+                    // itemList: (data, actions) => <UserList data={data} actions={actions}/>,
+                    renderItemColumns: renderUserInfo,
                     itemForm: (item, onSubmit, onClose) => <UserForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                 }}
                 options={{

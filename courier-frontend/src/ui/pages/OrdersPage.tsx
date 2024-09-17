@@ -4,9 +4,10 @@ import moment from "moment";
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { Order, PageResponse, ValueColumn } from "@/domain";
-import { ItemsPage, OrderForm, OrderList } from "@/ui";
+import { ItemsPage, OrderForm } from "@/ui";
 import { PageProps } from "./interface";
 import { withLoading } from "@/hoc";
+import { Box, Divider } from "@mui/material";
 
 const OrdersPage = ({ userDetails }: PageProps) => {
 
@@ -35,6 +36,8 @@ const OrdersPage = ({ userDetails }: PageProps) => {
 
     // const isAdmin = userDetails ? userDetails.roles.some(role => role.name === 'ROLE_ADMIN') : false;
 
+    const isClient = userDetails.roles.some(role => role.name === 'ROLE_CLIENT');
+
     const [ orderColumns, setOrderColumns ] = useState<ValueColumn[]>([
         { key: 'client', label: 'Client Details' },
         { key: 'origin', label: 'Origin Details' },
@@ -61,6 +64,60 @@ const OrdersPage = ({ userDetails }: PageProps) => {
         }
     }, [userDetails]);
 
+    const renderOrderInfo = (order: Order) => [
+        {
+            key: 'client',
+            content: order.client ? (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span>{order.client.name} {order.client.lastName}</span>
+                    <span>{order.client.phone}</span>
+                    <span>{order.client.email}</span>
+                </div>
+            ) : (
+                <div>Client information is missing</div>
+            )
+        },
+        {
+            key: 'origin',
+            content: (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span>{order.originBranch?.office.name}</span>
+                    <span>{order.originBranch?.city} {order.originBranch?.address}</span>
+                </div>
+            )
+        },
+        {
+            key: 'destination',
+            content: (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {order.destinationBranch && <span>{order.destinationBranch.office.name}</span>}
+                    {order.destinationBranch ? <span>{order.destinationBranch.city} {order.destinationBranch.address}</span> : <span>{order.destinationAddress}</span>}
+                </div>
+            )
+        },
+        {
+            key: 'status',
+            content: (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {order.currentStatus?.name}
+                    <i className='fas fa-info-circle' style={{ marginLeft: '5px' }}></i>
+                </div>
+            )
+        },
+        {
+            key: 'couriers',
+            content: (
+                !isClient && order.couriers.map((courier, index) => (
+                    <Box key={courier.id}>
+                        <div>{courier.name} {courier.lastName}</div>
+                        <div>{courier.phone}</div>
+                        {index < order.couriers.length - 1 && <Divider />}
+                    </Box>
+                ))
+            )
+        }
+    ]
+
     const formatMessage = (order: Order) => {
         return `Are you sure you want to delete:
                 Order ID: ${order.id}
@@ -84,7 +141,8 @@ const OrdersPage = ({ userDetails }: PageProps) => {
                 }}
                 list={{
                     columns: orderColumns,
-                    itemList: (data, actions) => <OrderList data={data} actions={actions}/>,
+                    // itemList: (data, actions) => <OrderList data={data} actions={actions}/>,
+                    renderItemColumns: renderOrderInfo,
                     itemForm: (item, onSubmit, onClose) => <OrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                 }}
                 options={{

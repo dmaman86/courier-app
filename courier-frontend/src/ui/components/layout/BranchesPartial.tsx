@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services";
 import { BranchResponse, PageResponse, ValueColumn } from "@/domain"
-import { BranchForm, BranchList, ItemsPage } from "@/ui";
+import { BranchForm, ItemsPage } from "@/ui";
 import { PartialProps } from "./interface";
 
 export const BranchesPartial = ({ userDetails, isAdmin }: PartialProps) => {
@@ -39,6 +39,22 @@ export const BranchesPartial = ({ userDetails, isAdmin }: PartialProps) => {
         }
     }, [isAdmin]);
 
+    const renderBranchInfo = (branch: BranchResponse) => [
+        {
+            key: 'branch',
+            content: (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span>{branch.address}</span>
+                    <span>{branch.city}</span>
+                </div>
+            )
+        },
+        {
+            key: 'name',
+            content: branch.office.name
+        }
+    ]
+
     const branchAllowedRoles = {
         create: ['ROLE_ADMIN'],
         update: ['ROLE_ADMIN'],
@@ -67,7 +83,8 @@ export const BranchesPartial = ({ userDetails, isAdmin }: PartialProps) => {
                 }}
                 list={{
                     columns: branchColumns,
-                    itemList: (data, actions) => <BranchList data={data} actions={actions}/>,
+                    // itemList: (data, actions) => <BranchList data={data} actions={actions}/>,
+                    renderItemColumns: renderBranchInfo,
                     itemForm: (item, onSubmit, onClose) => <BranchForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                 }}
                 options={{

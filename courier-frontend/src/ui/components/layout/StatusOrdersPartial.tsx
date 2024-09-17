@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { paths } from "@/helpers";
 import { serviceRequest } from "@/services"
 import { PageResponse, StatusOrder, ValueColumn } from "@/domain";
-import { ItemsPage, StatusOrderForm, StatusOrdersList } from "@/ui";
+import { ItemsPage, StatusOrderForm } from "@/ui";
 import { PartialProps } from "./interface";
 
 export const StatusOrdersPartial = ({ userDetails, isAdmin }: PartialProps) => {
@@ -31,6 +31,17 @@ export const StatusOrdersPartial = ({ userDetails, isAdmin }: PartialProps) => {
             setStatusOrdersColumns([...statusOrdersColumns, { key: 'actions', label: '' }]);
         }
     }, [isAdmin]);
+
+    const renderStatusOrderInfo = (statusOrder: StatusOrder) => [
+        {
+            key: 'statusOrder',
+            content: statusOrder.name
+        },
+        {
+            key: 'description',
+            content: statusOrder.description
+        }
+    ]
 
     /*const statusOrdersColumns: ValueColumn[] = [
         { key: 'statusOrder', label: 'Status Order Name' },
@@ -72,7 +83,7 @@ export const StatusOrdersPartial = ({ userDetails, isAdmin }: PartialProps) => {
                 }}
                 list={{
                     columns: statusOrdersColumns,
-                    itemList: (data, actions) => <StatusOrdersList data={data} actions={actions}/>,
+                    renderItemColumns: renderStatusOrderInfo,
                     itemForm: (item, onSubmit, onClose) => <StatusOrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                 }}
                 options={{

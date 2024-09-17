@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { PageResponse, Role, ValueColumn } from "@/domain";
 import { serviceRequest } from "@/services";
 import { paths } from "@/helpers";
-import { ItemsPage, RoleForm, RoleList } from "@/ui";
+import { ItemsPage, RoleForm } from "@/ui";
 import { PartialProps } from "./interface";
 
 export const RolePartial = ({ userDetails, isAdmin }: PartialProps) => {
@@ -23,6 +23,13 @@ export const RolePartial = ({ userDetails, isAdmin }: PartialProps) => {
     const [ roleColumns, setRoleColumns ] = useState<ValueColumn[]>([
         { key: 'role', label: 'Role Name' }
     ]);
+
+    const renderRoleInfo = (role: Role) => [
+        {
+            key: 'role',
+            content: role.name
+        }
+    ]
 
     useEffect(() => {
         if(isAdmin){
@@ -57,7 +64,7 @@ export const RolePartial = ({ userDetails, isAdmin }: PartialProps) => {
                 }}
                 list={{
                     columns: roleColumns,
-                    itemList: (data, actions) => <RoleList data={data} actions={actions}/>,
+                    renderItemColumns: renderRoleInfo,
                     itemForm: (item, onSubmit, onClose) => <RoleForm item={item} onSubmit={onSubmit} onClose={onClose}/>
                 }}
                 options={{

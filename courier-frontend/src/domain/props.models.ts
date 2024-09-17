@@ -66,33 +66,39 @@ export interface ValueColumn {
     label: string;
 }
 
+export interface InfoColumn {
+    key: string;
+    content: ReactNode;
+}
+
 export interface Item {
     id: number;
 }
 
-export interface Action<T extends { id: number }, R = T> {
+export interface Action<T extends Item, R = T> {
     label: string;
     classNameButton?: string;
     classNameIcon?: string;
     method: (item: T | R) => void;
 }
 
-export interface GenericTableProps<T extends { id: number }>{
+export interface GenericTableProps<T extends Item>{
     data: T[];
     columns: ValueColumn[];
     actions?: Action<T>[];
-    BodyComponent: (data: T[], actions?: Action<T>[]) => ReactNode;
+    // BodyComponent: (data: T[], actions?: Action<T>[]) => ReactNode;
+    renderItemColumns: (item: T) => InfoColumn[];
     pagination: { page: number, size: number, totalItems: number };
     onPageChange: (event: unknown, page: number) => void;
     onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export interface ListProps<T extends { id: number }>{
+export interface ListProps<T extends Item>{
     data: T[];
     actions?: Action<T>[];
 }
 
-export interface ItemsPageProps<T extends {id: number}> {
+export interface ItemsPageProps<T extends Item> {
     userDetails: User;
     header: {
         title: string;
@@ -107,7 +113,8 @@ export interface ItemsPageProps<T extends {id: number}> {
     };
     list: {
         columns: ValueColumn[];
-        itemList: (data: T[], actions?: Action<T>[]) => ReactNode;
+        // itemList: (data: T[], actions?: Action<T>[]) => ReactNode;
+        renderItemColumns: (item: T) => InfoColumn[];
         itemForm: (item: T, onSubmit: (item: T) => void, onClose?: () => void) => ReactNode;
     };
     options: {

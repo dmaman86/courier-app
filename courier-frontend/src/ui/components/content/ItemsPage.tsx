@@ -170,7 +170,8 @@ export const ItemsPage = <T extends Item>({
                     data={items}
                     columns={list.columns}
                     actions={actionsItem as Action<{ id: number; }>[]}
-                    BodyComponent={() => list.itemList(items, actionsItem)}
+                    // BodyComponent={() => list.itemList(items, actionsItem)}
+                    renderItemColumns={(item: { id: number; }) => list.renderItemColumns(item as T)}
                     pagination={state.pagination}
                     onPageChange={handlePageChange}
                     onRowsPerPageChange={handleRowsPerPageChange}
