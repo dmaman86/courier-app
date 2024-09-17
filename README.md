@@ -91,7 +91,7 @@ Couriers can view and manage their assigned deliveries, update delivery statuses
 
 | ![Courier Update Order](./images/courier-update-order.png) | ![Courier Update Status Order](./images/courier-update-status-order.png) |
 |:---:|:---:|
-| *Courier Manage Order* | *Courier Update Status Order* |
+| *Courier Update Order* | *Courier Update Status Order* |
 
 ### Client Functionality
 
@@ -469,15 +469,10 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │   ├── index.ts
 │   │   ├── useAsync.ts
 │   │   ├── useAuth.ts
+│   │   ├── useDebounce.ts
 │   │   ├── useFetchAndLoad.ts
 │   │   ├── useForm.ts
-│   │   ├── useItemsPageState
-│   │   │   ├── reducer.ts
-│   │   │   └── useItemsPage.ts
-│   │   ├── useList.ts
-│   │   └── useNavbar
-│   │       ├── reducer.ts
-│   │       └── useNavbar.ts
+│   │   └── useList.ts
 │   ├── index.css
 │   ├── main.tsx
 │   ├── redux
@@ -486,6 +481,7 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │   └── store.ts
 │   ├── routes
 │   │   ├── PrivateRoutes.tsx
+│   │   ├── ProtectedRoutes.tsx
 │   │   ├── PublicRoutes.tsx
 │   │   ├── index.ts
 │   │   └── routes.tsx
@@ -497,6 +493,9 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │   └── token.service.ts
 │   ├── ui
 │   │   ├── components
+│   │   │   ├── content
+│   │   │   │   ├── ItemsPage.tsx
+│   │   │   │   └── index.ts
 │   │   │   ├── dialogs
 │   │   │   │   ├── CustomDialog.tsx
 │   │   │   │   ├── GenericModal.tsx
@@ -527,7 +526,8 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │   │   │   ├── RolePartial.tsx
 │   │   │   │   ├── StatusOrdersPartial.tsx
 │   │   │   │   ├── UserDetails.tsx
-│   │   │   │   └── index.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   └── interface.ts
 │   │   │   └── tables
 │   │   │       ├── ReusableTable.tsx
 │   │   │       ├── index.ts
@@ -547,9 +547,7 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │       │   ├── Home.tsx
 │   │       │   ├── HomeAdmin.tsx
 │   │       │   ├── HomeClient.tsx
-│   │       │   ├── HomeCourier.tsx
-│   │       │   └── index.ts
-│   │       ├── ItemsPage.tsx
+│   │       │   └── HomeCourier.tsx
 │   │       ├── Login.tsx
 │   │       ├── OfficesPage.tsx
 │   │       ├── OrdersPage.tsx
@@ -557,12 +555,19 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │       ├── SettingsAdmin.tsx
 │   │       ├── SignUp.tsx
 │   │       ├── UsersPage.tsx
-│   │       └── index.ts
+│   │       ├── index.ts
+│   │       └── interface.ts
 │   ├── useCases
 │   │   ├── form
 │   │   │   ├── index.ts
 │   │   │   └── useAuthForm.ts
 │   │   ├── index.ts
+│   │   ├── useItemsPageState
+│   │   │   ├── reducer.ts
+│   │   │   └── useItemsPage.ts
+│   │   ├── useNavbar
+│   │   │   ├── reducer.ts
+│   │   │   └── useNavbar.ts
 │   │   ├── useRouteConfig.ts
 │   │   └── useUserItemActions.ts
 │   └── vite-env.d.ts
