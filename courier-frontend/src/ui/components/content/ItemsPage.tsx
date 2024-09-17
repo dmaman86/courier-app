@@ -3,10 +3,10 @@ import { useErrorBoundary } from "react-error-boundary";
 import { Typography } from "@mui/material";
 
 import { Action, FetchResponse, Item, ItemsPageProps, PageResponse } from "@/domain";
-import { useAsync, useFetchAndLoad, useItemsPage, useList } from "@/hooks";
+import { useAsync, useFetchAndLoad, useList } from "@/hooks";
 import { withLoading } from "@/hoc";
 import { CustomDialog, PageHeader, ReusableTable } from "@/ui";
-import { useUserItemActions } from "@/useCases";
+import { useUserItemActions, useItemsPage } from "@/useCases";
 
 export const ItemsPage = <T extends Item>({ 
     userDetails,
@@ -101,16 +101,10 @@ export const ItemsPage = <T extends Item>({
     const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newSize = parseInt(event.target.value, 10);
         setPagination(0, newSize, state.pagination.totalItems);
-        fetchData();
-        // if(state.searchQuery) searchApiData();
-        // else getApiData();
     }
 
     const handlePageChange = (event: unknown, page: number) => {
         setPagination(page, state.pagination.size, state.pagination.totalItems);
-        fetchData();
-        // if(state.searchQuery) searchApiData();
-        // else getApiData();
     }
 
     const handleClose = () => {
@@ -124,7 +118,6 @@ export const ItemsPage = <T extends Item>({
         setSelectedItem(item);
         setTitle(`Edit item ID: ${item.id}`);
         setContent(list.itemForm(item, handleFormSubmit, handleClose));
-        // toggleModal();
         toggleAlertDialog();
     };
 

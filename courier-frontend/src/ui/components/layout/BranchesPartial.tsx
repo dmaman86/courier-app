@@ -6,7 +6,7 @@ import { BranchResponse, PageResponse, ValueColumn } from "@/domain"
 import { BranchForm, BranchList, ItemsPage } from "@/ui";
 import { PartialProps } from "./interface";
 
-export const BranchesPartial = ({ userDetails }: PartialProps) => {
+export const BranchesPartial = ({ userDetails, isAdmin }: PartialProps) => {
 
     const initialBranch: BranchResponse = {
         id: 0,
@@ -34,10 +34,10 @@ export const BranchesPartial = ({ userDetails }: PartialProps) => {
     ]);
 
     useEffect(() => {
-        if(userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+        if(isAdmin){
             setBranchColumns([...branchColumns, { key: 'actions', label: '' }]);
         }
-    }, [userDetails]);
+    }, [isAdmin]);
 
     const branchAllowedRoles = {
         create: ['ROLE_ADMIN'],

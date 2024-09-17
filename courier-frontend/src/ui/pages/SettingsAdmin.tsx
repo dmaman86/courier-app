@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
@@ -9,11 +9,16 @@ import { withLoading } from "@/hoc";
 
 const SettingsAdmin = ({ userDetails }: PageProps) => {
 
+    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
     const [ expanded, setExpanded ] = useState<string | false>(false);
 
     const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
         setExpanded(isExpanded ? panel : false);
     }
+
+    useEffect(() => {
+        setIsAdmin(userDetails.roles.some(role => role.name === 'ROLE_ADMIN'))
+    }, [userDetails.roles]);
 
     return (
         <>
@@ -27,7 +32,7 @@ const SettingsAdmin = ({ userDetails }: PageProps) => {
                         {expanded !== 'panel1' && <Typography>Roles</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel1' && <RolePartial userDetails={userDetails}/>}
+                        {expanded === 'panel1' && <RolePartial userDetails={userDetails} isAdmin={isAdmin}/>}
                     </AccordionDetails>
                 </Accordion>
                 <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
@@ -39,7 +44,7 @@ const SettingsAdmin = ({ userDetails }: PageProps) => {
                         {expanded !== 'panel2' && <Typography>Branches</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel2' && <BranchesPartial userDetails={userDetails}/>}
+                        {expanded === 'panel2' && <BranchesPartial userDetails={userDetails} isAdmin={isAdmin}/>}
                     </AccordionDetails>
                 </Accordion>
                 <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
@@ -51,7 +56,7 @@ const SettingsAdmin = ({ userDetails }: PageProps) => {
                         {expanded !== 'panel3' && <Typography>Status Orders</Typography>}
                     </AccordionSummary>
                     <AccordionDetails>
-                        {expanded === 'panel3' && <StatusOrdersPartial userDetails={userDetails}/>}
+                        {expanded === 'panel3' && <StatusOrdersPartial userDetails={userDetails} isAdmin={isAdmin}/>}
                     </AccordionDetails>
                 </Accordion>
             </div>

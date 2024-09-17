@@ -6,7 +6,7 @@ import { paths } from "@/helpers";
 import { ItemsPage, RoleForm, RoleList } from "@/ui";
 import { PartialProps } from "./interface";
 
-export const RolePartial = ({ userDetails }: PartialProps) => {
+export const RolePartial = ({ userDetails, isAdmin }: PartialProps) => {
 
     const initialRole: Role = {
         id: 0,
@@ -25,10 +25,10 @@ export const RolePartial = ({ userDetails }: PartialProps) => {
     ]);
 
     useEffect(() => {
-        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+        if(isAdmin){
             setRoleColumns([...roleColumns, { key: 'actions', label: '' }]);
         }
-    }, [userDetails]);
+    }, [isAdmin]);
 
     const roleAllowedRoles = {
         create: ['ROLE_ADMIN'],
@@ -43,34 +43,30 @@ export const RolePartial = ({ userDetails }: PartialProps) => {
 
     return (
         <>
-            {
-                userDetails && (
-                    <ItemsPage<Role>
-                        userDetails={userDetails}
-                        header={{
-                            title: 'Roles',
-                            placeholder: 'Search role...',
-                            buttonName: 'Create Role'
-                        }}
-                        getItems={getRoles}
-                        actions={{
-                            createOrUpdateItem: createOrUpdateRole,
-                            deleteItem: deleteRole,
-                        }}
-                        list={{
-                            columns: roleColumns,
-                            itemList: (data, actions) => <RoleList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit, onClose) => <RoleForm item={item} onSubmit={onSubmit} onClose={onClose}/>
-                        }}
-                        options={{
-                            showSearch: false,
-                            allowedRoles: roleAllowedRoles
-                        }}
-                        initialItem={initialRole}
-                        formatMessage={formatMessage}
-                    />
-                )
-            }
+            <ItemsPage<Role>
+                userDetails={userDetails}
+                header={{
+                    title: 'Roles',
+                    placeholder: 'Search role...',
+                    buttonName: 'Create Role'
+                }}
+                getItems={getRoles}
+                actions={{
+                    createOrUpdateItem: createOrUpdateRole,
+                    deleteItem: deleteRole,
+                }}
+                list={{
+                    columns: roleColumns,
+                    itemList: (data, actions) => <RoleList data={data} actions={actions}/>,
+                    itemForm: (item, onSubmit, onClose) => <RoleForm item={item} onSubmit={onSubmit} onClose={onClose}/>
+                }}
+                options={{
+                    showSearch: false,
+                    allowedRoles: roleAllowedRoles
+                }}
+                initialItem={initialRole}
+                formatMessage={formatMessage}
+            />
         </>
     );
 }

@@ -9,7 +9,7 @@ import { Branch, BranchResponse, Client, Contact, ContactOptionType,
         FetchResponse, FormProps, FormState, Office, OfficeResponse, 
         OptionType, Order, StatusOrder, User } from "@/domain";
 
-import { useAsync, useAuth, useFetchAndLoad, useForm } from '@/hooks';
+import { useAsync, useAuth, useFetchAndLoad, useForm, useDebounce } from '@/hooks';
 import { serviceRequest } from '@/services';
 import { paths, validatorForm } from '@/helpers';
 
@@ -17,22 +17,6 @@ interface BranchOptionType extends OptionType {
     address: string;
     office: Office;
 }
-
-const useDebounce = (value: string, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-  
-    useEffect(() => {
-      const handler = setTimeout(() => {
-        setDebouncedValue(value);
-      }, delay);
-  
-      return () => {
-        clearTimeout(handler);
-      };
-    }, [value, delay]);
-  
-    return debouncedValue;
-};
 
 const tranformOffices = (offices: OfficeResponse[]): readonly OptionType[] => {
     return offices.map(office => ({ value: office.id, label: office.name }));

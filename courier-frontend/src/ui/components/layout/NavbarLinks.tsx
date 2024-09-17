@@ -8,7 +8,8 @@ interface NavbarLinksProps {
 
 export const NavbarLinks = React.memo(({ links }: NavbarLinksProps) => (
   <>
-      {links.length > 0 && links.map((link, index) => (
+      {
+        links.length > 0 && links.map((link, index) => (
           <li key={index} className="nav-item">
               <NavLink
                   to={link.path}
@@ -17,7 +18,8 @@ export const NavbarLinks = React.memo(({ links }: NavbarLinksProps) => (
                   {link.label}
               </NavLink>
           </li>
-      ))}
+      ))
+    }
   </>
 ));
 

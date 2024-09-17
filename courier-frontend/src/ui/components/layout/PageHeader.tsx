@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { FormState } from "@/domain";
-import { useForm } from "@/hooks";
+import { useDebounce, useForm } from "@/hooks";
 import { RootState } from "@/redux/store";
-import _ from 'lodash';
 import { ReusableInput } from "../form";
 
 
@@ -44,6 +43,8 @@ export const PageHeader = ({ header, search, onCreate, delay = 250 }: PageHeader
     
     const { values, state, handleChange } = useForm(initialData, initialState);
 
+    const debouncedSearch = useDebounce(state.search, delay);
+
     useEffect(() => {
         if(userDetails){
             const userRoles = userDetails.roles;
@@ -51,18 +52,9 @@ export const PageHeader = ({ header, search, onCreate, delay = 250 }: PageHeader
         }
     }, [userDetails]);
 
-    const sendBack = useCallback(() => {
-        search.onSearch(state.search);
-    }, [search.onSearch, state.search]);
-
-    const debouncedRequest = useMemo(() => {
-        return _.debounce(sendBack, delay);
-    }, [delay, sendBack]);
-
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        handleChange(e);
-        debouncedRequest();
-    }
+    useEffect(() => {
+        search.onSearch(debouncedSearch);
+    }, [debouncedSearch, search.onSearch]);
 
     return(
         <>
@@ -83,7 +75,7 @@ export const PageHeader = ({ header, search, onCreate, delay = 250 }: PageHeader
                                                 value: state.search,
                                                 placeholder: header.placeholder
                                             }}
-                                            onChange={handleSearchChange}
+                                            onChange={handleChange}
                                             onFocus={() => {}}
                                         />
                                     </div>

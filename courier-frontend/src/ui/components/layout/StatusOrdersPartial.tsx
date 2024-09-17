@@ -6,9 +6,7 @@ import { PageResponse, StatusOrder, ValueColumn } from "@/domain";
 import { ItemsPage, StatusOrderForm, StatusOrdersList } from "@/ui";
 import { PartialProps } from "./interface";
 
-export const StatusOrdersPartial = ({ userDetails }: PartialProps) => {
-
-    const [ isAdmin, setIsAdmin ] = useState<boolean>(false);
+export const StatusOrdersPartial = ({ userDetails, isAdmin }: PartialProps) => {
 
     const statusOrder: StatusOrder = {
         id: 0,
@@ -29,22 +27,22 @@ export const StatusOrdersPartial = ({ userDetails }: PartialProps) => {
     ]);
 
     useEffect(() =>{
-        if(userDetails && userDetails.roles.some(role => role.name === 'ROLE_ADMIN')){
+        if(isAdmin){
             setStatusOrdersColumns([...statusOrdersColumns, { key: 'actions', label: '' }]);
         }
-    }, [userDetails]);
+    }, [isAdmin]);
 
     /*const statusOrdersColumns: ValueColumn[] = [
         { key: 'statusOrder', label: 'Status Order Name' },
         { key: 'description', label: 'Description' }
     ]*/
 
-    useEffect(() => {
+    /*useEffect(() => {
         if(userDetails){
             const userRoles = userDetails.roles;
             setIsAdmin(userRoles.some(userRole => userRole.name === 'ROLE_ADMIN'));
         }
-    }, [userDetails]);
+    }, [userDetails]);*/
 
     const statusOrderAllowedRoles = {
         create: ['ROLE_ADMIN'],
@@ -60,34 +58,30 @@ export const StatusOrdersPartial = ({ userDetails }: PartialProps) => {
 
     return(
         <>
-            {
-                userDetails && (
-                    <ItemsPage<StatusOrder>
-                        userDetails={userDetails}
-                        header={{
-                            title: 'Status Order',
-                            placeholder: 'Search status order...',
-                            buttonName: 'Create Status Order'
-                        }}
-                        getItems={getStatusOrders}
-                        actions={{
-                            createOrUpdateItem: createOrUpdateStatusOrder,
-                            deleteItem: deleteStatusOrder,
-                        }}
-                        list={{
-                            columns: statusOrdersColumns,
-                            itemList: (data, actions) => <StatusOrdersList data={data} actions={actions}/>,
-                            itemForm: (item, onSubmit, onClose) => <StatusOrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
-                        }}
-                        options={{
-                            showSearch: false,
-                            allowedRoles: statusOrderAllowedRoles
-                        }}
-                        initialItem={statusOrder}
-                        formatMessage={formatMessage}
-                    />
-                )
-            }
+            <ItemsPage<StatusOrder>
+                userDetails={userDetails}
+                header={{
+                    title: 'Status Order',
+                    placeholder: 'Search status order...',
+                    buttonName: 'Create Status Order'
+                }}
+                getItems={getStatusOrders}
+                actions={{
+                    createOrUpdateItem: createOrUpdateStatusOrder,
+                    deleteItem: deleteStatusOrder,
+                }}
+                list={{
+                    columns: statusOrdersColumns,
+                    itemList: (data, actions) => <StatusOrdersList data={data} actions={actions}/>,
+                    itemForm: (item, onSubmit, onClose) => <StatusOrderForm item={item} onSubmit={onSubmit} onClose={onClose}/>
+                }}
+                options={{
+                    showSearch: false,
+                    allowedRoles: statusOrderAllowedRoles
+                }}
+                initialItem={statusOrder}
+                formatMessage={formatMessage}
+            />
         </>
     )
 }

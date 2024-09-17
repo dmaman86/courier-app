@@ -1,34 +1,39 @@
 import { Link, useLocation } from "react-router-dom";
 
-import { useFetchAndLoad, useNavbar, useAuth } from "@/hooks";
+import { useFetchAndLoad } from "@/hooks";
 import { CustomDialog, NavbarLinks, UserDetails } from "@/ui";
-import { useRouteConfig } from "@/useCases";
+import { useRouteConfig, useNavbar } from "@/useCases";
+import { User } from "@/domain";
 import { useEffect, useState } from "react";
 
-export const Navbar = () => {
+interface NavbarProps {
+    userDetails: User | null;
+    logout: () => void;
+}
 
-    const { userDetails, logout } = useAuth();
+export const Navbar = ({ userDetails, logout }: NavbarProps) => {
 
     const { links } = useRouteConfig();
 
     const { callEndPoint } = useFetchAndLoad();
     const location = useLocation();
 
-    // const [ allowedLinks, setAllowedLinks ] = useState(getLinks());
-
 
     const { state, dispatch } = useNavbar(userDetails, logout, callEndPoint);
 
-    /*useEffect(() => {
-        setAllowedLinks(getLinks());
-    }, [userDetails]);*/
+    const [ titleNavbar, setTittleNavbar ] = useState('');
+
+
+    useEffect(() => {
+        setTittleNavbar(userDetails ? 'Home' : '');
+    }, [userDetails]);
 
 
     return(
         <>
             <nav className="navbar navbar-expand-lg bg-body-tertiary">
                 <div className="container-fluid">
-                    <Link to="/" className="navbar-brand">Navbar</Link>
+                    <Link to="/" className="navbar-brand">{ titleNavbar }</Link>
                     {
                         userDetails ? (
                             <>
