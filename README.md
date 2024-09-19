@@ -1,619 +1,150 @@
-# Courier Fullstack Project
+# Courier-App 
 
-This project includes a backend developed with Spring Boot Cloud, Eureka, API Gateway, and Kafka, and a frontend developed with React, Redux Toolkit, and TypeScript. It includes features for user authentication, order management, and real-time updates using Kafka. The frontend also utilizes `use-debounce` for optimized performance.
+This project is a **courier management system** that allows admins, couriers, and clients to manage deliveries and orders. It is divided into two main components: **courier-backend** and **courier-frontend**, where each handles different aspects of the system.
 
-## Getting Started
+## Project Structure
+```
+courier-app/
+│
+├── courier-backend/                # Contains all backend microservices
+│   ├── authentication-server/      # Authentication service
+│   ├── courier-server/             # Manages orders and couriers
+│   ├── error-server/               # Logs and handles errors
+│   ├── primes-server/              # Prime number generation for encryption keys
+│   ├── service-registry            # Eureka Service Registry for microservice discovery
+│   ├── spring-cloud-gateway        # API Gateway for routing requests   
+│   ├── .gitignore
+│   ├── docker-compose.yml
+│
+├── courier-frontend/               # React frontend application
+│   └── README.md                   # Frontend setup instructions
+│
+└── README.md                       # Root README (this file)
+```
+
+## Overview
+- **Backend:** The backend consists of several microservices, each responsible for a specific part of the system (authentication, order management, error handling, etc.). The services via REST APIs and use Kafka for asynchronous messaging.
+- **Frontend:** The frontend is a React-based application that interacts with the backend through Axios to provide a user-friendly interface for different roles (admins, couriers, and clients).
+
+## Technologies Used
+
+- **Backend:**
+    - **Spring Boot** for the microservices
+    - **Spring Cloud** for service discovery and API gateway
+    - **Eureka** for service discovery
+    - **Kafka** for inter-service communication
+    - **MySQL** as the database
+    - **Docker Compose** for managing services locally
+    - **JWT** for authentication and token management
+
+- **Frontend:**
+    - **React** and **TypeScript** for the user interface
+    - **Redux** for the state management
+    - **Axios** for API requests
+    - **Bootstrap** and **Material UI** for styling and responsive design components
+
+## Setup and Installation
 
 ### Prerequisites
-- Java 17 (Install using Homebrew: `brew install openjdk@17`)
-- Node.js and npm
-- Docker and Docker Compose
+- **Node.js** and **npm** (for the frontend)
+- **Java 17** (for the backend)
+- **Docker** (to run services with Docker Compose)
 
-### Installation
-
+### Running the Application
 1. **Clone the repository**
-    ```bash
+```bash
     git clone https://github.com/dmaman86/courier-app.git
     cd courier-app
-    ```
+```
+### Backend
 
-2. **Configure the enviroment**
-    - Make sure you have Java 17 installed.
-    - Update the database connection details in `./src/main/resources/application.yml` for `authentication-server`, `courier-server`, `primes-server` and `error-server`:
-        ```yaml
-        spring:
-        datasource:
-            username: your_db_username
-            password: your_db_password
-        ```
+Each backend microservice has its own README that details the specific setup.
+Below are the general instructions for running all services together.
 
-3. **Start necessary services**
-    - Use Docker to start Kafka services, navigate to directory `courier-backend` and run:
-        ```bash
-        docker-compose up --build -d
-        ```
+#### 1. Start Backend Services with Docker Compose (feature, not yet completed)
+   In the `courier-backend` directory, Docker Compose is configured to spin up all microservices, databases, and message brokers.
 
-4. **Build and run the backend servers**
-    - Navigate to each server directory (`service-registry`, `spring-cloud-gateway`, `primes-server`, `authentication-server`, `courier-server`, `error-server`) and run:
-        ```bash
-        mvn spring-boot:run
-        ```
+   ```bash
+   cd courier-backend
+   docker-compose up --build
+   ```
 
-5. **Set up and run the frontend**
-    - Navigate to the frontend directory (e.g., `courier-frontend`) and run:
-        ```bash
-        npm install
-        npm run dev
-        ```
+   This will launch:
+   - **Auth-Service** on port `8081`
+   - **Order-Service** on port `8082`
+   - **User-Service** on port `8083`
+   - **Eureka Service Registry** on port `8761`
+   - **Kafka** for messaging
 
-6. **Access the application**
-    - The backend application will be available at `http://localhost:8080`.
-    - The frontend will be availabe at `http://localhost:5173`.
+   **Note**: You can check the individual README files in each service for more detailed instructions.
+
+#### 2. Verify Backend Services
+You can verify the services are running correctly by visiting the **Eureka Dashboard**:
+```
+http://localhost:8761/
+```
+
+### Frontend
+1. **Navigate to the frontend directory**:
+```bash
+cd courier-frontend
+```
+
+2. **Install dependencies**:
+```bash
+npm install
+```
+
+3. **Run the frontend**:
+```bash
+npm run dev
+```
+This will start the application on `http://localhost:5173/courier-app/`.
+
+## Services Overview
+
+### Authentication Server
+Handles user login, registration, and token management (JWT).
+- **Port**: `8088`
+- **Technology**: Spring Boot
+- **Key Features**: JWT-based authentication, refresh tokens, user roles management.
+
+### Courier Server
+Manages the creation, updating, and tracking of courier orders.
+- **Port**: `8081`
+- **Technology**: Spring Boot
+- **Key Features**: Order creation, status updates, assignment to couriers.
+
+### Error Server
+Handles logging and management of application-level errors.
+- **Port**: `8082`
+- **Technology**: Spring Boot
+- **Key Features**: Centralized error logging and management.
+
+### Primes Server
+Generates primes numbers and calculates encryption keys for signing tokens.
+- **Port**: `8090`
+- **Technology**: Spring Boot
+- **Key Features**: Prime number generation and RSA key creation for token signing.
+
+### Service Registry
+Manages microservice discovery using Eureka.
+- **Port**: `8761`
+- **Technology**: Spring Boot, Eureka
+- **Key Features**: Registers all microservices and provides service discovery for inter-service communication.
+
+### Spring Cloud Gateway
+API Gateway that routes requests to the appropriate microservices.
+- **Port**: `8080`
+- **Technology**: Spring Boot, Spring Cloud Gateway
+- **Key Features**: Load balancing, routing, security, and monitoring.
 
 ## Note
 - The full Dockerization of the project is not yet completed, except for the use of Kafka. Please follow the instructions above to run the project locally.
 
 ## Contributing
-
 Contributions are welcome! Please create a pull request or open an issue to discuss what you would like to change.
 
 ## License
-
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
-
-## Frontend Functionality
-
-| ![Login Page](./images/login-page.png) | ![Signup Page](./images/signup-page.png) |
-|:---:|:---:|
-| *Login Page* | *Signup Page* |
-
-### Admin Functionality
-Admins have access to a wide range of features including user management, office and branch management, and order oversight.
-
-![Admin Dashboard](./images/admin-dashboard.png)
-*Admin Dashboard*
-
-| ![Admin Update User](./images/admin-update-user.png) | ![Admin Create User](./images/admin-create-user.png) |
-|:---:|:---:|
-| *Admin Manage Users* | *Admin Create User* |
-
-| ![Admin Settings Page](./images/admin-settings-page.png) | ![Admin Update Orders](./images/admin-update-order.png) |
-|:---:|:---:|
-| *Admin Manage Branches* | *Admin Manage Orders* |
-
-### Courier Functionality
-
-Couriers can view and manage their assigned deliveries, update delivery statuses, and view order details.
-
-![Courier Dashboard](./images/courier-dashboard.png)
-*Courier Dashboard*
-
-| ![Courier Update Order](./images/courier-update-order.png) | ![Courier Update Status Order](./images/courier-update-status-order.png) |
-|:---:|:---:|
-| *Courier Update Order* | *Courier Update Status Order* |
-
-### Client Functionality
-
-Clients can place orders, track the status of their deliveries, and update their profile information.
-
-![Client Dashboard](./images/client-dashboard.png)
-*Client Dashboard*
-
-| ![Client Create Order](./images/client-create-order.png) | ![Client Update Order](./images/client-update-order.png) |
-|:---:|:---:|
-| *Client Create Order* | *Client Update Order* |
-
-## Backend Structure:
-
-```bash
-.
-├── authentication-server
-│   ├── Dockerfile
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   ├── pom.xml
-│   └── src
-│       ├── main
-│       │   ├── java
-│       │   │   └── com
-│       │   │       └── david
-│       │   │           └── maman
-│       │   │               └── authenticationserver
-│       │   │                   ├── AuthenticationServerApplication.java
-│       │   │                   ├── configuration
-│       │   │                   │   ├── ExceptionHandlerFilter.java
-│       │   │                   │   ├── JwtAuthenticationFilter.java
-│       │   │                   │   └── security
-│       │   │                   │       ├── ApplicationConfig.java
-│       │   │                   │       ├── KafkaProducerConfig.java
-│       │   │                   │       └── SecurityConfiguration.java
-│       │   │                   ├── controllers
-│       │   │                   │   └── AuthController.java
-│       │   │                   ├── exceptions
-│       │   │                   │   ├── GlobalExceptionsHandler.java
-│       │   │                   │   └── TokenValidationException.java
-│       │   │                   ├── helpers
-│       │   │                   │   ├── CustomUserDetails.java
-│       │   │                   │   ├── TokenType.java
-│       │   │                   │   └── UserDetailsServiceImpl.java
-│       │   │                   ├── models
-│       │   │                   │   ├── dto
-│       │   │                   │   │   ├── AuthResponse.java
-│       │   │                   │   │   ├── ErrorLogDto.java
-│       │   │                   │   │   ├── LoginDto.java
-│       │   │                   │   │   ├── PrimeProductDto.java
-│       │   │                   │   │   ├── RSAKeyManager.java
-│       │   │                   │   │   └── UserCredentialsPassword.java
-│       │   │                   │   └── entities
-│       │   │                   │       ├── Role.java
-│       │   │                   │       ├── Token.java
-│       │   │                   │       ├── User.java
-│       │   │                   │       └── UserCredentials.java
-│       │   │                   ├── repositories
-│       │   │                   │   ├── RoleRepository.java
-│       │   │                   │   ├── TokenRepository.java
-│       │   │                   │   ├── UserCredentialsRepository.java
-│       │   │                   │   └── UserRepository.java
-│       │   │                   └── services
-│       │   │                       ├── AuthService.java
-│       │   │                       ├── ConsumerListenerService.java
-│       │   │                       ├── ErrorLogService.java
-│       │   │                       ├── HealthCheckService.java
-│       │   │                       ├── JwtKeyService.java
-│       │   │                       ├── JwtService.java
-│       │   │                       ├── RoleService.java
-│       │   │                       ├── UserCredentialsService.java
-│       │   │                       └── impl
-│       │   │                           ├── AuthServiceImpl.java
-│       │   │                           └── JwtServiceImpl.java
-│       │   └── resources
-│       │       └── application.yml
-│       └── test
-│           └── java
-│               └── com
-│                   └── david
-│                       └── maman
-│                           └── authenticationserver
-│                               └── AuthenticationServerApplicationTests.java
-├── courier-server
-│   ├── Dockerfile
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   ├── pom.xml
-│   └── src
-│       ├── main
-│       │   ├── java
-│       │   │   └── com
-│       │   │       └── david
-│       │   │           └── maman
-│       │   │               └── courierserver
-│       │   │                   ├── CourierServerApplication.java
-│       │   │                   ├── configuration
-│       │   │                   │   ├── AuthFilter.java
-│       │   │                   │   ├── ExceptionHandlerFilter.java
-│       │   │                   │   └── security
-│       │   │                   │       ├── KafkaProviderConfig.java
-│       │   │                   │       └── SecurityConfig.java
-│       │   │                   ├── controllers
-│       │   │                   │   ├── BranchController.java
-│       │   │                   │   ├── ContactController.java
-│       │   │                   │   ├── OfficeController.java
-│       │   │                   │   ├── OrderController.java
-│       │   │                   │   ├── OrderStatusHistoryController.java
-│       │   │                   │   ├── RoleController.java
-│       │   │                   │   ├── StatusController.java
-│       │   │                   │   └── UserController.java
-│       │   │                   ├── exceptions
-│       │   │                   │   ├── GlobalExceptionsHandler.java
-│       │   │                   │   ├── PublicKeyNotAvailableException.java
-│       │   │                   │   └── TokenValidationException.java
-│       │   │                   ├── helpers
-│       │   │                   │   ├── CustomUserDetails.java
-│       │   │                   │   ├── IdExtractor.java
-│       │   │                   │   ├── SearchByDate.java
-│       │   │                   │   ├── SearchByDateRange.java
-│       │   │                   │   ├── SearchFunction.java
-│       │   │                   │   └── StatusEnum.java
-│       │   │                   ├── mappers
-│       │   │                   │   ├── BranchMapper.java
-│       │   │                   │   ├── ContactMapper.java
-│       │   │                   │   ├── OfficeMapper.java
-│       │   │                   │   ├── OrderMapper.java
-│       │   │                   │   ├── OrderStatusHistoryMapper.java
-│       │   │                   │   ├── RoleMapper.java
-│       │   │                   │   ├── StatusMapper.java
-│       │   │                   │   └── UserMapper.java
-│       │   │                   ├── models
-│       │   │                   │   ├── criteria
-│       │   │                   │   │   ├── BranchSpecification.java
-│       │   │                   │   │   ├── ContactSpecification.java
-│       │   │                   │   │   ├── OfficeSpecification.java
-│       │   │                   │   │   ├── SearchCriteria.java
-│       │   │                   │   │   └── UserSepecification.java
-│       │   │                   │   ├── dto
-│       │   │                   │   │   ├── AdminDto.java
-│       │   │                   │   │   ├── BranchDto.java
-│       │   │                   │   │   ├── ClientDto.java
-│       │   │                   │   │   ├── ContactDto.java
-│       │   │                   │   │   ├── CourierDto.java
-│       │   │                   │   │   ├── ErrorLogDto.java
-│       │   │                   │   │   ├── OfficeDto.java
-│       │   │                   │   │   ├── OrderDto.java
-│       │   │                   │   │   ├── OrderStatusDto.java
-│       │   │                   │   │   ├── RoleDto.java
-│       │   │                   │   │   ├── StatusDto.java
-│       │   │                   │   │   ├── UserDto.java
-│       │   │                   │   │   └── base
-│       │   │                   │   │       ├── BranchInfoDto.java
-│       │   │                   │   │       └── OfficeInfoDto.java
-│       │   │                   │   └── entities
-│       │   │                   │       ├── Branch.java
-│       │   │                   │       ├── Contact.java
-│       │   │                   │       ├── Office.java
-│       │   │                   │       ├── Order.java
-│       │   │                   │       ├── OrderStatusHistory.java
-│       │   │                   │       ├── Role.java
-│       │   │                   │       ├── Status.java
-│       │   │                   │       └── User.java
-│       │   │                   ├── repositories
-│       │   │                   │   ├── BranchRepository.java
-│       │   │                   │   ├── ContactRepository.java
-│       │   │                   │   ├── OfficeRepository.java
-│       │   │                   │   ├── OrderRepository.java
-│       │   │                   │   ├── OrderStatusHistoryRepository.java
-│       │   │                   │   ├── RoleRepository.java
-│       │   │                   │   ├── StatusRepository.java
-│       │   │                   │   └── UserRepository.java
-│       │   │                   └── services
-│       │   │                       ├── BranchService.java
-│       │   │                       ├── ContactService.java
-│       │   │                       ├── ErrorLogService.java
-│       │   │                       ├── JwtService.java
-│       │   │                       ├── JwtValidationService.java
-│       │   │                       ├── KafkaProducerService.java
-│       │   │                       ├── OfficeService.java
-│       │   │                       ├── OrderService.java
-│       │   │                       ├── OrderStatusHistoryService.java
-│       │   │                       ├── RoleService.java
-│       │   │                       ├── StatusService.java
-│       │   │                       ├── UserService.java
-│       │   │                       └── impl
-│       │   │                           ├── BranchServiceImpl.java
-│       │   │                           ├── ContactServiceImpl.java
-│       │   │                           ├── JwtServiceImpl.java
-│       │   │                           ├── OfficeServiceImpl.java
-│       │   │                           ├── OrderServiceImpl.java
-│       │   │                           ├── OrderStatusHistoryServiceImpl.java
-│       │   │                           ├── RoleServiceImpl.java
-│       │   │                           ├── StatusServiceImpl.java
-│       │   │                           └── UserServiceImpl.java
-│       │   └── resources
-│       │       └── application.yml
-│       └── test
-│           └── java
-│               └── com
-│                   └── david
-│                       └── maman
-│                           └── courierserver
-│                               └── CourierServerApplicationTests.java
-├── docker-compose.yml
-├── error-server
-│   ├── Dockerfile
-│   ├── HELP.md
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   ├── pom.xml
-│   └── src
-│       ├── main
-│       │   ├── java
-│       │   │   └── com
-│       │   │       └── david
-│       │   │           └── maman
-│       │   │               └── errorserver
-│       │   │                   ├── ErrorServerApplication.java
-│       │   │                   ├── models
-│       │   │                   │   ├── dto
-│       │   │                   │   │   └── ErrorLogDto.java
-│       │   │                   │   └── entity
-│       │   │                   │       └── ErrorLog.java
-│       │   │                   ├── repositories
-│       │   │                   │   └── ErrorLogRepository.java
-│       │   │                   └── services
-│       │   │                       └── KafkaErrorLogListener.java
-│       │   └── resources
-│       │       └── application.yml
-│       └── test
-│           └── java
-│               └── com
-│                   └── david
-│                       └── maman
-│                           └── errorserver
-│                               └── ErrorServerApplicationTests.java
-├── primes-server
-│   ├── Dockerfile
-│   ├── HELP.md
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   ├── pom.xml
-│   └── src
-│       ├── main
-│       │   ├── java
-│       │   │   └── com
-│       │   │       └── david
-│       │   │           └── maman
-│       │   │               └── primesserver
-│       │   │                   ├── PrimesServerApplication.java
-│       │   │                   ├── configurations
-│       │   │                   │   └── KafkaProviderConfig.java
-│       │   │                   ├── listeners
-│       │   │                   │   └── PrimeProductListener.java
-│       │   │                   ├── models
-│       │   │                   │   ├── dto
-│       │   │                   │   │   └── PrimeProductDto.java
-│       │   │                   │   └── entities
-│       │   │                   │       └── PrimeProduct.java
-│       │   │                   ├── repositories
-│       │   │                   │   └── PrimeProductRepository.java
-│       │   │                   └── services
-│       │   │                       └── PrimeProductService.java
-│       │   └── resources
-│       │       └── application.yml
-│       └── test
-│           └── java
-│               └── com
-│                   └── david
-│                       └── maman
-│                           └── primesserver
-│                               └── PrimesServerApplicationTests.java
-├── service-registry
-│   ├── Dockerfile
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   ├── pom.xml
-│   └── src
-│       ├── main
-│       │   ├── java
-│       │   │   └── com
-│       │   │       └── david
-│       │   │           └── maman
-│       │   │               └── serviceregistry
-│       │   │                   └── ServiceRegistryApplication.java
-│       │   └── resources
-│       │       └── application.yml
-│       └── test
-│           └── java
-│               └── com
-│                   └── david
-│                       └── maman
-│                           └── serviceregistry
-│                               └── ServiceRegistryApplicationTests.java
-└── spring-cloud-gateway
-    ├── Dockerfile
-    ├── mvnw
-    ├── mvnw.cmd
-    ├── pom.xml
-    └── src
-        ├── main
-        │   ├── java
-        │   │   └── com
-        │   │       └── david
-        │   │           └── maman
-        │   │               └── springcloudgateway
-        │   │                   ├── SpringCloudGatewayApplication.java
-        │   │                   └── config
-        │   │                       ├── GatewayConfig.java
-        │   │                       └── RouterValidator.java
-        │   └── resources
-        │       └── application.yml
-        └── test
-            └── java
-                └── com
-                    └── david
-                        └── maman
-                            └── springcloudgateway
-                                └── SpringCloudGatewayApplicationTests.java
-
-```
-
-## Additional Backend Information:
-
-### Primes-Server
-- Generates two distinct prime numbers using the Rabin-Miller algorithm.
-- Sends the product of the prime numbers and the phi of this number to the Authentication-Server via Kafka.
-
-### Authentication-Server
-- Rejects all requests until it receives the values from Primes-Server.
-- Upon receiving the values, it generates private and public keys.
-- Uses the private key to sign tokens and the public key to validate the signature.
-- Sends the public key to Courier-Server.
-
-### Courier-Server
-- Rejects all requests until it receives the public key from the Authentication-Server.
-
-### Error-Server
-- Logs errors from the Authentication-Server and Courier-Server.
-- Receives errors via Kafka from these servers.
-
-## Frontend Structure:
-
-```bash
-.
-├── README.md
-├── index.html
-├── package-lock.json
-├── package.json
-├── public
-│   └── vite.svg
-├── src
-│   ├── App.css
-│   ├── App.tsx
-│   ├── assets
-│   │   └── react.svg
-│   ├── domain
-│   │   ├── axios.models.ts
-│   │   ├── form.models.ts
-│   │   ├── index.ts
-│   │   ├── models.ts
-│   │   ├── props.models.ts
-│   │   └── reducer.models.ts
-│   ├── helpers
-│   │   ├── index.ts
-│   │   ├── load-abort-axios.ts
-│   │   ├── paths.ts
-│   │   └── validation.form.ts
-│   ├── hoc
-│   │   ├── index.ts
-│   │   └── withLoading.tsx
-│   ├── hooks
-│   │   ├── index.ts
-│   │   ├── useAsync.ts
-│   │   ├── useAuth.ts
-│   │   ├── useDebounce.ts
-│   │   ├── useFetchAndLoad.ts
-│   │   ├── useForm.ts
-│   │   └── useList.ts
-│   ├── index.css
-│   ├── main.tsx
-│   ├── redux
-│   │   ├── states
-│   │   │   └── authSlice.ts
-│   │   └── store.ts
-│   ├── routes
-│   │   ├── PrivateRoutes.tsx
-│   │   ├── ProtectedRoutes.tsx
-│   │   ├── PublicRoutes.tsx
-│   │   ├── index.ts
-│   │   └── routes.tsx
-│   ├── services
-│   │   ├── api.ts
-│   │   ├── cache.ts
-│   │   ├── index.ts
-│   │   ├── service-request.ts
-│   │   └── token.service.ts
-│   ├── ui
-│   │   ├── components
-│   │   │   ├── content
-│   │   │   │   ├── ItemsPage.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── dialogs
-│   │   │   │   ├── CustomDialog.tsx
-│   │   │   │   ├── GenericModal.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── entityForm
-│   │   │   │   ├── BranchForm.tsx
-│   │   │   │   ├── ContactForm.tsx
-│   │   │   │   ├── OfficeForm.tsx
-│   │   │   │   ├── OrderForm.tsx
-│   │   │   │   ├── RoleForm.tsx
-│   │   │   │   ├── StatusOrderForm.tsx
-│   │   │   │   ├── UpdatePassword.tsx
-│   │   │   │   ├── UserForm.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── form
-│   │   │   │   ├── ReusableInput.tsx
-│   │   │   │   ├── ReusableSelect.tsx
-│   │   │   │   ├── SelectDetailsForm.tsx
-│   │   │   │   └── index.ts
-│   │   │   ├── index.ts
-│   │   │   ├── layout
-│   │   │   │   ├── BranchesPartial.tsx
-│   │   │   │   ├── ErrorFallback.tsx
-│   │   │   │   ├── Navbar.tsx
-│   │   │   │   ├── NavbarLinks.tsx
-│   │   │   │   ├── PageHeader.tsx
-│   │   │   │   ├── PasswordRulesList.tsx
-│   │   │   │   ├── RolePartial.tsx
-│   │   │   │   ├── StatusOrdersPartial.tsx
-│   │   │   │   ├── UserDetails.tsx
-│   │   │   │   ├── index.ts
-│   │   │   │   └── interface.ts
-│   │   │   └── tables
-│   │   │       ├── ReusableTable.tsx
-│   │   │       └── index.ts
-│   │   ├── index.ts
-│   │   └── pages
-│   │       ├── ContactsPage.tsx
-│   │       ├── Home
-│   │       │   ├── Home.tsx
-│   │       │   ├── HomeAdmin.tsx
-│   │       │   ├── HomeClient.tsx
-│   │       │   └── HomeCourier.tsx
-│   │       ├── Login.tsx
-│   │       ├── OfficesPage.tsx
-│   │       ├── OrdersPage.tsx
-│   │       ├── Profile.tsx
-│   │       ├── SettingsAdmin.tsx
-│   │       ├── SignUp.tsx
-│   │       ├── UsersPage.tsx
-│   │       ├── index.ts
-│   │       └── interface.ts
-│   ├── useCases
-│   │   ├── form
-│   │   │   ├── index.ts
-│   │   │   └── useAuthForm.ts
-│   │   ├── index.ts
-│   │   ├── useItemsPageState
-│   │   │   ├── reducer.ts
-│   │   │   └── useItemsPage.ts
-│   │   ├── useNavbar
-│   │   │   ├── reducer.ts
-│   │   │   └── useNavbar.ts
-│   │   ├── useRouteConfig.ts
-│   │   └── useUserItemActions.ts
-│   └── vite-env.d.ts
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
-```
-## Additional Frontend Information:
-
-### Domain
-- **Domain Definitions:** TypeScript models for Axios requests (`axios.models.ts`), form data (`form.models.ts`), general models (`models.ts`), and component props (`props.models.ts`) to ensure type safety across the application.
-
-### Helpers and Hooks
-- Custom hooks like `useAsync`, `useAuth`, `useFetchAndLoad`, `useForm`, and `useList` to manage data fetching, authentication, form handling, and other functionalities.
-- Helper functions for various utilities and configurations like `load-abort-axios`, `paths`, and `validation.form`.
-
-### Redux
-- **State Management:** The `authSlice` and `store.ts` files configure Redux for global state management, handling authentication and other states.
-
-### Routes
-- **Routing Configuration:** `ProtectedRoutes` handle the routing logic for authenticated and unauthenticated users, respectively. The `routes.tsx` file defines the application's routes.
-
-### Services
-- **API Interaction:** Services like `api.ts`, `service-request.ts`, and `token.service.ts` manage interactions with the backend APIs, including token management and caching.
-
-### UI
-- ### Components:
-    - **Content:** Contains components that manage and display data. The main example is ItemsPage.tsx, which centralizes the logic for display lists and data.
-    - **Dialogs:** Modal components used to interact with entities, such as CustomDialog, GenericModal, and others, for creating or editing entities.
-    - **EntityForm:** Specific forms for managing entities such as `BranchForm`, `ContactForm`, `OfficeForm`, `OrderForm`, `RoleForm`, `StatusOrderForm`, `UpdatePassword`, and `UserForm`. Each form is designed to handle a specific entity within the application.
-    - **Form:** Contains reusable form components like `ReusableInput`, `ReusableSelect`, and `SelectDetailsForm`, which are used across various forms in the application.
-    - **Layout:** Components that organize the structure and design of the application, such as `Navbar`, `NavbarLinks`, `PageHeader`, and partial components like `BranchesPartial`, `PasswordRulesList`, `RolePartial`, `StatusOrderPartial`, and `UserDetails`. These components are responsible for the visual and structural organization of the pages.
-    - **Tables:** Components for managing and displaying reusable data tables, such as `ReusableTable.tsx`, which enables dynamic list management.
-
-- ### Pages:
-- Contains the main pages of the application that correspond to the defined routes. Some of these pages include:
-    - **`ContactsPage.tsx:`** Manages contacts.
-    - **`Home (and its variants HomeAdmin, HomeClient, HomeCourier):`** Landing pages for different user roles.
-    - **`Login.tsx:`** Login page.
-    - **`OfficesPage.tsx:`** Manages offices.
-    - **`OrdersPage.tsx:`** Manages orders.
-    - **`Profile.tsx:`** User profile page.
-    - **`SettingsAdmin.tsx:`** Admin configuration page.
-    - **`SignUp.tsx:`** Registration page.
-    - **`UsersPage.tsx:`** Manages users.
-
-- ### UseCases:
-    - **`Form:`** Contains logic and hooks related to form handling.
-        - **`useAuthForm.ts`** Manages the authentication form logic.
-    - **`useItemsPageState`** Handles the state management for `ItemsPage`, including:
-        - **`reducer.ts:`** Reducer logic for managing the page state.
-        - **`useItemsPage.ts:`** Custom hook for managing `ItemsPage` logic.
-    - **`useNavbar:`** Manages the state and logic for the application's navigation bar.
-        - **`redurec.ts:`** Reducer logic for managing navigation state.
-        - **`useNavbar.ts`** Custom hook for managing the navbar behavior.
-    - **`useRouteConfig.ts:`** Custom hook that handles route configuration and guards.
-    - **`useUserItemActions.ts:`** Handles actions related to user items, such as creation, updating, and deletion.
 

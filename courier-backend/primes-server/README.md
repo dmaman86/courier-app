@@ -25,7 +25,7 @@ The `Primes-Server` is responsible for generating two distinct primes numbers **
 1. **Clone the repository** and navigate to the `Primes-Server` directory.
     ```bash
     git clone https://github.com/dmaman86/courier-app.git
-    cd courier-app
+    cd courier-app/courier-backend/primes-server
     ```
 
 2. **Configure the enviroment**
@@ -58,6 +58,9 @@ The `Primes-Server` is responsible for generating two distinct primes numbers **
   - The application sends and receives messages using Kafka, with the Kafka server running at `localhost:9092`.
   - The producer uses `StringSerializer` for the key and `JsonSerializer` for the value to send data.
   - The consumer belongs to the `primes-consumer` group, which listens to messages from the Kafka topic.
+
+## Endpoints
+The Primes Server doesn't expose any public REST endpoints. It listens to messages from Kafka and interacts with the database.
 
 ## Primes-Server Structure:
 ```bash
