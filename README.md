@@ -530,16 +530,7 @@ Clients can place orders, track the status of their deliveries, and update their
 │   │   │   │   └── interface.ts
 │   │   │   └── tables
 │   │   │       ├── ReusableTable.tsx
-│   │   │       ├── index.ts
-│   │   │       └── list
-│   │   │           ├── BranchList.tsx
-│   │   │           ├── ContactList.tsx
-│   │   │           ├── OfficeList.tsx
-│   │   │           ├── OrderList.tsx
-│   │   │           ├── RoleList.tsx
-│   │   │           ├── StatusOrdersList.tsx
-│   │   │           ├── UserList.tsx
-│   │   │           └── index.ts
+│   │   │       └── index.ts
 │   │   ├── index.ts
 │   │   └── pages
 │   │       ├── ContactsPage.tsx
@@ -577,28 +568,52 @@ Clients can place orders, track the status of their deliveries, and update their
 ```
 ## Additional Frontend Information:
 
-### Components
-- **Common:** Contains reusable components like `Navbar`, `Profile`, `ContactsPage`, etc., which are used throughout the application.
-- **ListTables:** Components for displaying lists of entities such as branches, contacts, offices, orders, roles, status orders, and users.
-- **Modals:** Components for creating or editing entities. Examples include `BranchForm`, `ContactForm`, `OrderForm`, etc.
-- **Pages:** Different page components for various routes like `Home`, `Login`, `SignUp`, and role-specific pages like `HomeAdmin`, `HomeClient`, and `HomeCourier`.
-- **Partials:** Partial components used in other components or pages, such as `BranchesPartial`, `PasswordRulesList`, etc.
-- **Shared:** Shared components like `AlertDialog`, `ItemsPage`, `ReusableInput`, `ReusableSelect`, and `ReusableTable` that provide common functionalities across the application.
+### Domain
+- **Domain Definitions:** TypeScript models for Axios requests (`axios.models.ts`), form data (`form.models.ts`), general models (`models.ts`), and component props (`props.models.ts`) to ensure type safety across the application.
 
 ### Helpers and Hooks
-- Custom hooks like `useAsync`, `useAuth`, `useFetchAndLoad`, `useForm`, `useList`, and `useRouteConfig` to manage data fetching, authentication, form handling, and other functionalities.
+- Custom hooks like `useAsync`, `useAuth`, `useFetchAndLoad`, `useForm`, and `useList` to manage data fetching, authentication, form handling, and other functionalities.
 - Helper functions for various utilities and configurations like `load-abort-axios`, `paths`, and `validation.form`.
 
 ### Redux
 - **State Management:** The `authSlice` and `store.ts` files configure Redux for global state management, handling authentication and other states.
 
 ### Routes
-- **Routing Configuration:** `PrivateRoutes` and `PublicRoutes` handle the routing logic for authenticated and unauthenticated users, respectively. The `routes.tsx` file defines the application's routes.
+- **Routing Configuration:** `ProtectedRoutes` handle the routing logic for authenticated and unauthenticated users, respectively. The `routes.tsx` file defines the application's routes.
 
 ### Services
 - **API Interaction:** Services like `api.ts`, `service-request.ts`, and `token.service.ts` manage interactions with the backend APIs, including token management and caching.
 
-### Types
-- **Type Definitions:** TypeScript models for Axios requests (`axios.models.ts`), form data (`form.models.ts`), general models (`models.ts`), and component props (`props.models.ts`) to ensure type safety across the application.
+### UI
+- ### Components:
+    - **Content:** Contains components that manage and display data. The main example is ItemsPage.tsx, which centralizes the logic for display lists and data.
+    - **Dialogs:** Modal components used to interact with entities, such as CustomDialog, GenericModal, and others, for creating or editing entities.
+    - **EntityForm:** Specific forms for managing entities such as `BranchForm`, `ContactForm`, `OfficeForm`, `OrderForm`, `RoleForm`, `StatusOrderForm`, `UpdatePassword`, and `UserForm`. Each form is designed to handle a specific entity within the application.
+    - **Form:** Contains reusable form components like `ReusableInput`, `ReusableSelect`, and `SelectDetailsForm`, which are used across various forms in the application.
+    - **Layout:** Components that organize the structure and design of the application, such as `Navbar`, `NavbarLinks`, `PageHeader`, and partial components like `BranchesPartial`, `PasswordRulesList`, `RolePartial`, `StatusOrderPartial`, and `UserDetails`. These components are responsible for the visual and structural organization of the pages.
+    - **Tables:** Components for managing and displaying reusable data tables, such as `ReusableTable.tsx`, which enables dynamic list management.
 
+- ### Pages:
+- Contains the main pages of the application that correspond to the defined routes. Some of these pages include:
+    - **`ContactsPage.tsx:`** Manages contacts.
+    - **`Home (and its variants HomeAdmin, HomeClient, HomeCourier):`** Landing pages for different user roles.
+    - **`Login.tsx:`** Login page.
+    - **`OfficesPage.tsx:`** Manages offices.
+    - **`OrdersPage.tsx:`** Manages orders.
+    - **`Profile.tsx:`** User profile page.
+    - **`SettingsAdmin.tsx:`** Admin configuration page.
+    - **`SignUp.tsx:`** Registration page.
+    - **`UsersPage.tsx:`** Manages users.
+
+- ### UseCases:
+    - **`Form:`** Contains logic and hooks related to form handling.
+        - **`useAuthForm.ts`** Manages the authentication form logic.
+    - **`useItemsPageState`** Handles the state management for `ItemsPage`, including:
+        - **`reducer.ts:`** Reducer logic for managing the page state.
+        - **`useItemsPage.ts:`** Custom hook for managing `ItemsPage` logic.
+    - **`useNavbar:`** Manages the state and logic for the application's navigation bar.
+        - **`redurec.ts:`** Reducer logic for managing navigation state.
+        - **`useNavbar.ts`** Custom hook for managing the navbar behavior.
+    - **`useRouteConfig.ts:`** Custom hook that handles route configuration and guards.
+    - **`useUserItemActions.ts:`** Handles actions related to user items, such as creation, updating, and deletion.
 
