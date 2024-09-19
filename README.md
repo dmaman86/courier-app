@@ -70,10 +70,12 @@ Below are the general instructions for running all services together.
    ```
 
    This will launch:
-   - **Auth-Service** on port `8081`
-   - **Order-Service** on port `8082`
-   - **User-Service** on port `8083`
-   - **Eureka Service Registry** on port `8761`
+   - **Authentication-Server** on port `8088`
+   - **Courier-Server** on port `8081`
+   - **Error-Server** on port `8082`
+   - **Primes-Server** on port `8090`
+   - **Service-Registry** on port `8761`
+   - **Spring-Cloud-Gatewat** on port `8080`
    - **Kafka** for messaging
 
    **Note**: You can check the individual README files in each service for more detailed instructions.

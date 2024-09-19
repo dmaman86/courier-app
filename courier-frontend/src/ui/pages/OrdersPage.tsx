@@ -7,7 +7,7 @@ import { Order, PageResponse, ValueColumn } from "@/domain";
 import { ItemsPage, OrderForm } from "@/ui";
 import { PageProps } from "./interface";
 import { withLoading } from "@/hoc";
-import { Box, Divider } from "@mui/material";
+import { Box, Divider, Tooltip } from "@mui/material";
 
 const OrdersPage = ({ userDetails }: PageProps) => {
 
@@ -99,8 +99,10 @@ const OrdersPage = ({ userDetails }: PageProps) => {
             key: 'status',
             content: (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {order.currentStatus?.name}
-                    <i className='fas fa-info-circle' style={{ marginLeft: '5px' }}></i>
+                    {order.currentStatus.name}
+                    <Tooltip title={order.currentStatus.description}>
+                        <i className='fas fa-info-circle' style={{ marginLeft: '5px' }}></i>
+                    </Tooltip>
                 </div>
             )
         },
