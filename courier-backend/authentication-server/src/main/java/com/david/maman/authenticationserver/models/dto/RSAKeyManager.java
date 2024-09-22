@@ -5,21 +5,26 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Base64;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RSAKeyManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(RSAKeyManager.class);
     private KeyPair keyPair;
 
 
     public RSAKeyManager(BigInteger n, BigInteger phi){
-        BigInteger e = findCoprime(phi);
+        BigInteger e = findOptimalCoprime(phi);
         BigInteger d = e.modInverse(phi);
 
-        System.out.println("d: " + d);
+        logger.info("d: {}", d);
 
-        initializeKeys(n, e, d);
+        initializeKeys(n, e);
     }
 
     public KeyPair getKeyPair(){
@@ -49,19 +54,29 @@ public class RSAKeyManager {
                + getPrivateKeyAsBase64() + "]";
     }
 
-    private BigInteger findCoprime(BigInteger phi){
-        BigInteger e = BigInteger.valueOf(2);
+    private BigInteger findOptimalCoprime(BigInteger phi){
+        // phi = 2^r * k
+        int r = phi.getLowestSetBit();  // Find the lowest set bit 2^r
+        BigInteger k = phi.divide(BigInteger.TWO.pow(r)); // Find k = phi / 2^r
 
-        while(e.compareTo(phi) < 0){
-            if(e.gcd(phi).equals(BigInteger.ONE)){
-                return e;
-            }
-            e = e.add(BigInteger.ONE);
-        }
-        return BigInteger.valueOf(65537); // Fallback value
+        return findOptionalE(k);
     }
 
-    private void initializeKeys(BigInteger n, BigInteger e, BigInteger d){
+    private BigInteger findOptionalE(BigInteger k){
+        SecureRandom random = new SecureRandom();
+        BigInteger e = BigInteger.valueOf(65537);
+
+        while(!e.gcd(k).equals(BigInteger.ONE)){
+            int bitLength = 17 + random.nextInt(16);
+            e = new BigInteger(bitLength, random);
+
+            if(!e.testBit(0)) e = e.add(BigInteger.ONE);
+        }
+        logger.info("e: {}", e);
+        return e;
+    }
+
+    private void initializeKeys(BigInteger n, BigInteger e){
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             keyPairGenerator.initialize(new RSAKeyGenParameterSpec(n.bitLength(), e));

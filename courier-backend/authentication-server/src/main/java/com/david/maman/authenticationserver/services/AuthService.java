@@ -10,6 +10,8 @@ public interface AuthService {
 
     AuthResponse generateAuthTokens(CustomUserDetails credentials);
 
+    AuthResponse refreshAuthTokens(CustomUserDetails credentials, String existingRefreshToken);
+
     void updateUserCredentials(UserCredentialsPassword credentials);
 
     void updateUserCredentials(UserCredentials userCredentials, UserCredentialsPassword credentials);

@@ -1,7 +1,11 @@
 package com.david.maman.authenticationserver.services;
 
 import java.math.BigInteger;
-
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -17,6 +21,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.david.maman.authenticationserver.models.dto.PrimeProductDto;
+import com.david.maman.authenticationserver.models.dto.PublicKeyRequest;
+import com.david.maman.authenticationserver.models.dto.PublicKeyResponse;
 import com.david.maman.authenticationserver.models.dto.RSAKeyManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,94 +35,103 @@ public class JwtKeyService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    // @Autowired
+    // private KafkaTemplate<String, String> kafkaTemplate;
+
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, PublicKeyRequest> kafkaTemplate;
 
     @Autowired
     private KafkaListenerEndpointRegistry registry;
 
-    private CompletableFuture<PrimeProductDto> futureProduct;
+    // private CompletableFuture<PrimeProductDto> futureProduct;
 
     @Autowired
     private JwtService jwtService;
 
-    private String publicKeyString;
+    // private String publicKeyString;
 
-    private boolean publicKeyRequestPending = false;
+    private CompletableFuture<PublicKeyResponse> futurePublicKey;
 
-    @EventListener(ApplicationReadyEvent.class)
+    /*@EventListener(ApplicationReadyEvent.class)
     public void startRequestingOnStartup(){
-        requestData();
-    }
+        requestPublicKey();
+    }*/
 
-    public void requestData(){
-        futureProduct = new CompletableFuture<>();
-        kafkaTemplate.send("request-prime-product", "Request for prime product");
+    public void requestPublicKey(){
+        futurePublicKey = new CompletableFuture<>();
+
+        String correlationId = UUID.randomUUID().toString();
+        PublicKeyRequest request = PublicKeyRequest.builder()
+                                                .correlationId(correlationId)
+                                                .serverName("authentication-server")
+                                                .build();
+
+        kafkaTemplate.send("public-key-request", request);
+
         try{
-            PrimeProductDto primeProductDto = futureProduct.get();
-            processProduct(primeProductDto);
+            PublicKeyResponse response = futurePublicKey.get();
+            PublicKey publicKey = convertBase64ToPublicKey(response.getPublicKey());
+            processPublicKey(publicKey);
         }catch(InterruptedException | ExecutionException e){
-            logger.error("Error processing message", e);
+            logger.error("Error requesting public key, ", e);
+        } catch (Exception e) {
+            logger.error("Error processing public key, ", e);
         }
     }
 
-    @KafkaListener(id = "consumerId", topics = "response-prime-product", groupId = "auth-primes-consumer")
-    public void receiveData(ConsumerRecord<String, String> record){
+    @KafkaListener(id = "publicKeyConsumerId", topics = "public-key-response", groupId = "auth-key-consumer")
+    public void receivePublicKey(ConsumerRecord<String, String> record) {
+
         try{
-            String messageKey = record.key();
-            String jsonPayLoad = record.value();
-
-            PrimeProductDto primeProductDto = objectMapper.readValue(jsonPayLoad, PrimeProductDto.class);
-            logger.info("Received message with key: {} and value: {}", messageKey, primeProductDto);
-
-            futureProduct.complete(primeProductDto);
-            registry.getListenerContainer("consumerId").pause();
-            
+            PublicKeyResponse response = objectMapper.readValue(record.value(), PublicKeyResponse.class);
+            logger.info("Received public key response: {}", response);
+            if(response == null || response.getPublicKey() == null){
+                logger.error("Received empty public key response");
+                return;
+            }
+            futurePublicKey.complete(response);
+            registry.getListenerContainer("publicKeyConsumerId").pause();
         }catch(JsonProcessingException e){
-            logger.error("Error processing message", e);
+            logger.error("Error parsing public key response, ", e);
         }
     }
 
-
-    private void processProduct(PrimeProductDto primeProductDto){
-        logger.info("Processing prime product: {}", primeProductDto);
-
-        BigInteger n = new BigInteger(primeProductDto.getProduct());
-        BigInteger phi = new BigInteger(primeProductDto.getPhiProduct());
-        // RSAKeyGenerator rsaKeyGenerator = new RSAKeyGenerator(n, phi);
-
-        RSAKeyManager rsaKeyManager = new RSAKeyManager(n, phi);
-        logger.info("Generated RSA keys: {}", rsaKeyManager);
-
-        publicKeyString = rsaKeyManager.getPublicKeyAsBase64();
-
-        if(publicKeyRequestPending){
-            sendPublicKey();
-            publicKeyRequestPending = false;
-        }
-
-        jwtService.setKeyPair(rsaKeyManager.getKeyPair());
-        resumekafkaListener();
+    private PublicKey convertBase64ToPublicKey(String base64PublicKey) throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(base64PublicKey);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
     }
 
-    @KafkaListener(id = "publicKeyRequestConsumerId", topics = "request-public-key", groupId = "auth-primes-consumer")
-    public void handlePublicKeyRequest(String message){
-        logger.info("Received public key request: {}", message);
-        if(publicKeyString != null){
-            sendPublicKey();
-        }else{
-            logger.info("Public key not yet avaible, marking request as pending");
-            publicKeyRequestPending = true;
+
+    private void processPublicKey(PublicKey publicKey){
+        try{
+            logger.info("Received public key response: {}", publicKey);
+            jwtService.setPublicKey(publicKey);
+            resumeKafkaListener();
+        }catch(Exception e){
+            throw new RuntimeException("Error processing public key, ", e);
         }
     }
 
-    private void sendPublicKey(){
-        kafkaTemplate.send("public-key-topic", publicKeyString);
-        logger.info("Sent public key to Kafka topic: public-key-topic");
+    public void resumeKafkaListener(){
+        registry.getListenerContainer("publicKeyConsumerId").resume();
     }
 
-    public void resumekafkaListener(){
-        registry.getListenerContainer("consumerId").resume();
+    @KafkaListener(topics = "token-server-health", groupId = "auth-consumer")
+    public void handleAuthServerHealthCheck(String message){
+        logger.info("Raw message received: [{}]", message);
+    
+        String cleanedMessage = message.replace("\"", "").trim();
+
+        if ("token-server-restarted".equals(cleanedMessage)) {
+            logger.info("Detected token-server restart, invalidating public key");
+            jwtService.setPublicKeyAvailable(false);
+        } else if ("keys-generated".equals(cleanedMessage)) {
+            logger.info("Detected key generation completed, requesting public key");
+            requestPublicKey();
+        }
     }
 
 }

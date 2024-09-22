@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.david.maman.courierserver.exceptions.PublicKeyNotAvailableException;
 import com.david.maman.courierserver.helpers.CustomUserDetails;
+import com.david.maman.courierserver.helpers.TokenType;
 import com.david.maman.courierserver.models.entities.User;
 import com.david.maman.courierserver.services.JwtService;
 import com.google.common.base.Strings;
@@ -40,7 +41,7 @@ public class AuthFilter extends OncePerRequestFilter{
 
         if(request.getCookies() != null){
             for(Cookie cookie : request.getCookies()){
-                if(cookie.getName().equals("accessToken")){
+                if(cookie.getName().equals(TokenType.ACCESS_TOKEN.toString())){
                     token = cookie.getValue();
                     break;
                 }

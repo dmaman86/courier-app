@@ -1,6 +1,7 @@
 package com.david.maman.authenticationserver.services.impl;
 
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +19,6 @@ import com.david.maman.authenticationserver.helpers.CustomUserDetails;
 import com.david.maman.authenticationserver.helpers.TokenResponse;
 import com.david.maman.authenticationserver.helpers.TokenType;
 import com.david.maman.authenticationserver.models.entities.Token;
-import com.david.maman.authenticationserver.models.entities.User;
 import com.david.maman.authenticationserver.models.entities.UserCredentials;
 import com.david.maman.authenticationserver.repositories.TokenRepository;
 import com.david.maman.authenticationserver.repositories.UserCredentialsRepository;
@@ -26,7 +26,6 @@ import com.david.maman.authenticationserver.repositories.UserRepository;
 import com.david.maman.authenticationserver.services.JwtService;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -35,14 +34,18 @@ public class JwtServiceImpl implements JwtService{
 
     private static final Logger logger = LoggerFactory.getLogger(JwtServiceImpl.class);
 
-    private KeyPair jwtKeyPair;
+    private PublicKey publicKey;
+
+    private volatile boolean isPublicKeyAvailable = false;
+
+    // private KeyPair jwtKeyPair;
 
     // private long jwtExpiration = 86400000; // 1 day
     private long jwtExpiration = 60000; // 1 minute
     // private long jwtExpiration = 600000; // 10 minutes
-    // private long jwtRefreshExpiration = 604800000; // 7 days
+    private long jwtRefreshExpiration = 604800000; // 7 days
     // private long jwtRefreshExpiration = 300000; // 5 minutes
-    private long jwtRefreshExpiration = 1800000; // 30 minutes
+    // private long jwtRefreshExpiration = 1800000; // 30 minutes
 
     @Autowired
     private UserCredentialsRepository userCredentialsRepository;
@@ -55,35 +58,51 @@ public class JwtServiceImpl implements JwtService{
 
 
     @Override
-    public void setKeyPair(KeyPair keyPair) {
-        this.jwtKeyPair = keyPair;
+    public void setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
+        this.isPublicKeyAvailable = true;
     }
 
     @Override
     public Boolean isPublicKeyAvailable(){
-        return jwtKeyPair.getPublic() != null;
+        return this.isPublicKeyAvailable;
     }
 
     @Override
+    public void setPublicKeyAvailable(Boolean available){
+        this.isPublicKeyAvailable = available;
+    }
+
+    @Override
+    public long getAccessTokenExpirationTime(){
+        return jwtExpiration;
+    }
+
+    @Override
+    public long getRefreshTokenExpirationTime(){
+        return jwtRefreshExpiration;
+    }
+
+    /*@Override
     public TokenResponse generateToken(CustomUserDetails credentials) {
         Map<String, Object> claims = new HashMap<>();
         String token = buildToken(claims, credentials, jwtExpiration);
         return new TokenResponse(token, jwtExpiration);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public TokenResponse generateRefreshToken(CustomUserDetails credentials){
         Map<String, Object> claims = new HashMap<>();
         String token = buildToken(claims, credentials, jwtRefreshExpiration);
         return new TokenResponse(token, jwtRefreshExpiration);
-    }
+    }*/
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    public String buildToken(Map<String, Object> extraClaims, CustomUserDetails credentials, long expirationTime) {
+    /*public String buildToken(Map<String, Object> extraClaims, CustomUserDetails credentials, long expirationTime) {
         var user = credentials.getCredentials().getUser();
         List<Map<String, Object>> roles = user.getRoles().stream()
                 .map(role -> {
@@ -104,6 +123,12 @@ public class JwtServiceImpl implements JwtService{
                     .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                     .signWith(jwtKeyPair.getPrivate(), SignatureAlgorithm.RS256)
                     .compact();
+    }*/
+
+    @Override
+    public long getExpirationTime(String token){
+        Claims claims = extractAllClaims(token);
+        return claims.getExpiration().getTime();
     }
 
     @Override
@@ -139,7 +164,7 @@ public class JwtServiceImpl implements JwtService{
 
     private Claims extractAllClaims(String token){
         return Jwts.parserBuilder()
-                .setSigningKey(jwtKeyPair.getPublic())
+                .setSigningKey(publicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

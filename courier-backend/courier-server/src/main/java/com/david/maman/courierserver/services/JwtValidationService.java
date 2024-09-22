@@ -4,9 +4,11 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +19,21 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.david.maman.courierserver.models.dto.PublicKeyRequest;
+import com.david.maman.courierserver.models.dto.PublicKeyResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 public class JwtValidationService {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtValidationService.class);
 
+    // @Autowired
+    // private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, PublicKeyRequest> kafkaTemplate;
 
     @Autowired
     private KafkaListenerEndpointRegistry registry;
@@ -32,47 +41,71 @@ public class JwtValidationService {
     @Autowired
     private JwtService jwtService;
 
-    private CompletableFuture<String> futurePublicKey;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private CompletableFuture<PublicKeyResponse> futurePublicKey;
 
 
-    @EventListener(ApplicationReadyEvent.class)
+    /*@EventListener(ApplicationReadyEvent.class)
     public void startRequestingOnStartup(){
         requestPublicKey();
-    }
+    }*/
 
     public void requestPublicKey(){
         futurePublicKey = new CompletableFuture<>();
-        kafkaTemplate.send("request-public-key", "Request for public key");
+
+        String correlationId = UUID.randomUUID().toString();
+        PublicKeyRequest request = PublicKeyRequest.builder()
+                                                .correlationId(correlationId)
+                                                .serverName("courier-server")
+                                                .build();
+
+        kafkaTemplate.send("public-key-request", request);
+
         try{
-            String publicKeyString = futurePublicKey.get();
-            processPublicKey(publicKeyString);
+            PublicKeyResponse response = futurePublicKey.get();
+            PublicKey publicKey = convertBase64ToPublicKey(response.getPublicKey());
+            processPublicKey(publicKey);
         }catch(InterruptedException | ExecutionException e){
-            logger.error("Error processing message", e);
+            logger.error("Error requesting public key, ", e);
+        } catch (Exception e) {
+            logger.error("Error processing public key, ", e);
         }
     }
 
 
-    @KafkaListener(id = "publicKeyConsumerId", topics = "public-key-topic", groupId = "public-key-group")
-    public void receivePublicKey(String publicKeyString) {
-        if(publicKeyString == null || publicKeyString.isEmpty()){
-            logger.error("Received empty public key");
-            return;
+    @KafkaListener(id = "publicKeyConsumerId", topics = "public-key-response", groupId = "public-key-consumer")
+    public void receivePublicKey(ConsumerRecord<String, String> record) {
+
+        try{
+            PublicKeyResponse response = objectMapper.readValue(record.value(), PublicKeyResponse.class);
+            logger.info("Received public key response: {}", response);
+            if(response == null || response.getPublicKey() == null){
+                logger.error("Received empty public key response");
+                return;
+            }
+            futurePublicKey.complete(response);
+            registry.getListenerContainer("publicKeyConsumerId").pause();
+        }catch(JsonProcessingException e){
+            logger.error("Error parsing public key response, ", e);
         }
-        futurePublicKey.complete(publicKeyString);
-        registry.getListenerContainer("publicKeyConsumerId").pause();
     }
 
-    private void processPublicKey(String publicKeyString){
-        try {
-            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyString);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            PublicKey publicKey = keyFactory.generatePublic(keySpec);
-            logger.info("Received public key from Kafka: {}", publicKey);
+    private PublicKey convertBase64ToPublicKey(String base64PublicKey) throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(base64PublicKey);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
+    }
+
+    private void processPublicKey(PublicKey publicKey){
+        try{
+            logger.info("Received public key response: {}", publicKey);
             jwtService.setPublicKey(publicKey);
             resumeKafkaListener();
-        } catch (Exception e) {
-            throw new RuntimeException("Error initializing public key, ", e);
+        }catch(Exception e){
+            throw new RuntimeException("Error processing public key, ", e);
         }
     }
 
@@ -80,12 +113,17 @@ public class JwtValidationService {
         registry.getListenerContainer("publicKeyConsumerId").resume();
     }
 
-    @KafkaListener(id = "authServerHealthCheckConsumerId", topics = "auth-server-health-check", groupId = "public-key-group")
+    @KafkaListener(topics = "token-server-health", groupId = "public-key-group")
     public void handleAuthServerHealthCheck(String message){
-        if("auth-server-restarted".equals(message)){
-            logger.info("Detected authentication-server restart, requesting public key again");
+        logger.info("Raw message received: [{}]", message);
+    
+        String cleanedMessage = message.replace("\"", "").trim();
+
+        if ("token-server-restarted".equals(cleanedMessage)) {
+            logger.info("Detected token-server restart, invalidating public key");
             jwtService.setPublicKeyFlag(false);
-            resumeKafkaListener();
+        } else if ("keys-generated".equals(cleanedMessage)) {
+            logger.info("Detected key generation completed, requesting public key");
             requestPublicKey();
         }
     }

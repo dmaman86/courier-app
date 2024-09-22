@@ -4,7 +4,6 @@ package com.david.maman.authenticationserver.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,10 +75,12 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(Authentication authentication, HttpServletResponse response){
+    public ResponseEntity<?> refreshToken(Authentication authentication,
+                                            @CookieValue("REFRESH_TOKEN") String refreshToken,
+                                            HttpServletResponse response){
         CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
 
-        setAuthCookies(response, authService.generateAuthTokens(user));
+        setAuthCookies(response, authService.refreshAuthTokens(user, refreshToken));
 
         return ResponseEntity.ok().build();
     }
@@ -106,8 +108,8 @@ public class AuthController {
     }
 
     private void setAuthCookies(HttpServletResponse response, AuthResponse authResponse){
-        response.addHeader(HttpHeaders.SET_COOKIE, authResponse.getAccessTokenCookie().toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, authResponse.getRefreshTokenCookie().toString());
+        response.addCookie(authResponse.getAccessTokenCookie());
+        response.addCookie(authResponse.getRefreshTokenCookie());
     }
 
     private Boolean isEmpty(String value){

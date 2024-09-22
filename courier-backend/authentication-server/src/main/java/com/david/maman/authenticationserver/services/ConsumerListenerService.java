@@ -24,14 +24,18 @@ public class ConsumerListenerService {
     private UserCredentialsService userCredentialsService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private RoleService roleService;
 
 
     @KafkaListener(topics = "user-topic", groupId = "auth-consumer")
     public void receiveUser(ConsumerRecord<String, String> record){
         try{
-            User user = objectMapper.readValue(record.value(), User.class);
-            logger.info("Received user: {}", user);
+            User userKafka = objectMapper.readValue(record.value(), User.class);
+            logger.info("Received user: {}", userKafka);
+            User user = this.saveUser(userKafka);
             userCredentialsService.createCredentials(user);
         }catch(JsonProcessingException e){
             logger.error("Error processing message", e);
@@ -58,6 +62,18 @@ public class ConsumerListenerService {
         }catch(JsonProcessingException e){
             logger.error("Error processing message", e);
         }
+    }
+
+    private User saveUser(User user){
+        var userDb = userService.loadUserByEmailOrPhoneAndIsActive(user.getEmail(), user.getPhone(), user.getIsActive());
+
+        if(!userDb.isPresent()){
+            logger.info("User not found in database, saving new user: {}", user);
+            return userService.createUser(user);
+        }
+        User existUser = userDb.get();
+        logger.info("User found in database, updating user: {}", existUser);
+        return userService.updateUser(existUser.getId(), user);
     }
 
 }

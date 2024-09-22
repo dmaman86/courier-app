@@ -50,13 +50,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
             String token = null;
             TokenType tokenType = TokenType.ACCESS_TOKEN;                        
             if(requestUri.equals("/api/auth/refresh")){
-                token = getTokenCookie(request, "refreshToken");
-                
-                // String accessToken = getTokenCookie(request, "accessToken");
-                // revokeToken(accessToken, TokenType.ACCESS_TOKEN);
+                token = getTokenCookie(request, TokenType.REFRESH_TOKEN);
                 tokenType = TokenType.REFRESH_TOKEN;
             } else{
-                token = getTokenCookie(request, "accessToken");
+                token = getTokenCookie(request, TokenType.ACCESS_TOKEN);
             }
 
             
@@ -73,7 +70,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
             CustomUserDetails userDetails = getUserDetails(token, tokenType);
             Authentication authentication = getAuthentication(userDetails);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            // authenticateUser(token);
         } catch (SignatureException | MalformedJwtException e) {
             throw new JwtException(e.getMessage());
         } catch(IllegalStateException e){
@@ -82,22 +78,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         chain.doFilter(request, response);
     }
 
-    private String getTokenCookie(HttpServletRequest request, String type){
+    private String getTokenCookie(HttpServletRequest request, TokenType tokenType){
         if(request.getCookies() != null){
             for(Cookie cookie : request.getCookies()){
-                if(cookie.getName().equals(type)){
+                if(cookie.getName().equals(tokenType.toString())){
                     return cookie.getValue();
                 }
             }
         }
         return null;
-    }
-
-    private void revokeToken(String token, TokenType tokenType){
-        if(!Strings.isNullOrEmpty(token)){
-            CustomUserDetails userDetails = getUserDetails(token, tokenType);
-            jwtService.revokeToken(userDetails, token, tokenType);
-        }
     }
 
     private CustomUserDetails getUserDetails(String token, TokenType tokenType) throws SignatureException{
@@ -115,20 +104,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         logger.info("User authenticated: { " + authentication + " }");
         return authentication;
     }
-
-    /*private void authenticateUser(String jwt) throws IllegalStateException, SignatureException{
-        if(jwtService.isTokenExpired(jwt)){
-            throw new IllegalStateException("Token expired");
-        }
-        UserCredentials user = jwtService.getUserFromToken(jwt);
-        if(user == null) throw new SignatureException("User not found");
-
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-            userDetails,
-            null,
-            userDetails.getAuthorities());
-        logger.info("User authenticated: { " + authentication + " }");
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }*/
 }
