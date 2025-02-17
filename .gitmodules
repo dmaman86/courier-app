@@ -1,0 +1,21 @@
+[submodule "courier-backend/auth-service"]
+	path = courier-backend/auth-service
+	url = https://github.com/dmaman86/courier-auth-service.git
+[submodule "courier-backend/office-service"]
+	path = courier-backend/office-service
+	url = https://github.com/dmaman86/courier-office-service.git
+[submodule "courier-backend/client-service"]
+	path = courier-backend/client-service
+	url = https://github.com/dmaman86/courier-client-service.git
+[submodule "courier-backend/order-service"]
+	path = courier-backend/order-service
+	url = https://github.com/dmaman86/courier-order-service.git
+[submodule "courier-backend/courier-service"]
+	path = courier-backend/courier-service
+	url = https://github.com/dmaman86/courier-service.git
+[submodule "courier-backend/api-gateway"]
+	path = courier-backend/api-gateway
+	url = https://github.com/dmaman86/courier-api-gateway.git
+[submodule "courier-backend/discovery-service"]
+	path = courier-backend/discovery-service
+	url = https://github.com/dmaman86/courier-service-discovery.git
