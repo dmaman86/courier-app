@@ -19,3 +19,9 @@
 [submodule "courier-backend/discovery-service"]
 	path = courier-backend/discovery-service
 	url = https://github.com/dmaman86/courier-service-discovery.git
+[submodule "courier-frontend"]
+	path = courier-frontend
+	url = https://github.com/dmaman86/courier-frontend.git
+[submodule "courier-backend/error-service"]
+	path = courier-backend/error-service
+	url = https://github.com/dmaman86/courier-error-service.git
