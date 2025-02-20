@@ -22,3 +22,6 @@
 [submodule "courier-backend/api-gateway"]
 	path = courier-backend/api-gateway
 	url = https://github.com/dmaman86/courier-api-gateway.git
+[submodule "courier-backend/user-service"]
+	path = courier-backend/user-service
+	url = https://github.com/dmaman86/courier-user-service.git
