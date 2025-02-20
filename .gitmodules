@@ -10,9 +10,6 @@
 [submodule "courier-backend/discovery-service"]
 	path = courier-backend/discovery-service
 	url = https://github.com/dmaman86/courier-service-discovery.git
-[submodule "courier-backend/client-service"]
-	path = courier-backend/client-service
-	url = https://github.com/dmaman86/courier-client-service.git
 [submodule "courier-backend/order-service"]
 	path = courier-backend/order-service
 	url = https://github.com/dmaman86/courier-order-service.git
