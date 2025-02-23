@@ -16,9 +16,6 @@
 [submodule "courier-backend/error-service"]
 	path = courier-backend/error-service
 	url = https://github.com/dmaman86/courier-error-service.git
-[submodule "courier-backend/courier-service"]
-	path = courier-backend/courier-service
-	url = https://github.com/dmaman86/courier-service.git
 [submodule "courier-backend/api-gateway"]
 	path = courier-backend/api-gateway
 	url = https://github.com/dmaman86/courier-api-gateway.git
