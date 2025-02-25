@@ -4,9 +4,6 @@
 [submodule "courier-backend/auth-service"]
 	path = courier-backend/auth-service
 	url = https://github.com/dmaman86/courier-auth-service.git
-[submodule "courier-backend/office-service"]
-	path = courier-backend/office-service
-	url = https://github.com/dmaman86/courier-office-service.git
 [submodule "courier-backend/discovery-service"]
 	path = courier-backend/discovery-service
 	url = https://github.com/dmaman86/courier-service-discovery.git
@@ -22,3 +19,6 @@
 [submodule "courier-backend/user-service"]
 	path = courier-backend/user-service
 	url = https://github.com/dmaman86/courier-user-service.git
+[submodule "courier-backend/resource-service"]
+	path = courier-backend/resource-service
+	url = https://github.com/dmaman86/courier-resource-service.git
