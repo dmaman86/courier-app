@@ -1,0 +1,39 @@
+services:
+  zookeeper:
+    image: "bitnami/zookeeper:latest"
+    container_name: zookeeper
+    networks:
+      - backend-network
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: "bitnami/kafka:latest"
+    container_name: kafka
+    networks:
+      - backend-network
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    ports:
+      - "9092:9092"
+
+  redis:
+    image: "redis:latest"
+    container_name: redis
+    networks:
+      - backend-network
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "6379:6379"
+
+networks:
+  backend-network:
+    driver: bridge
