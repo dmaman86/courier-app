@@ -6,6 +6,7 @@ REDIS_CONTAINER = $(shell docker ps --format "{{.Names}}" | grep redis)
 DISCOVERY_SERVICE = courier-backend/discovery-service
 API_GATEWAY = courier-backend/api-gateway
 MICROSERVICES = courier-backend/auth-service courier-backend/error-service courier-backend/resource-service courier-backend/user-service
+COURIER_FRONTEND = courier-frontend
 PROJECT_ROOT = $(shell pwd)
 
 SERVICE ?=
@@ -78,6 +79,9 @@ start-microservices:
 		(cd $(PROJECT_ROOT)/$$microservice && mvn spring-boot:run &) \
 	done
 
+start-frontend:
+	@echo "Starting Frontend"
+	@cd $(PROJECT_ROOT)/$(COURIER_FRONTEND) && npm install && npm run dev
 
 stop-microservice:
 	@echo "Stopping microservice: $(SERVICE)"
@@ -104,8 +108,19 @@ stop-microservices:
 	done
 	@echo "All microservices stopped."
 
+
+stop-frontend:
+	@echo "Stopping Courier Frontend (default Vite port: 5173)"
+	@PID=$$(lsof -ti :5173); \
+	if [ -n "$$PID" ]; then \
+		echo "Killing process on port 5173 (PID: $$PID)..."; \
+		kill -9 $$PID; \
+	else \
+		echo "No process found on port 5173"; \
+	fi
+
 restart-microservices: stop-microservices start-microservices
 
-start-all: start-infra start-discovery start-api-gateway start-microservices
+start-all: start-infra start-discovery start-api-gateway start-microservices start-frontend
 
-stop-all: stop-microservices stop-infra
+stop-all: stop-frontend stop-microservices stop-infra
