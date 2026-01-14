@@ -50,7 +50,7 @@ Architecture includes:
 - Makefile orchestration
 - Docker Compose infrastructure service
 
-Each microservice is a separate Git repository, imported into this monorepo as a submodule.
+This is a **true monorepo** - all code lives in a single repository without submodules.
 
 ---
 
@@ -72,7 +72,7 @@ courier-app/
 │
 ├── courier-frontend/               # React frontend application
 │   └── README.md                   # Frontend setup instructions
-├── .gitmodules                     # Git submodule configuration
+├── package.json                    # Workspace root configuration
 ├── Makefile                        # Local orchestrator
 └── README.md                       # Root README (this file)
 ```
@@ -230,9 +230,9 @@ Features include:
 
 ### Clone the repository
 ```bash
-    git clone https://github.com/dmaman86/courier-app.git
-    cd courier-app
-    git submodule update --init --recursive
+git clone https://github.com/dmaman86/courier-app.git
+cd courier-app
+npm install
 ```
 
 ---

@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: courier-resource-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/resource_db?useSSL=false&createDatabaseIfNotExist=true&serverTimezone=UTC
+    username: root
+    password: root-workbench
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: resource-service-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: MySecretPassword123!
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+            loggerLevel: full
+      circuitbreaker:
+        enabled: true
+
+server:
+  port: 8083
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+
+  instance:
+    hostname: courier-resource-service
+    prefer-ip-address: true

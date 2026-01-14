@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: courier-api-gateway
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: courier-api-gateway-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: MySecretPassword123!
+
+  cloud:
+    gateway:
+      discovery.locator.enabled: true
+      discovery.locator.lower-case-service-id: true
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          "[/**]":
+            allowed-origins: "http://localhost:5173"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+
+server:
+  port: 8080
+
+eureka:
+  instance:
+    hostname: courier-api-gateway
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoint.gateway.access: unrestricted
+  endpoints.web.exposure.include: gateway

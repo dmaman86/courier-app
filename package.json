@@ -1,0 +1,37 @@
+{
+  "name": "courier-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Courier App - Monorepo with Frontend and Backend Microservices",
+  "workspaces": [
+    "courier-frontend"
+  ],
+  "scripts": {
+    "frontend:dev": "npm run dev --workspace=courier-frontend",
+    "frontend:build": "npm run build --workspace=courier-frontend",
+    "frontend:lint": "npm run lint --workspace=courier-frontend",
+    "backend:build": "cd courier-backend && ./build-all.sh",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "install:all": "npm install && cd courier-frontend && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmaman86/courier-app.git"
+  },
+  "keywords": [
+    "courier",
+    "microservices",
+    "monorepo",
+    "spring-boot",
+    "react",
+    "vite"
+  ],
+  "author": "David Maman",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: courier-discovery-service
+
+server:
+  port: 8761
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+

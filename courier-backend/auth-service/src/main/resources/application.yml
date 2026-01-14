@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: courier-auth-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth_db?useSSL=false&createDatabaseIfNotExist=true&serverTimezone=UTC
+    username: root
+    password: root-workbench
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: auth-service-group
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: MySecretPassword123!
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+            loggerLevel: full
+      circuitbreaker:
+        enabled: true
+
+server:
+  port: 8088
+
+eureka:
+  instance:
+    hostname: courier-auth-service
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "health"
