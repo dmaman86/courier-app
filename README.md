@@ -1,6 +1,7 @@
 # Courier-App 
 ### *Distributed Courier Management Platform — Microservices, Event‑Driven, Secure, Scalable*
 
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Documentation-blue?logo=readthedocs)](https://deepwiki.com/dmaman86/courier-app)
 ![Java](https://img.shields.io/badge/Java-17-blue)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
 ![React](https://img.shields.io/badge/React-18-blue)
@@ -13,11 +14,7 @@
 ## 🚧 Project Status
 **This system is actively under development.**
 
-> **⚠️ Note:** This project was recently migrated from git submodules to a monorepo structure.  
-> The DeepWiki documentation may still reference the old structure and will be updated soon.
-
-Full technical documentation (DeepWiki):
-https://deepwiki.com/dmaman86/courier-app
+> **📚 Interactive Documentation:** Click the DeepWiki badge above to explore AI-powered documentation you can chat with!
 
 ---
 
