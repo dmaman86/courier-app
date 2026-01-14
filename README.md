@@ -13,6 +13,9 @@
 ## 🚧 Project Status
 **This system is actively under development.**
 
+> **⚠️ Note:** This project was recently migrated from git submodules to a monorepo structure.  
+> The DeepWiki documentation may still reference the old structure and will be updated soon.
+
 Full technical documentation (DeepWiki):
 https://deepwiki.com/dmaman86/courier-app
 
